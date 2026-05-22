@@ -118,21 +118,70 @@
       fixes a long-standing under-performance of HRP relative to direct optimisation.
     </p>
 
-    <h2>The block-matrix identity, in one line</h2>
+    <h2>What HRP misses</h2>
     <p>
-      For a covariance partitioned as
-      $\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix},$
-      the global minimum-variance allocation between the two blocks is governed not by $A$ and $D$
-      alone but by their <em>Schur complements</em>:
+      Cluster the assets into two groups. Partition the covariance accordingly:
+      $\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix}.$
+      Standard <strong>Hierarchical Risk Parity</strong> allocates between the two clusters using
+      only the diagonal blocks &mdash; effectively pretending the cross-cluster covariance $B$
+      is zero. That&apos;s wrong, and it&apos;s the dominant source of HRP&apos;s under-performance
+      against direct mean-variance optimisation. The cross block is information; HRP throws it on
+      the floor.
+    </p>
+
+    <h2>What the Schur complement puts back</h2>
+    <p>
+      The block-inverse identity tells you exactly how to put $B$ back. The inverse of a
+      partitioned covariance is
     </p>
     <div class="equation-card">
-      $S_A = A - B\,D^{-1}\,B^\top, \qquad S_D = D - B^\top\,A^{-1}\,B$
+      $\Sigma^{-1} = \begin{pmatrix} S_A^{-1} & \star \\ \star & S_D^{-1} \end{pmatrix},
+       \qquad
+       S_A = A - B D^{-1} B^\top,
+       \qquad
+       S_D = D - B^\top A^{-1} B$
     </div>
     <p>
-      Plug $S_A$ and $S_D$ in place of $A$ and $D$ when doing the hierarchical step and the
-      top-down construction is no longer a heuristic &mdash; it&apos;s an exact decomposition of
-      the global problem. Replace them with $A$ and $D$ verbatim and you get the standard HRP
-      family. Everything in between is a tunable interpolation.
+      $S_A$ is the <em>Schur complement</em> of $D$ in $\Sigma$ &mdash; the within-cluster
+      covariance with the cross-cluster effect already absorbed. So if you allocate between
+      clusters using $S_A$ and $S_D$ (instead of $A$ and $D$), you reproduce the global
+      minimum-variance result exactly &mdash; <em>top-down</em>. The hierarchical decomposition
+      stops being a heuristic and becomes an identity.
+    </p>
+
+    <h2>The interpolation</h2>
+    <p>
+      Schur complementary portfolios introduce a single dial $\gamma \in [0, 1]$:
+    </p>
+    <div class="equation-card">
+      $S_A(\gamma) = A - \gamma\,B D^{-1} B^\top,
+       \qquad
+       S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
+    </div>
+    <ul>
+      <li>$\gamma = 0$ &mdash; plain <strong>HRP</strong>: ignore $B$, allocate top-down on the
+        diagonal blocks.</li>
+      <li>$\gamma = 1$ &mdash; <strong>exact global MVP</strong>, recovered hierarchically via the
+        block-inverse identity.</li>
+      <li>$\gamma \in (0, 1)$ &mdash; pay attention to $B$ in proportion to how much you trust your
+        covariance estimate. Empirically the sweet spot is interior: noisy $\hat\Sigma$ rewards
+        partial trust in the off-diagonal block, not full trust.</li>
+    </ul>
+
+    <h2>The recursion</h2>
+    <p>
+      Cluster the assets, partition $\Sigma$. Compute $S_A(\gamma)$ and $S_D(\gamma)$. Use the
+      inverse-volatility of the Schur complements (or any reasonable allocator) to split mass
+      between the two clusters. Recurse inside each cluster on its own sub-covariance. That&apos;s
+      the whole algorithm. Set $\gamma = 1$ and the recursion is mathematically equivalent to
+      solving global MVP. Set $\gamma = 0$ and you get HRP back. Everything in between is a
+      smoothly tunable trade-off between estimation noise and information content.
+    </p>
+    <p style="font-size: 0.92rem; color: var(--muted);">
+      The same idea generalises beyond the two-block case &mdash; see the
+      <a href="https://arxiv.org/abs/2411.05807">paper</a> for the recursion at arbitrary
+      hierarchy depth, the connection to Newton&apos;s method on the Riccati equation, and the
+      empirical comparisons.
     </p>
 
     <h2>Where to start</h2>
@@ -225,7 +274,7 @@
       </li>
     </ul>
 
-    <h3 style="font-size:1.02rem;margin-top:1em">Extensions and comparisons</h3>
+    <h3 style="font-size:1.02rem;margin-top:1em">Theory and extensions</h3>
     <ul>
       <li>
         Wuebben, B. J. (2026).
@@ -235,13 +284,72 @@
         <em>Introduces HRP-&mu;, HRP-&Sigma;&mu;, and CRISP &mdash; signal-aware extensions of
         both HRP and Schur.</em>
       </li>
+      <li>
+        Kne&zcaron;evi&cacute;, P., and &Scaron;imovi&cacute;, P. P. (2026).
+        <a href="https://www.google.com/search?q=%22Bridging+Risk+Parity+and+Variance+Optimization%22+Schur+Complement">
+          <em>Bridging Risk Parity and Variance Optimization: A Schur Complement Approach to
+          Recursive Asset Allocation</em></a>. <em>The Journal of FinTech</em>.
+      </li>
+      <li>
+        Mograby, G. (2025).
+        <a href="https://arxiv.org/abs/2503.12328">
+          <em>Hierarchical Minimum Variance Portfolios: A Theoretical and Algorithmic
+          Approach</em></a>. arXiv:2503.12328.
+        <em>Develops the hierarchical-graph view of MVP, using Schur complements.</em>
+      </li>
+    </ul>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Return- and signal-aware variants</h3>
+    <ul>
+      <li>
+        Alonso, N. I. (2025).
+        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624">
+          <em>Return-Adjusted Hierarchical Risk Parity and Schur Portfolios: A Comprehensive
+          Theoretical and Empirical Study</em></a>. SSRN 5370624.
+      </li>
+      <li>
+        Alonso, N. I. (2026).
+        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220">
+          <em>Reinforcement Learning Portfolio Optimization (RLPO): From Markowitz to
+          Risk-Sensitive Control</em></a>. SSRN 6447220.
+      </li>
+    </ul>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Applications and surveys</h3>
+    <ul>
+      <li>
+        Bergmeier, J. (2026).
+        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678">
+          <em>The risk parity zoo: Which risk contributions should multi-asset investors
+          equalize?</em></a>. SSRN 6536678.
+        <em>Out-of-sample comparison of risk-based asset-allocation models.</em>
+      </li>
+      <li>
+        Dominguez, A. R. (2025).
+        <a href="https://arxiv.org/abs/2504.05743">
+          <em>Causal Portfolio Optimization: Principles and Sensitivity-Based
+          Solutions</em></a>. arXiv:2504.05743.
+      </li>
+      <li>
+        Chitra, T., Diamandis, T., Sheng, N., and Sterle, L. (2025).
+        <a href="https://arxiv.org/abs/2502.06028">
+          <em>Perpetual demand lending pools</em></a>. arXiv:2502.06028.
+        <em>DeFi application area citing Schur complementary methods.</em>
+      </li>
     </ul>
 
     <h3 style="font-size:1.02rem;margin-top:1em">Implementations</h3>
     <ul>
       <li>
         <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html"><strong>SkFolio</strong></a>
-        (Hugo Delatte) &mdash; recommended for production use.
+        (Hugo Delatte) &mdash; recommended for production use. Tutorial walks through Schur
+        complementary allocation on real data.
+      </li>
+      <li>
+        Nicolini, C., Manzi, M., and Delatte, H. (2025).
+        <a href="https://arxiv.org/abs/2507.04176">
+          <em>skfolio: Portfolio Optimization in Python</em></a>. arXiv:2507.04176.
+        <em>The accompanying paper for the SkFolio package.</em>
       </li>
       <li>
         <a href="https://github.com/microprediction/precise"><strong>precise</strong></a> &mdash;
@@ -251,7 +359,9 @@
     </ul>
 
     <p style="font-size: 0.9rem; color: var(--muted); margin-top: 16px;">
-      Working on a related paper or implementation? Open an issue on
+      Citation list maintained from
+      <a href="https://scholar.google.com/scholar?cites=7287366636726005592">Google Scholar
+      forward citations</a>. Working on a related paper or implementation? Open an issue on
       <a href="https://github.com/microprediction/schur">the schur repo</a> and we&apos;ll add it.
     </p>
 
