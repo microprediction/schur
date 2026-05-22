@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --panel: #ffffff;
+      --text: #1a1a1a;
+      --muted: #5a5a5a;
+      --accent: #4a3aff;
+      --border: #e2e2e2;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.55; font-size: 17px;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    header.site-header {
+      background: #1f1d3d; color: #fff;
+      padding: 14px 24px; border-bottom: 1px solid #15132a;
+    }
+    header.site-header .nav-inner {
+      max-width: 820px; margin: 0 auto;
+      display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+    }
+    header.site-header .brand { font-weight: 600; font-size: 1.1rem; color: #fff; }
+    header.site-header nav { display: flex; flex-wrap: wrap; gap: 0 18px; }
+    header.site-header nav a { color: #fff; opacity: 0.85; font-size: 0.95rem; }
+    header.site-header nav a:hover { opacity: 1; }
+    main { max-width: 820px; margin: 32px auto; padding: 0 24px 60px; }
+    h1 { font-size: 2.1rem; margin: 0 0 4px; line-height: 1.2; }
+    .subtitle { color: var(--muted); font-size: 1.1rem; margin: 0 0 28px; }
+    h2 {
+      font-size: 1.3rem; margin: 2.2em 0 0.6em;
+      border-bottom: 1px solid var(--border); padding-bottom: 4px;
+    }
+    p { margin: 0.8em 0; }
+    ul { padding-left: 1.4em; }
+    li { margin-bottom: 8px; }
+    .callout {
+      background: #f1f0fb; border-left: 3px solid var(--accent);
+      padding: 12px 18px; border-radius: 4px; margin: 18px 0;
+    }
+    blockquote {
+      margin: 18px 0; padding: 10px 18px;
+      border-left: 3px solid #ddd; color: var(--muted);
+    }
+    code {
+      background: #f3f3f7; padding: 1px 5px;
+      border-radius: 3px; font-size: 0.92em;
+      font-family: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+    .resource-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px; margin-top: 18px;
+    }
+    .resource {
+      border: 1px solid var(--border); background: var(--panel);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .resource h3 { margin: 0 0 6px; font-size: 1.02rem; }
+    .resource p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+    footer {
+      max-width: 820px; margin: 40px auto 24px; padding: 16px 24px;
+      font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--border);
+    }
+    .equation-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 18px; margin: 18px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./">schur</a>
+      <nav>
+        <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio</a>
+        <a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">Slides</a>
+        <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Medium</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Schur Complementary Portfolios</h1>
+    <p class="subtitle">A unification of top-down and bottom-up portfolio construction.</p>
+
+    <p>
+      Top-down portfolio construction &mdash; build a hierarchy, allocate between clusters, then
+      within them &mdash; and bottom-up portfolio construction &mdash; solve one optimisation over
+      the whole covariance matrix &mdash; are usually presented as opposing camps. They aren&apos;t.
+      Block matrix inversion makes the connection explicit: when you allocate top-down between two
+      clusters and then within each, you are <em>also</em> implicitly solving a global optimisation
+      &mdash; with the off-diagonal cross-cluster covariance compressed into a <strong>Schur
+      complement</strong>.
+    </p>
+
+    <p>
+      <strong>Schur complementary portfolios</strong> exploit this. Augment the within-cluster
+      covariance with the relevant Schur complement before allocating, and the hierarchical
+      construction recovers the optimisation result exactly. Drop the augmentation and you fall
+      back to plain hierarchical risk parity. The augmentation interpolates between the two and
+      fixes a long-standing under-performance of HRP relative to direct optimisation.
+    </p>
+
+    <h2>The block-matrix identity, in one line</h2>
+    <p>
+      For a covariance partitioned as
+      $\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix},$
+      the global minimum-variance allocation between the two blocks is governed not by $A$ and $D$
+      alone but by their <em>Schur complements</em>:
+    </p>
+    <div class="equation-card">
+      $S_A = A - B\,D^{-1}\,B^\top, \qquad S_D = D - B^\top\,A^{-1}\,B$
+    </div>
+    <p>
+      Plug $S_A$ and $S_D$ in place of $A$ and $D$ when doing the hierarchical step and the
+      top-down construction is no longer a heuristic &mdash; it&apos;s an exact decomposition of
+      the global problem. Replace them with $A$ and $D$ verbatim and you get the standard HRP
+      family. Everything in between is a tunable interpolation.
+    </p>
+
+    <h2>Where to start</h2>
+    <div class="resource-grid">
+      <div class="resource">
+        <h3><a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio implementation</a></h3>
+        <p>Recommended for production use. Hugo Delatte&apos;s clean port with a tutorial that
+          walks through the method end-to-end on real data.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">CQF slides</a></h3>
+        <p>Formal write-up &mdash; derivation, empirical comparisons, the interpolation argument.
+          A good first read if you want the maths.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Medium article</a></h3>
+        <p>&ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo; The plain-language
+          take with the intuition for why HRP underperforms and what the fix changes.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://www.linkedin.com/posts/petercotton_schur-complementary-portfolios-a-unification-activity-7000535020381552640-ZWej">LinkedIn introduction</a></h3>
+        <p>Short post pitching the unification of hierarchical and optimisation-based construction.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://github.com/microprediction/precise">precise package</a></h3>
+        <p>Original reference implementation by the author. The <code>schurmanagers</code> module
+          ships a family of variants (e.g. <code>schur_weak_pm_t0_d0_r025_n50_g100_long_manager</code>)
+          parameterised by interpolation weight and regularisation.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://www.linkedin.com/posts/alexander-fleiss-70b49410_does-option-volume-predict-stock-direction-activity-7021134433344749569-bxx4">M6 commentary</a></h3>
+        <p>Note on how the method performed (and didn&apos;t) in the M6 forecasting competition.</p>
+      </div>
+    </div>
+
+    <h2>In the textbooks</h2>
+    <p>
+      Schur complementary portfolios are covered in
+      <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">
+      &sect;12.3.4 of Daniel P. Palomar&apos;s <em>Portfolio Optimization</em></a>, alongside HRP
+      and the global minimum-variance portfolio. The textbook derives the Schur-complement form
+      of the global MV solution and describes the
+      &ldquo;continuum from hierarchical to minimum-risk&rdquo; that the method opens up.
+    </p>
+
+    <h2>Cite</h2>
+    <blockquote>
+      Cotton, P. (2024). &ldquo;Schur Complementary Allocation: A Unification of Hierarchical
+      Risk Parity and Minimum Variance Portfolios.&rdquo; arXiv preprint
+      <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>.
+    </blockquote>
+    <pre style="background:#f3f3f7;padding:12px 14px;border-radius:6px;overflow-x:auto;font-size:0.85em;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">@article{cotton2024schur,
+  author  = {Cotton, Peter},
+  title   = {Schur Complementary Allocation: A Unification of Hierarchical
+             Risk Parity and Minimum Variance Portfolios},
+  journal = {arXiv preprint arXiv:2411.05807},
+  year    = {2024},
+  url     = {https://arxiv.org/abs/2411.05807}
+}</pre>
+
+    <h2>Bibliography</h2>
+    <p>Selected works on, citing, or directly extending Schur complementary portfolios.</p>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Foundational</h3>
+    <ul>
+      <li>
+        Cotton, P. (2024).
+        <a href="https://arxiv.org/abs/2411.05807">
+          <em>Schur Complementary Allocation: A Unification of Hierarchical Risk Parity and
+          Minimum Variance Portfolios</em></a>. arXiv:2411.05807. <em>The canonical write-up.</em>
+      </li>
+      <li>
+        Cotton, P. (2023). <em>Schur Complementary Portfolios &mdash; CQF slides</em>.
+        <a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">PDF</a>.
+        <em>Earlier presentation of the same material.</em>
+      </li>
+      <li>
+        L&oacute;pez de Prado, M. (2016). &ldquo;Building Diversified Portfolios that Outperform
+        Out of Sample.&rdquo; <em>Journal of Portfolio Management</em> 42(4), 59&ndash;69.
+        <em>The HRP paper that Schur complementary portfolios extend / fix.</em>
+      </li>
+    </ul>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Textbooks</h3>
+    <ul>
+      <li>
+        Palomar, D. P. <em>Portfolio Optimization</em>, &sect;12.3.4
+        &ldquo;Schur complementary portfolios&rdquo;.
+        <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online edition</a>.
+      </li>
+    </ul>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Extensions and comparisons</h3>
+    <ul>
+      <li>
+        Wuebben, B. J. (2026).
+        <a href="https://arxiv.org/abs/2604.23833">
+          <em>Beyond De Prado and Cotton: Hierarchical and Iterative Methods for General
+          Mean-Variance Portfolios</em></a>. arXiv:2604.23833.
+        <em>Introduces HRP-&mu;, HRP-&Sigma;&mu;, and CRISP &mdash; signal-aware extensions of
+        both HRP and Schur.</em>
+      </li>
+    </ul>
+
+    <h3 style="font-size:1.02rem;margin-top:1em">Implementations</h3>
+    <ul>
+      <li>
+        <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html"><strong>SkFolio</strong></a>
+        (Hugo Delatte) &mdash; recommended for production use.
+      </li>
+      <li>
+        <a href="https://github.com/microprediction/precise"><strong>precise</strong></a> &mdash;
+        original reference implementation with parameterised variants
+        (<code>schurmanagers</code>).
+      </li>
+    </ul>
+
+    <p style="font-size: 0.9rem; color: var(--muted); margin-top: 16px;">
+      Working on a related paper or implementation? Open an issue on
+      <a href="https://github.com/microprediction/schur">the schur repo</a> and we&apos;ll add it.
+    </p>
+
+    <p style="margin-top: 28px; color: var(--muted); font-size: 0.95rem;">
+      This site is intentionally small &mdash; it points at the canonical resources rather than
+      duplicating them. For an executable reference, prefer
+      <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio</a>; for the
+      maths, the <a href="https://arxiv.org/abs/2411.05807">arXiv paper</a>.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
