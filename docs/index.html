@@ -62,15 +62,32 @@
       font-family: "SFMono-Regular", Menlo, Consolas, monospace;
     }
     .resource-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 14px; margin-top: 18px;
     }
     .resource {
+      position: relative;
       border: 1px solid var(--border); background: var(--panel);
-      border-radius: 8px; padding: 14px 16px;
+      border-radius: 10px; padding: 16px 18px;
+      display: flex; flex-direction: column;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     }
-    .resource h3 { margin: 0 0 6px; font-size: 1.02rem; }
-    .resource p { margin: 0; font-size: 0.92rem; color: var(--muted); }
+    .resource:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px rgba(74, 58, 255, 0.10);
+      transform: translateY(-2px);
+    }
+    .resource .tag {
+      display: inline-block; align-self: flex-start;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.04em;
+      text-transform: uppercase; color: var(--accent);
+      background: #ecebfb; border-radius: 999px;
+      padding: 2px 9px; margin-bottom: 9px;
+    }
+    .resource h3 { margin: 0 0 6px; font-size: 1.03rem; line-height: 1.3; }
+    .resource h3 a::after { content: " \2192"; opacity: 0; transition: opacity 0.15s ease; }
+    .resource:hover h3 a::after { opacity: 0.6; }
+    .resource p { margin: 0; font-size: 0.9rem; color: var(--muted); }
     footer {
       max-width: 820px; margin: 40px auto 24px; padding: 16px 24px;
       font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--border);
@@ -106,9 +123,9 @@
       <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">skfolio</a>
       (batch &mdash; recommended for production) &middot;
       <a href="https://allocation.microprediction.org">allocation</a>
-      (online / streaming, changing universe &mdash; <code>pip install allocation</code>) &middot;
+      (online / streaming, changing universe &mdash; <code>pip install allocation</code>), built on
       <a href="https://github.com/microprediction/precise">precise</a>
-      (original reference).
+      (streaming covariance estimation).
     </div>
 
     <p>
@@ -196,42 +213,49 @@
     </p>
 
     <h2>Where to start</h2>
+    <p>Want to run it? Reach for <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">skfolio</a>
+      (batch) or <a href="https://allocation.microprediction.org">allocation</a> (streaming). Want the
+      intuition first? Start with the <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">original
+      blog post</a>.</p>
     <div class="resource-grid">
       <div class="resource">
-        <h3><a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio implementation</a></h3>
+        <span class="tag">Code &middot; production</span>
+        <h3><a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">skfolio</a></h3>
         <p>Recommended for production use. Hugo Delatte&apos;s clean port with a tutorial that
           walks through the method end-to-end on real data.</p>
       </div>
       <div class="resource">
-        <h3><a href="https://allocation.microprediction.org">allocation (online / streaming)</a></h3>
-        <p>Streaming implementation: the Schur recursion with the asset order from
-          <em>Fiedler seriation</em> instead of agglomerative linkage, so the hierarchy is a smooth
-          function of the covariance and <code>partial_fit</code> is low-turnover. Handles a changing
-          universe. <code>pip install allocation</code>.</p>
+        <span class="tag">Code &middot; streaming</span>
+        <h3><a href="https://allocation.microprediction.org">allocation</a></h3>
+        <p>Online / streaming: the Schur recursion with asset order from <em>Fiedler seriation</em>,
+          so the hierarchy is smooth in the covariance and <code>partial_fit</code> is low-turnover.
+          Handles a changing universe. <code>pip install allocation</code>.</p>
       </div>
       <div class="resource">
+        <span class="tag">Code &middot; covariance</span>
+        <h3><a href="https://github.com/microprediction/precise">precise</a></h3>
+        <p>Streaming covariance estimation that <a href="https://allocation.microprediction.org">allocation</a>
+          builds on. Online, low-turnover covariance estimators &mdash; the <code>partial_fit</code>
+          input the Schur recursion consumes. <code>pip install precise</code>.</p>
+      </div>
+      <div class="resource">
+        <span class="tag">Read first</span>
+        <h3><a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">The original blog post</a></h3>
+        <p>&ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity&rdquo; (2022) &mdash;
+          the article that started it all. Plain-language intuition for why HRP underperforms and
+          what the fix changes.</p>
+      </div>
+      <div class="resource">
+        <span class="tag">Paper</span>
+        <h3><a href="https://arxiv.org/abs/2411.05807">arXiv paper</a></h3>
+        <p>The canonical write-up: the block-inverse identity, the $\gamma$ interpolation, the
+          recursion at arbitrary depth, and the empirical comparisons.</p>
+      </div>
+      <div class="resource">
+        <span class="tag">Slides</span>
         <h3><a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">CQF slides</a></h3>
-        <p>Formal write-up &mdash; derivation, empirical comparisons, the interpolation argument.
-          A good first read if you want the maths.</p>
-      </div>
-      <div class="resource">
-        <h3><a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Medium article</a></h3>
-        <p>&ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo; The plain-language
-          take with the intuition for why HRP underperforms and what the fix changes.</p>
-      </div>
-      <div class="resource">
-        <h3><a href="https://www.linkedin.com/posts/petercotton_schur-complementary-allocation-a-unification-activity-7261933143971041280--hz6/">LinkedIn post (paper release)</a></h3>
-        <p>Author&apos;s LinkedIn post announcing the arXiv paper and summarising the unification argument.</p>
-      </div>
-      <div class="resource">
-        <h3><a href="https://github.com/microprediction/precise">precise package</a></h3>
-        <p>Original reference implementation by the author. The <code>schurmanagers</code> module
-          ships a family of variants (e.g. <code>schur_weak_pm_t0_d0_r025_n50_g100_long_manager</code>)
-          parameterised by interpolation weight and regularisation.</p>
-      </div>
-      <div class="resource">
-        <h3><a href="https://www.linkedin.com/posts/alexander-fleiss-70b49410_does-option-volume-predict-stock-direction-activity-7021134433344749569-bxx4">M6 commentary</a></h3>
-        <p>Note on how the method performed (and didn&apos;t) in the M6 forecasting competition.</p>
+        <p>Formal write-up &mdash; derivation, empirical comparisons, and the interpolation argument.
+          A good first read if you want the maths without the full paper.</p>
       </div>
     </div>
 
@@ -265,6 +289,11 @@
 
     <h3 style="font-size:1.02rem;margin-top:1em">Foundational</h3>
     <ul>
+      <li>
+        Cotton, P. (2022). &ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo;
+        <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
+        Culture (Medium)</a>. <em>The original blog post that started it all.</em>
+      </li>
       <li>
         Cotton, P. (2024).
         <a href="https://arxiv.org/abs/2411.05807">
@@ -371,8 +400,8 @@
       </li>
       <li>
         <a href="https://github.com/microprediction/precise"><strong>precise</strong></a> &mdash;
-        original reference implementation with parameterised variants
-        (<code>schurmanagers</code>).
+        streaming covariance estimation that <code>allocation</code> builds on. Online,
+        low-turnover covariance estimators feeding the Schur recursion.
       </li>
       <li>
         <a href="https://github.com/microprediction/allocation"><strong>allocation</strong></a> &mdash;
