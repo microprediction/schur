@@ -89,6 +89,7 @@
       <nav>
         <a href="https://arxiv.org/abs/2411.05807">Paper</a>
         <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio</a>
+        <a href="https://allocation.microprediction.org">allocation</a>
         <a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">Slides</a>
         <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Medium</a>
         <a href="https://github.com/microprediction/schur">GitHub</a>
@@ -190,6 +191,13 @@
         <h3><a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio implementation</a></h3>
         <p>Recommended for production use. Hugo Delatte&apos;s clean port with a tutorial that
           walks through the method end-to-end on real data.</p>
+      </div>
+      <div class="resource">
+        <h3><a href="https://allocation.microprediction.org">allocation (online / streaming)</a></h3>
+        <p>Streaming implementation: the Schur recursion with the asset order from
+          <em>Fiedler seriation</em> instead of agglomerative linkage, so the hierarchy is a smooth
+          function of the covariance and <code>partial_fit</code> is low-turnover. Handles a changing
+          universe. <code>pip install allocation</code>.</p>
       </div>
       <div class="resource">
         <h3><a href="https://github.com/microprediction/precise/blob/main/academic/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">CQF slides</a></h3>
@@ -356,6 +364,13 @@
         original reference implementation with parameterised variants
         (<code>schurmanagers</code>).
       </li>
+      <li>
+        <a href="https://github.com/microprediction/allocation"><strong>allocation</strong></a> &mdash;
+        online / streaming implementation. Schur via Fiedler seriation (a smooth order, hence
+        low-turnover streaming and a changing-universe), alongside a Thurstone allocator.
+        <code>pip install allocation</code> &middot;
+        <a href="https://allocation.microprediction.org">docs</a>.
+      </li>
     </ul>
 
     <p style="font-size: 0.9rem; color: var(--muted); margin-top: 16px;">
@@ -369,7 +384,8 @@
       This site is intentionally small &mdash; it points at the canonical resources rather than
       duplicating them. For an executable reference, prefer
       <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">SkFolio</a>; for the
-      maths, the <a href="https://arxiv.org/abs/2411.05807">arXiv paper</a>.
+      maths, the <a href="https://arxiv.org/abs/2411.05807">arXiv paper</a>; for streaming /
+      online use over a changing universe, <a href="https://allocation.microprediction.org">allocation</a>.
     </p>
   </main>
 
