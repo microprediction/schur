@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schur Complementary Portfolios &mdash; Introduction</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./">schur</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="./index.html#implementations">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./">&larr; Home</a></p>
+    <h1>An introduction</h1>
+    <p class="subtitle">How the Schur complement bridges hierarchical and optimisation-based allocation.</p>
+
+    <p class="lead">
+      Cluster the assets into two groups and partition the covariance matrix accordingly:
+    </p>
+    <div class="equation-card">
+      $\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix}$
+    </div>
+    <p>
+      $A$ and $D$ are the within-cluster covariances; $B$ holds the cross-cluster covariance. The
+      question every allocator faces is how much to trust $B$.
+    </p>
+
+    <h2>Where hierarchical risk parity sits</h2>
+    <p>
+      <strong>Hierarchical Risk Parity (HRP)</strong> allocates between the two clusters using the
+      diagonal blocks $A$ and $D$, and sets the cross block $B$ aside. This is a deliberate,
+      sensible choice: $B$ is the noisiest part of an estimated covariance, and ignoring it makes
+      HRP robust and stable out of sample. The cost is that genuine cross-cluster information in
+      $B$ goes unused &mdash; which is the main reason HRP and direct mean-variance optimisation can
+      pull in different directions. Schur complementary portfolios put $B$ back gradually, on a
+      dial, so you can keep HRP&apos;s robustness while recovering as much of that information as
+      your estimate deserves.
+    </p>
+
+    <h2>What the Schur complement puts back</h2>
+    <p>
+      The block-inverse identity says exactly how $B$ should re-enter. The inverse of the
+      partitioned covariance is
+    </p>
+    <div class="equation-card">
+      $\Sigma^{-1} = \begin{pmatrix} S_A^{-1} & \star \\ \star & S_D^{-1} \end{pmatrix},
+       \qquad
+       S_A = A - B D^{-1} B^\top,
+       \qquad
+       S_D = D - B^\top A^{-1} B$
+    </div>
+    <p>
+      $S_A$ is the <em>Schur complement</em> of $D$ in $\Sigma$ &mdash; the within-cluster
+      covariance with the cross-cluster effect already absorbed. Allocate between clusters using
+      $S_A$ and $S_D$ instead of $A$ and $D$, and the hierarchical, top-down decomposition
+      reproduces the global minimum-variance result exactly. The hierarchy stops being a heuristic
+      and becomes an identity.
+    </p>
+
+    <h2>The interpolation</h2>
+    <p>
+      Schur complementary portfolios introduce a single dial $\gamma \in [0, 1]$:
+    </p>
+    <div class="equation-card">
+      $S_A(\gamma) = A - \gamma\,B D^{-1} B^\top,
+       \qquad
+       S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
+    </div>
+    <ul>
+      <li>$\gamma = 0$ &mdash; plain <strong>HRP</strong>: allocate top-down on the diagonal
+        blocks, with $B$ set aside.</li>
+      <li>$\gamma = 1$ &mdash; <strong>exact global MVP</strong>, recovered hierarchically via the
+        block-inverse identity.</li>
+      <li>$\gamma \in (0, 1)$ &mdash; trust $B$ in proportion to how much you trust your covariance
+        estimate. Empirically the sweet spot is interior: a noisy $\hat\Sigma$ rewards partial
+        trust in the off-diagonal block, not full trust.</li>
+    </ul>
+
+    <h2>The recursion</h2>
+    <p>
+      Cluster the assets and partition $\Sigma$. Compute $S_A(\gamma)$ and $S_D(\gamma)$. Use the
+      inverse-volatility of the Schur complements (or any reasonable allocator) to split mass
+      between the two clusters, then recurse inside each cluster on its own sub-covariance. That is
+      the whole algorithm. Set $\gamma = 1$ and the recursion is mathematically equivalent to
+      solving global MVP; set $\gamma = 0$ and you get HRP back; everything in between is a smoothly
+      tunable trade-off between estimation noise and information content.
+    </p>
+
+    <div class="next-steps">
+      <p>
+        The same idea generalises beyond the two-block case. See the
+        <a href="https://arxiv.org/abs/2411.05807">paper</a> for the recursion at arbitrary
+        hierarchy depth, the connection to Newton&apos;s method on the Riccati equation, and the
+        empirical comparisons &mdash; or head back to the
+        <a href="./#implementations">implementations</a> to try it.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
