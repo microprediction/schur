@@ -222,7 +222,7 @@ const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
 // Chakraborty–Katzfuss (ShrinkTM) live inside the circle; edges that used to
 // terminate at a hub dot now stop at the perimeter, so the interior stays legible.
 // Hub↔inner edges are not drawn at all — containment already says it.
-const cx = W/2, cy = H/2, R_PERIM = 130, R_INNER = 52, R_OUTER = 305;
+const cx = W/2, cy = H/2, R_PERIM = 95, R_INNER = 36, R_OUTER = 305;
 const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
 const HUB = NODES.find(d => d.id === "hub");
 const sectors = {};
