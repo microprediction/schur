@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Schur damping — a map of the literature</title>
-    <meta name="description" content="Interactive map of the literatures connected to Schur damping: Vecchia approximations, composite likelihood, Cholesky regressions, shrinkage, robust covariance, PD completion, portfolio construction. Dashed red edges are open research gaps.">
+    <title>Schur Damping: Research Directions</title>
+    <meta name="description" content="Schur Damping: Research Directions — an interactive map of the connected literatures (Vecchia approximations, composite likelihood, Cholesky regressions, shrinkage, robust covariance, PD completion, portfolio construction). Dashed red edges are open research directions.">
     <link rel="stylesheet" href="./style.css">
     <style>
         .site-nav { position: sticky; top: 0; z-index: 1000; background: #34495e; color: white;
@@ -45,7 +45,7 @@
   </header>
 
 <div id="map-wrap">
-    <h1>Schur damping: a map of the literature</h1>
+    <h1>Schur Damping: Research Directions</h1>
     <p>Each node is a paper (or the hub concept). Colors are literatures; solid edges are real
     connections; <b style="color:#c0392b">dashed red edges are connections that do not yet exist</b> —
     verified absences as of mid-2026, i.e. the research agenda. Click a node to open the paper;
@@ -67,7 +67,7 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script>
 const CLUSTERS = {
-  hub:        {label: "Schur damping (hub)",        color: "#222222"},
+  hub:        {label: "Schur damping (core)",       color: "#222222"},
   spatial:    {label: "Spatial / Vecchia",          color: "#2980b9"},
   composite:  {label: "Composite likelihood",       color: "#16a085"},
   cholesky:   {label: "Cholesky regressions",       color: "#8e44ad"},
@@ -98,7 +98,7 @@ const NODES = [
  {id:"spde2011", label:"SPDE 2011 ⚠", year:2011, c:"spatial", url:"https://doi.org/10.1111/j.1467-9868.2011.00777.x", note:"Lindgren–Rue–Lindström: sparse precision from a PDE."},
  {id:"sko2021", label:"Schäfer–Katzfuss–Owhadi ⚠", year:2021, c:"spatial", url:"https://arxiv.org/abs/2004.14455", note:"Sparse inverse-Cholesky by KL minimization; near-linear cost with guarantees."},
  {id:"pan2024", label:"Block-Vecchia 2024", year:2024, c:"spatial", url:"https://arxiv.org/abs/2410.04477", note:"GPU block Vecchia."},
- {id:"shrinktm2025", label:"ShrinkTM 2025", year:2025, c:"spatial", url:"https://arxiv.org/abs/2409.19208", note:"Shrinks Vecchia conditionals toward a parametric base (EB intensity). Nearest relative; needs a base."},
+ {id:"shrinktm2025", label:"Chakraborty\u2013Katzfuss 2025", year:2025, c:"hub", url:"https://arxiv.org/abs/2409.19208", note:"Shrinks Vecchia conditionals toward a parametric base (EB intensity). Nearest relative; needs a base."},
  {id:"taper2006", label:"Tapering 2006", year:2006, c:"spatial", url:"https://doi.org/10.1198/106186006X132178", note:"Entrywise damping (Schur product theorem) vs factorization damping (LDL'). The instructive contrast."},
 
  {id:"besag1975", label:"Besag 1975", year:1975, c:"composite", url:"https://doi.org/10.2307/2987782", note:"Pseudo-likelihood, the origin."},
@@ -218,10 +218,13 @@ svg.call(d3.zoom().scaleExtent([0.4,3]).on("zoom", ev => g.attr("transform", ev.
 
 const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
 
-// Radial layout: hub pinned at center; Cotton 2022/2024 + ShrinkTM on an inner
-// ring; everything else fans out beyond, seeded into angular sectors by cluster.
-const cx = W/2, cy = H/2, R_INNER = 115, R_OUTER = 300;
+// SCHUR DAMPING is a perimeter, not a dot: Cotton 2022/2024 and
+// Chakraborty–Katzfuss (ShrinkTM) live inside the circle; edges that used to
+// terminate at a hub dot now stop at the perimeter, so the interior stays legible.
+// Hub↔inner edges are not drawn at all — containment already says it.
+const cx = W/2, cy = H/2, R_PERIM = 130, R_INNER = 52, R_OUTER = 305;
 const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
+const HUB = NODES.find(d => d.id === "hub");
 const sectors = {};
 Object.keys(CLUSTERS).forEach((k,i,arr) => { sectors[k] = (i/arr.length)*2*Math.PI - Math.PI/2; });
 NODES.forEach((d,i) => {
@@ -238,30 +241,43 @@ const sim = d3.forceSimulation(NODES)
                      .strength(d => d.id==="hub" ? 1 : (INNER.has(d.id) ? 0.95 : 0.32)))
   .force("collide", d3.forceCollide().radius(d => (d.r||9)+17));
 
-// faint guide ring for the inner circle
-g.append("circle").attr("cx",cx).attr("cy",cy).attr("r",R_INNER)
-  .attr("fill","none").attr("stroke","#ddd").attr("stroke-dasharray","3,5");
+const tooltip = d3.select("#tooltip");
 
-const link = g.append("g").selectAll("line").data(links).join("line")
+// the perimeter circle IS the hub
+g.append("circle").attr("cx",cx).attr("cy",cy).attr("r",R_PERIM)
+  .attr("fill","#fff").attr("stroke","#222").attr("stroke-width",1.6)
+  .style("cursor","pointer")
+  .on("click", ()=>window.open(HUB.url,"_blank"))
+  .on("mousemove",(ev)=>{ tooltip.style("display","block")
+      .style("left",(ev.pageX+14)+"px").style("top",(ev.pageY+8)+"px")
+      .html(`<b>${HUB.label}</b><br>${HUB.note}`); })
+  .on("mouseout",()=>tooltip.style("display","none"));
+g.append("text").attr("x",cx).attr("y",cy - R_PERIM - 10).attr("text-anchor","middle")
+  .style("font","bold 13px sans-serif").style("letter-spacing","2px")
+  .attr("fill","#222").text("SCHUR DAMPING");
+
+// drop hub↔inner edges; everything else renders
+const drawn = links.filter(d =>
+  !(d.s==="hub" && INNER.has(d.t)) && !(d.t==="hub" && INNER.has(d.s)));
+
+const link = g.append("g").selectAll("line").data(drawn).join("line")
   .attr("stroke", d=>STYLE[d.type].stroke).attr("stroke-width", d=>STYLE[d.type].width)
   .attr("stroke-dasharray", d=>STYLE[d.type].dash).attr("opacity",0.75);
-
-const tooltip = d3.select("#tooltip");
 
 // invisible fat lines so edges are hoverable; tooltip gives type + explanation
 const TYPE_NAMES = {lineage:"builds on", identity:"same object, two readings",
   endpoint:"endpoint / special case of the γ-dial", contrast:"contrast", gap:"GAP — does not exist yet"};
-const linkHover = g.append("g").selectAll("line").data(links).join("line")
+const linkHover = g.append("g").selectAll("line").data(drawn).join("line")
   .attr("stroke","transparent").attr("stroke-width",12)
   .on("mousemove",(ev,d)=>{ tooltip.style("display","block")
       .style("left",(ev.pageX+14)+"px").style("top",(ev.pageY+8)+"px")
       .html(`<b>${d.source.label} → ${d.target.label}</b><br><i>${TYPE_NAMES[d.type]}</i>${d.label?"<br>"+d.label:""}`); })
   .on("mouseout",()=>tooltip.style("display","none"));
 
-const edgeLabel = g.append("g").selectAll("text").data(links.filter(d=>d.label)).join("text")
+const edgeLabel = g.append("g").selectAll("text").data(drawn.filter(d=>d.label)).join("text")
   .attr("class","edgelabel").attr("text-anchor","middle")
   .attr("fill", d=>STYLE[d.type].stroke).text(d=>d.label);
-const node = g.append("g").selectAll("circle").data(NODES).join("circle")
+const node = g.append("g").selectAll("circle").data(NODES.filter(d=>d.id!=="hub")).join("circle")
   .attr("r", d=>d.r||9).attr("fill", d=>CLUSTERS[d.c].color).attr("stroke","#fff").attr("stroke-width",1.5)
   .style("cursor","pointer")
   .on("click", (ev,d)=>{ if(d.url) window.open(d.url,"_blank"); })
@@ -274,13 +290,17 @@ const node = g.append("g").selectAll("circle").data(NODES).join("circle")
     .on("drag",(ev,d)=>{ d.fx=ev.x; d.fy=ev.y; })
     .on("end",(ev,d)=>{ if(!ev.active) sim.alphaTarget(0); }));
 
-const label = g.append("g").selectAll("text").data(NODES).join("text")
+const label = g.append("g").selectAll("text").data(NODES.filter(d=>d.id!=="hub")).join("text")
   .attr("class","nodelabel").attr("text-anchor","middle").attr("dy", d=>-((d.r||9)+5)).text(d=>d.label);
 
+function clipToPerim(o){ const dx=o.x-cx, dy=o.y-cy, L=Math.hypot(dx,dy)||1;
+  return [cx + R_PERIM*dx/L, cy + R_PERIM*dy/L]; }
+function p1(d){ return d.source.id==="hub" ? clipToPerim(d.target) : [d.source.x, d.source.y]; }
+function p2(d){ return d.target.id==="hub" ? clipToPerim(d.source) : [d.target.x, d.target.y]; }
 sim.on("tick", ()=>{
-  link.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-  linkHover.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y).attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-  edgeLabel.attr("x",d=>(d.source.x+d.target.x)/2).attr("y",d=>(d.source.y+d.target.y)/2 - 4);
+  link.attr("x1",d=>p1(d)[0]).attr("y1",d=>p1(d)[1]).attr("x2",d=>p2(d)[0]).attr("y2",d=>p2(d)[1]);
+  linkHover.attr("x1",d=>p1(d)[0]).attr("y1",d=>p1(d)[1]).attr("x2",d=>p2(d)[0]).attr("y2",d=>p2(d)[1]);
+  edgeLabel.attr("x",d=>(p1(d)[0]+p2(d)[0])/2).attr("y",d=>(p1(d)[1]+p2(d)[1])/2 - 4);
   node.attr("cx",d=>d.x=Math.max(20,Math.min(W-20,d.x))).attr("cy",d=>d.y=Math.max(20,Math.min(H-20,d.y)));
   label.attr("x",d=>d.x).attr("y",d=>d.y);
 });
