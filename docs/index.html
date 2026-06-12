@@ -13,11 +13,11 @@
 <body>
   <header class="site-header">
     <div class="nav-inner">
-      <a class="brand" href="./">schur</a>
+      <a class="brand" href="./index.html">schur</a>
       <nav>
         <a href="./intro.html">Introduction</a>
         <a href="https://arxiv.org/abs/2411.05807">Paper</a>
-        <a href="#implementations">Implementations</a>
+        <a href="./implementations.html">Implementations</a>
         <a href="#bibliography">Bibliography</a>
         <a href="./map.html">Literature map</a>
         <a href="./timeline.html">Timeline</a>
@@ -102,39 +102,11 @@
 
     <h2 id="implementations">Implementations</h2>
     <p>
-      Two implementations are actively maintained. They differ in setting, not in quality: use the
-      batch library when the covariance and universe are fixed, and the streaming library when they
-      evolve over time.
-    </p>
-    <div class="table-wrap">
-      <table class="impl">
-        <thead>
-          <tr><th>Library</th><th>Setting</th><th>Install</th><th>Repository</th><th>Documentation</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>skfolio</td>
-            <td class="mode">Batch &mdash; fixed universe</td>
-            <td><code>pip install skfolio</code></td>
-            <td><a href="https://github.com/skfolio/skfolio">github.com/skfolio/skfolio</a></td>
-            <td><a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">Schur tutorial</a></td>
-          </tr>
-          <tr>
-            <td>allocation</td>
-            <td class="mode">Streaming / online &mdash; changing universe</td>
-            <td><code>pip install allocation</code></td>
-            <td><a href="https://github.com/microprediction/allocation">github.com/microprediction/allocation</a></td>
-            <td><a href="https://allocation.microprediction.org">allocation.microprediction.org</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="muted" style="font-size:0.92rem;">
-      The streaming library orders assets by <em>Fiedler seriation</em> &mdash; a smooth function of
-      the covariance, so <code>partial_fit</code> stays low-turnover &mdash; and relies on
-      <a href="https://github.com/microprediction/precise">precise</a> for online covariance
-      estimation. skfolio is described in Nicolini, Manzi &amp; Delatte (2025),
-      <a href="https://arxiv.org/abs/2507.04176">arXiv:2507.04176</a>.
+      Three maintained libraries cover the batch, streaming, and estimation layers:
+      <strong>skfolio</strong> (fixed universe, sklearn idiom), <strong>allocation</strong>
+      (online, evolving universe, Fiedler seriation), and <strong>precise</strong> (online
+      covariance and the Schur pseudo-likelihood). Install commands, repositories, and tutorials
+      are on the <a href="./implementations.html">implementations page</a>.
     </p>
 
     <h2>Further reading</h2>
@@ -180,67 +152,82 @@
 
     <div class="bib">
       <h2 id="bibliography">Bibliography</h2>
-      <p>Selected works on, citing, or directly extending Schur complementary portfolios.</p>
+      <p>Works on, citing, or directly extending Schur complementary allocation &mdash; plus the
+      spatial-statistics side of the same idea. Every paper below also appears on the
+      <a href="./map.html">literature map</a>; the dated story is on the
+      <a href="./timeline.html">timeline</a>.</p>
 
-      <h3>Foundational</h3>
+      <h3>The core</h3>
       <ul>
         <li>
           Cotton, P. (2022). &ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo;
           <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
-          Culture (Medium)</a>. <em>The original blog post that started it all.</em>
+          Culture (Medium)</a>. <em>Where the &gamma;-bridge first appeared, November 2022.</em>
+        </li>
+        <li>
+          Cotton, P. (2023). <em>Schur Complementary Portfolios &mdash; CQF slides</em>.
+          <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">PDF</a>.
+          <em>Compact derivation with the interpolation argument.</em>
         </li>
         <li>
           Cotton, P. (2024).
           <a href="https://arxiv.org/abs/2411.05807"><em>Schur Complementary Allocation: A
           Unification of Hierarchical Risk Parity and Minimum Variance Portfolios</em></a>.
-          arXiv:2411.05807. <em>The canonical write-up.</em>
+          arXiv:2411.05807. <em>The canonical write-up; the recursion at arbitrary depth.</em>
         </li>
         <li>
-          Cotton, P. (2023). <em>Schur Complementary Portfolios &mdash; CQF slides</em>.
-          <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">PDF</a>.
-          <em>Earlier presentation of the same material.</em>
-        </li>
-        <li>
-          L&oacute;pez de Prado, M. (2016). &ldquo;Building Diversified Portfolios that Outperform
-          Out of Sample.&rdquo; <em>Journal of Portfolio Management</em> 42(4), 59&ndash;69.
-          <em>The HRP paper that Schur complementary portfolios build on.</em>
+          Cotton, P. (2025). <em>Two Sides of Schur Damping</em>.
+          <a href="https://precise.microprediction.org/papers/two-sides-of-schur-damping/">precise.microprediction.org</a>.
+          <em>The cross-field identity: the same damping, and the same closed-form reliability
+          &gamma;*, in allocation and in spatial pseudo-likelihoods.</em>
         </li>
       </ul>
 
-      <h3>Textbooks</h3>
+      <h3>Antecedents</h3>
       <ul>
+        <li>
+          L&oacute;pez de Prado, M. (2016). &ldquo;Building Diversified Portfolios that Outperform
+          Out of Sample.&rdquo; <em>Journal of Portfolio Management</em> 42(4), 59&ndash;69.
+          <em>Hierarchical risk parity &mdash; the &gamma;=0 endpoint.</em>
+        </li>
+        <li>
+          Antonov, A., Lipton, A., and L&oacute;pez de Prado, M. (2024).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151"><em>Overcoming
+          Markowitz&apos;s Instability with the Help of the Hierarchical Risk Parity (HRP):
+          Theoretical Evidence</em></a>. SSRN 4748151. <em>Analytical noise comparison of HRP vs
+          Markowitz.</em>
+        </li>
         <li>
           Palomar, D. P. <em>Portfolio Optimization</em>, &sect;12.3.4
           &ldquo;Schur complementary portfolios&rdquo;.
-          <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online edition</a>.
+          <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online
+          edition</a>. <em>Textbook treatment alongside HRP and global minimum variance.</em>
         </li>
       </ul>
 
       <h3>Theory and extensions</h3>
       <ul>
         <li>
-          Wuebben, B. J. (2026).
-          <a href="https://arxiv.org/abs/2604.23833"><em>Beyond De Prado and Cotton: Hierarchical
-          and Iterative Methods for General Mean-Variance Portfolios</em></a>. arXiv:2604.23833.
-          <em>Introduces HRP-&mu;, HRP-&Sigma;&mu;, and CRISP &mdash; signal-aware extensions of
-          both HRP and Schur.</em>
-        </li>
-        <li>
-          Kne&zcaron;evi&cacute;, P., and &Scaron;imovi&cacute;, P. P. (2026).
-          <a href="https://www.google.com/search?q=%22Bridging+Risk+Parity+and+Variance+Optimization%22+Schur+Complement"><em>Bridging
-          Risk Parity and Variance Optimization: A Schur Complement Approach to Recursive Asset
-          Allocation</em></a>. <em>The Journal of FinTech</em>.
-        </li>
-        <li>
           Mograby, G. (2025).
           <a href="https://arxiv.org/abs/2503.12328"><em>Hierarchical Minimum Variance Portfolios:
           A Theoretical and Algorithmic Approach</em></a>. arXiv:2503.12328.
-          <em>Develops the hierarchical-graph view of MVP, using Schur complements.</em>
+          <em>Exact Schur separator recursion on hierarchical graphs &mdash; the &gamma;=1
+          skeleton, made rigorous.</em>
         </li>
-      </ul>
-
-      <h3>Return- and signal-aware variants</h3>
-      <ul>
+        <li>
+          Wuebben, B. J. (2026).
+          <a href="https://arxiv.org/abs/2604.23833"><em>Beyond De Prado and Cotton: Hierarchical
+          and Iterative Methods for General Mean-Variance Portfolios</em></a>. arXiv:2604.23833.
+          <em>HRP-&mu;, HRP-&Sigma;&mu;, CRISP: signal-aware extensions past minimum variance.</em>
+        </li>
+        <li>
+          Kne&zcaron;evi&cacute;, P., and Posedel &Scaron;imovi&cacute;, P. (2026).
+          <a href="https://doi.org/10.1142/S2705109926700013"><em>Bridging Risk Parity and
+          Variance Optimization: A Schur Complement Approach to Recursive Asset
+          Allocation</em></a>. <em>The Journal of FinTech</em> 2670001, open access
+          (<a href="https://github.com/microprediction/schur/blob/main/assets/pdf/Bridging%20Risk%20Parity%20and%20Variance%20Optimization_%20A%20Schur%20Complement%20Approach%20to%20Recursive%20Asset%20Allocation.pdf">PDF</a>).
+          <em>Cites both the 2022 blog post and the 2024 paper.</em>
+        </li>
         <li>
           Alonso, N. I. (2025).
           <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624"><em>Return-Adjusted
@@ -255,23 +242,60 @@
         </li>
       </ul>
 
-      <h3>Applications and surveys</h3>
+      <h3>The spatial-statistics side</h3>
       <ul>
         <li>
-          Bergmeier, J. (2026).
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678"><em>The risk parity
-          zoo: Which risk contributions should multi-asset investors equalize?</em></a>. SSRN 6536678.
-          <em>Out-of-sample comparison of risk-based asset-allocation models.</em>
+          Vecchia, A. V. (1988). &ldquo;Estimation and Model Identification for Continuous Spatial
+          Processes.&rdquo; <em>JRSS-B</em> 50(2). <em>The neighbour-conditioned factorization;
+          the conditionals are Schur complements.</em>
         </li>
         <li>
-          Chitra, T., Diamandis, T., Sheng, N., and Sterle, L. (2025).
-          <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual demand lending pools</em></a>.
-          arXiv:2502.06028. <em>DeFi application area citing Schur complementary methods.</em>
+          Katzfuss, M., and Guinness, J. (2021). &ldquo;A General Framework for Vecchia
+          Approximations of Gaussian Processes.&rdquo;
+          <a href="https://doi.org/10.1214/19-STS755"><em>Statistical Science</em> 36(1)</a>.
+        </li>
+        <li>
+          Chakraborty, A., and Katzfuss, M. (2025).
+          <a href="https://arxiv.org/abs/2409.19208"><em>Learning Non-Gaussian Spatial
+          Distributions via Bayesian Transport Maps with Parametric Shrinkage</em></a> (ShrinkTM).
+          arXiv:2409.19208. <em>Damping arrives in spatial statistics: conditionals shrunk toward a
+          parametric base.</em>
+        </li>
+      </ul>
+
+      <h3>Applications and empirical studies</h3>
+      <ul>
+        <li>
+          Chitra, T., Diamandis, T., Sheng, N., Sterle, L., and Yusubov, K. (2025).
+          <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual Demand Lending Pools</em></a>.
+          arXiv:2502.06028. <em>Appendix B decides single vs multiple DeFi lending pools via Schur
+          complements of the pool covariance &mdash; the &gamma;=0 vs &gamma;=1 architecture
+          question, posed for billions of dollars of pooled assets.</em>
+        </li>
+        <li>
+          Salas-Molina, F., Pla-Santamaria, D., Garcia-Bernabeu, A., and Reig-Mullor, J. (2025).
+          <a href="https://doi.org/10.1007/978-3-031-78241-1_5"><em>Estimation Windows in
+          Hierarchical Risk Parity Methods for Portfolio Selection</em></a>. LNCS Decision
+          Sciences. <em>Empirical HRP study; best out-of-sample Sharpe near five years of daily
+          data.</em>
+        </li>
+        <li>
+          Pergher, K. G. R., Soldera, J., and Scharcanski, J. (2026).
+          <a href="https://doi.org/10.1109/ACCESS.2026.3656702"><em>An Orthogonal Hierarchical
+          Risk Parity Allocation Method for Improved Portfolio Out-of-Sample Performance</em></a>.
+          IEEE Access.
+        </li>
+        <li>
+          Bergmeier, J. (2026).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678"><em>The Risk Parity
+          Zoo: Which Risk Contributions Should Multi-Asset Investors Equalize?</em></a>.
+          SSRN 6536678. <em>Out-of-sample comparison of risk-based allocation models.</em>
         </li>
         <li>
           Nicolini, C., Manzi, M., and Delatte, H. (2025).
           <a href="https://arxiv.org/abs/2507.04176"><em>skfolio: Portfolio Optimization in
-          Python</em></a>. arXiv:2507.04176. <em>The paper accompanying the skfolio package.</em>
+          Python</em></a>. arXiv:2507.04176. <em>The library shipping the SchurComplementary
+          optimizer.</em>
         </li>
       </ul>
 

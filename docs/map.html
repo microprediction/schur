@@ -33,10 +33,11 @@
 <body>
 <header class="site-header">
     <div class="nav-inner">
-      <a class="brand" href="./">schur</a>
+      <a class="brand" href="./index.html">schur</a>
       <nav>
         <a href="./intro.html">Introduction</a>
         <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="./implementations.html">Implementations</a>
         <a href="./map.html">Literature map</a>
         <a href="./timeline.html">Timeline</a>
         <a href="https://github.com/microprediction/schur">GitHub</a>
@@ -80,14 +81,20 @@ const CLUSTERS = {
 };
 
 const NODES = [
- {id:"hub", label:"SCHUR DAMPING", year:"", c:"hub", r:16, url:"./", note:"Damped conditional Gaussian factorization: b(γ)=γb, S(γ)=(1−γ)Σkk+γS. Closed-form γ* = reliability."},
+ {id:"hub", label:"SCHUR DAMPING", year:"", c:"hub", r:16, url:"./index.html", note:"Damped conditional Gaussian factorization: b(γ)=γb, S(γ)=(1−γ)Σkk+γS. Closed-form γ* = reliability."},
  {id:"cotton2022", label:"Cotton 2022 (blog)", year:2022, c:"hub", url:"https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f", note:"The Medium post where Schur complementary portfolios first appeared: HRP keeps the divide-and-conquer but throws away cross-block information; Schur augmentation puts it back."},
  {id:"cotton2024", label:"Cotton 2024", year:2024, c:"hub", url:"https://arxiv.org/abs/2411.05807", note:"Schur Complementary Allocation (arXiv): γ interpolates HRP ↔ min-variance."},
  {id:"wuebben2026", label:"Wuebben 2026", year:2026, c:"portfolio", url:"https://arxiv.org/abs/2604.23833", note:"'Beyond De Prado and Cotton': extends the hierarchical/Schur machinery past minimum variance to general mean-variance with alpha signals (HRP-μ, CRISP)."},
  {id:"skfolio2025", label:"skfolio 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2507.04176", note:"Nicolini–Manzi–Delatte: sklearn-ecosystem portfolio library; ships a SchurComplementary optimizer (batch/fixed-universe implementation)."},
- {id:"chitra2025", label:"Chitra et al 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2502.06028", note:"Perpetual demand lending pools (DeFi); cites Cotton 2024 — the allocation algebra surfacing in decentralized-finance market design."},
+ {id:"chitra2025", label:"Chitra et al 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2502.06028", note:"PDLPs (DeFi). Appendix B decides single vs multiple lending pools via Schur complements of the pool covariance — conditions the authors note are \u2018similar to hierarchical risk-parity methods [Cot24, LdP16]\u2019. The γ=0 vs γ=1 architecture question, posed in DeFi."},
  {id:"pergher2026", label:"Pergher et al 2026", year:2026, c:"portfolio", url:"https://doi.org/10.1109/ACCESS.2026.3656702", note:"Pergher–Soldera–Scharcanski (IEEE Access): orthogonal HRP allocation for better out-of-sample performance; cites Cotton 2024."},
  {id:"salas2025", label:"Salas-Molina et al 2025", year:2025, c:"portfolio", url:"https://doi.org/10.1007/978-3-031-78241-1_5", note:"Estimation windows in HRP methods (LNCS Decision Sciences): empirical HRP study; cites Cotton 2024; best OOS Sharpe at ~5y daily windows."},
+ {id:"calle2025", label:"Calle-Saldarriaga et al 2025", year:2025, c:"spatial", url:"https://arxiv.org/abs/2509.22474", note:"Generative multi-scale modeling and downscaling via spatial autoregressive transport maps (Katzfuss group); cites Chakraborty–Katzfuss."},
+ {id:"sikorski2025", label:"LatticeVision 2025", year:2025, c:"spatial", url:"https://arxiv.org/abs/2505.09803", note:"Sikorski–Ivanitskiy–Lenssen: image-to-image networks for non-stationary spatial data; cites Chakraborty–Katzfuss."},
+ {id:"knezevic2026", label:"Knežević–Šimović 2026", year:2026, c:"portfolio", url:"https://doi.org/10.1142/S2705109926700013", note:"Knežević &amp; Posedel Šimović, 'Bridging Risk Parity and Variance Optimization: A Schur Complement Approach to Recursive Asset Allocation', The Journal of FinTech (2026), open access. Cites both Cotton 2022 (blog) and Cotton 2024 (arXiv)."},
+ {id:"alonso2025", label:"Alonso 2025", year:2025, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624", note:"Return-Adjusted HRP and Schur Portfolios: theoretical and empirical study (SSRN 5370624)."},
+ {id:"alonso2026", label:"Alonso 2026 (RLPO)", year:2026, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220", note:"Reinforcement Learning Portfolio Optimization: from Markowitz to risk-sensitive control (SSRN 6447220)."},
+ {id:"bergmeier2026", label:"Bergmeier 2026", year:2026, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678", note:"The Risk Parity Zoo: out-of-sample comparison of risk-based allocation models (SSRN 6536678)."},
  {id:"mograby2025", label:"Mograby 2025", year:2025, c:"hub", url:"https://arxiv.org/abs/2503.12328", note:"Exact Schur separator recursion on hierarchical graphs; the γ=1, no-noise skeleton."},
 
  {id:"vecchia1988", label:"Vecchia 1988", year:1988, c:"spatial", url:"https://doi.org/10.1111/j.2517-6161.1988.tb01729.x", note:"Neighbor-conditioned pseudo-likelihood: the conditionals are Schur complements."},
@@ -152,6 +159,13 @@ const EDGES = [
  {s:"cotton2024", t:"chitra2025", type:"lineage", label:"cited in DeFi market design"},
  {s:"cotton2024", t:"pergher2026", type:"lineage", label:"cited by orthogonal-HRP variant"},
  {s:"cotton2024", t:"salas2025", type:"lineage", label:"cited in HRP empirics"},
+ {s:"cotton2024", t:"knezevic2026", type:"lineage"},
+ {s:"cotton2022", t:"knezevic2026", type:"lineage"},
+ {s:"cotton2024", t:"alonso2025", type:"lineage"},
+ {s:"cotton2024", t:"alonso2026", type:"lineage"},
+ {s:"cotton2024", t:"bergmeier2026", type:"lineage"},
+ {s:"shrinktm2025", t:"calle2025", type:"lineage"},
+ {s:"shrinktm2025", t:"sikorski2025", type:"lineage"},
  {s:"hrp2016", t:"pergher2026", type:"lineage"},
  {s:"hrp2016", t:"salas2025", type:"lineage"},
  {s:"cotton2024", t:"hub", type:"identity", label:"allocation side"},
@@ -222,23 +236,31 @@ const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
 // Chakraborty–Katzfuss (ShrinkTM) live inside the circle; edges that used to
 // terminate at a hub dot now stop at the perimeter, so the interior stays legible.
 // Hub↔inner edges are not drawn at all — containment already says it.
-const cx = W/2, cy = H/2, R_PERIM = 95, R_INNER = 36, R_OUTER = 305;
+const cx = W/2, cy = H/2, R_PERIM = 95, R_INNER = 36, R_DER = 140, R_RING = 190, R_OUTER = 320;
 const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
+// derived works: papers citing Cotton 2024 or Chakraborty-Katzfuss (ShrinkTM)
+const DERIVED = new Set(["mograby2025","wuebben2026","skfolio2025","chitra2025",
+                         "salas2025","pergher2026","calle2025","sikorski2025",
+                         "knezevic2026","alonso2025","alonso2026","bergmeier2026"]);
 const HUB = NODES.find(d => d.id === "hub");
 const sectors = {};
 Object.keys(CLUSTERS).forEach((k,i,arr) => { sectors[k] = (i/arr.length)*2*Math.PI - Math.PI/2; });
+const derivedList = NODES.filter(d => DERIVED.has(d.id));
 NODES.forEach((d,i) => {
   if (d.id === "hub") { d.fx = cx; d.fy = cy; return; }
-  const ring = INNER.has(d.id) ? R_INNER : R_OUTER;
-  const a = (INNER.has(d.id) ? (i*2.1) : sectors[d.c] + ((i%5)-2)*0.18);
+  const ring = INNER.has(d.id) ? R_INNER : (DERIVED.has(d.id) ? R_DER : R_OUTER);
+  let a;
+  if (INNER.has(d.id)) a = i*2.1;
+  else if (DERIVED.has(d.id)) a = (derivedList.indexOf(d)/derivedList.length)*2*Math.PI - Math.PI/2;
+  else a = sectors[d.c] + ((i%5)-2)*0.18;
   d.x = cx + ring*Math.cos(a); d.y = cy + ring*Math.sin(a);
 });
 
 const sim = d3.forceSimulation(NODES)
   .force("link", d3.forceLink(links).id(d=>d.id).distance(d => d.label ? 150 : 90).strength(0.12))
   .force("charge", d3.forceManyBody().strength(-330))
-  .force("radial", d3.forceRadial(d => d.id==="hub" ? 0 : (INNER.has(d.id) ? R_INNER : R_OUTER), cx, cy)
-                     .strength(d => d.id==="hub" ? 1 : (INNER.has(d.id) ? 0.95 : 0.32)))
+  .force("radial", d3.forceRadial(d => d.id==="hub" ? 0 : (INNER.has(d.id) ? R_INNER : (DERIVED.has(d.id) ? R_DER : R_OUTER)), cx, cy)
+                     .strength(d => d.id==="hub" ? 1 : (INNER.has(d.id) ? 0.95 : (DERIVED.has(d.id) ? 0.85 : 0.32))))
   .force("collide", d3.forceCollide().radius(d => (d.r||9)+17));
 
 const tooltip = d3.select("#tooltip");
@@ -256,9 +278,18 @@ g.append("text").attr("x",cx).attr("y",cy - R_PERIM - 10).attr("text-anchor","mi
   .style("font","bold 13px sans-serif").style("letter-spacing","2px")
   .attr("fill","#222").text("SCHUR DAMPING");
 
+// the derived-works ring: papers citing the core
+g.append("circle").attr("cx",cx).attr("cy",cy).attr("r",R_RING)
+  .attr("fill","none").attr("stroke","#bbb").attr("stroke-dasharray","2,6");
+g.append("text").attr("x",cx).attr("y",cy - R_RING - 8).attr("text-anchor","middle")
+  .style("font","italic 10.5px sans-serif").attr("fill","#999")
+  .text("derived works — cite Cotton or Chakraborty\u2013Katzfuss");
+
 // drop hub↔inner edges; everything else renders
+const coreDerived = (a,b) => INNER.has(a) && DERIVED.has(b);
+const inside = id => INNER.has(id) || DERIVED.has(id);
 const drawn = links.filter(d =>
-  !(d.s==="hub" && INNER.has(d.t)) && !(d.t==="hub" && INNER.has(d.s)));
+  !(d.s==="hub" && inside(d.t)) && !(d.t==="hub" && inside(d.s)));
 
 const link = g.append("g").selectAll("line").data(drawn).join("line")
   .attr("stroke", d=>STYLE[d.type].stroke).attr("stroke-width", d=>STYLE[d.type].width)
@@ -274,7 +305,7 @@ const linkHover = g.append("g").selectAll("line").data(drawn).join("line")
       .html(`<b>${d.source.label} → ${d.target.label}</b><br><i>${TYPE_NAMES[d.type]}</i>${d.label?"<br>"+d.label:""}`); })
   .on("mouseout",()=>tooltip.style("display","none"));
 
-const edgeLabel = g.append("g").selectAll("text").data(drawn.filter(d=>d.label)).join("text")
+const edgeLabel = g.append("g").selectAll("text").data(drawn.filter(d=>d.label && !coreDerived(d.s,d.t) && !coreDerived(d.t,d.s))).join("text")
   .attr("class","edgelabel").attr("text-anchor","middle")
   .attr("fill", d=>STYLE[d.type].stroke).text(d=>d.label);
 const node = g.append("g").selectAll("circle").data(NODES.filter(d=>d.id!=="hub")).join("circle")
@@ -294,7 +325,7 @@ const label = g.append("g").selectAll("text").data(NODES.filter(d=>d.id!=="hub")
   .attr("class","nodelabel").attr("text-anchor","middle").attr("dy", d=>-((d.r||9)+5)).text(d=>d.label);
 
 function clipToPerim(o){ const dx=o.x-cx, dy=o.y-cy, L=Math.hypot(dx,dy)||1;
-  return [cx + R_PERIM*dx/L, cy + R_PERIM*dy/L]; }
+  return [cx + R_RING*dx/L, cy + R_RING*dy/L]; }
 function p1(d){ return d.source.id==="hub" ? clipToPerim(d.target) : [d.source.x, d.source.y]; }
 function p2(d){ return d.target.id==="hub" ? clipToPerim(d.source) : [d.target.x, d.target.y]; }
 sim.on("tick", ()=>{

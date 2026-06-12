@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schur Complementary Allocation &mdash; Implementations</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">schur</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./map.html">Literature map</a>
+        <a href="./timeline.html">Timeline</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Implementations</h1>
+    <p class="subtitle">Three maintained libraries. They differ in setting, not in quality.</p>
+
+    <p class="lead">
+      Use <strong>skfolio</strong> when the universe and covariance are fixed (backtests, batch
+      rebalancing). Use <strong>allocation</strong> when assets arrive, leave, and update one
+      observation at a time. Use <strong>precise</strong> when what you need is the covariance
+      machinery itself &mdash; online estimators and the Schur pseudo-likelihood for scoring them.
+    </p>
+
+    <h2>skfolio &mdash; batch, fixed universe</h2>
+    <p>
+      The scikit-learn-ecosystem portfolio library ships a <code>SchurComplementary</code>
+      optimizer. Pipelines, cross-validation, and model selection come for free from the sklearn
+      idiom. Described in Nicolini, Manzi &amp; Delatte (2025),
+      <a href="https://arxiv.org/abs/2507.04176">arXiv:2507.04176</a>.
+    </p>
+    <ul>
+      <li>Install: <code>pip install skfolio</code></li>
+      <li>Repository: <a href="https://github.com/skfolio/skfolio">github.com/skfolio/skfolio</a></li>
+      <li>Start here: <a href="https://skfolio.org/auto_examples/clustering/plot_6_schur.html">the
+        Schur Complementary tutorial</a></li>
+    </ul>
+
+    <h2>allocation &mdash; streaming, changing universe</h2>
+    <p>
+      Online Schur allocation for universes that evolve: assets are ordered by <em>Fiedler
+      seriation</em> (a smooth function of the covariance, so <code>partial_fit</code> stays
+      low-turnover), covariance is maintained incrementally, and names can enter or leave without a
+      refit.
+    </p>
+    <ul>
+      <li>Install: <code>pip install allocation</code></li>
+      <li>Repository: <a href="https://github.com/microprediction/allocation">github.com/microprediction/allocation</a></li>
+      <li>Documentation: <a href="https://allocation.microprediction.org">allocation.microprediction.org</a></li>
+    </ul>
+
+    <h2>precise &mdash; online covariance and the Schur pseudo-likelihood</h2>
+    <p>
+      The estimation layer underneath: sklearn-style <em>online</em> covariance and correlation
+      estimators behind one <code>partial_fit</code> contract (the online complement of
+      <code>sklearn.covariance</code>), including Schur covariance estimators with the &gamma;
+      dial, and assessors &mdash; among them the Schur pseudo-likelihood, which scores covariance
+      estimates reliably in the undersampled regime where the plain held-out likelihood fails.
+    </p>
+    <ul>
+      <li>Install: <code>pip install precise</code></li>
+      <li>Repository: <a href="https://github.com/microprediction/precise">github.com/microprediction/precise</a></li>
+      <li>Documentation: <a href="https://precise.microprediction.org">precise.microprediction.org</a></li>
+    </ul>
+
+    <div class="next-steps">
+      <p>
+        New implementation, port, or integration? Open an issue on
+        <a href="https://github.com/microprediction/schur">microprediction/schur</a> and it will be
+        added here.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

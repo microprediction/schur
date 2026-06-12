@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Unifying portfolio work: a timeline</title>
-  <meta name="description" content="Unifying portfolio work: a timeline of hierarchical risk parity, the Schur-complement bridge between HRP and minimum variance, implementations, and follow-up work.">
+  <title>Schur damping across fields: a timeline</title>
+  <meta name="description" content="How Schur-complement damping spread across fields: spatial statistics and meteorology, finance and portfolio construction, machine learning — and the unification.">
   <link rel="stylesheet" href="./style.css">
   <style>
     #tl-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
@@ -23,7 +23,7 @@
 <body>
   <header class="site-header">
     <div class="nav-inner">
-      <a class="brand" href="./">schur</a>
+      <a class="brand" href="./index.html">schur</a>
       <nav>
         <a href="./intro.html">Introduction</a>
         <a href="https://arxiv.org/abs/2411.05807">Paper</a>
@@ -34,11 +34,12 @@
   </header>
 
 <div id="tl-wrap">
-  <h1>Unifying portfolio work: a timeline</h1>
-  <p>From hierarchical risk parity to the Schur-complement bridge and beyond — events placed at
-  their earliest public date (preprint or blog post). The dashed line marks November 2022, when
-  covariance augmentation with a damping parameter γ, interpolating HRP and minimum variance, first
-  appeared. Hover for details and exact dates; click to open. Dates marked ⚠ are month-approximate.</p>
+  <h1>Schur damping across fields: a timeline</h1>
+  <p>The same object — a Schur-complement conditional, shrunk toward independence by a damping
+  parameter — has appeared in more than one field. One lane per field; events at their earliest
+  public date (preprint or blog post, not journal acceptance). The dashed lines mark damping's
+  arrival in finance (Nov 2022) and in spatial statistics (Sep 2024). Hover for details; click to
+  open. Dates marked ⚠ are month-approximate.</p>
   <div class="legend" id="lane-legend"></div>
   <div id="timeline"></div>
   <p class="hint">Corrections welcome — file an issue on
@@ -49,89 +50,102 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script>
 const LANES = {
-  hrp:    {label:"HRP & hierarchical heuristics", color:"#27ae60", y:90},
-  schur:  {label:"Schur damping (the γ-bridge)",  color:"#222222", y:230},
-  theory: {label:"Theory & follow-ups",           color:"#2471a3", y:370},
-  impl:   {label:"Implementations",               color:"#d68910", y:500},
+  spatial: {label:"Meteorology & spatial statistics", color:"#2980b9", y0:55,  h:125},
+  finance: {label:"Finance & portfolio construction", color:"#27ae60", y0:210, h:175},
+  ml:      {label:"Machine learning",                 color:"#e74c8b", y0:415, h:50},
+  bridge:  {label:"Cross-field unification",          color:"#222222", y0:495, h:50},
 };
 
 // d: YYYY-MM (earliest public date). sure:false => month-approximate (⚠)
 const EVENTS = [
- {d:"2015-12", lane:"hrp", label:"HRP (SSRN preprint)", sure:false, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2708678",
-  note:"López de Prado, 'Building Diversified Portfolios that Outperform Out-of-Sample'. SSRN preprint; JPM 42(4), 2016. Recursive bisection on a clustered ordering; inverse-variance splits; no cross-block information."},
- {d:"2016-07", lane:"hrp", label:"HRP (JPM)", sure:false, url:"https://doi.org/10.3905/jpm.2016.42.4.059",
-  note:"Journal of Portfolio Management publication of HRP."},
- {d:"2017-05", lane:"hrp", label:"Raffinot HCAA", sure:false, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2840729",
-  note:"Raffinot, 'Hierarchical Clustering-Based Asset Allocation' (JPM 2017): generalizes the clustering step."},
- {d:"2018-08", lane:"hrp", label:"Raffinot HERC", sure:false, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3237540",
-  note:"Raffinot, 'The Hierarchical Equal Risk Contribution Portfolio' (SSRN 2018): equal risk contribution within the hierarchy."},
- {d:"2019-09", lane:"hrp", label:"Pfitzinger–Katzke ⚠", sure:false, url:"https://www.ekon.sun.ac.za/wpapers/2019/wp142019",
-  note:"'A constrained hierarchical risk parity algorithm with cluster-based capital allocation' (Stellenbosch WP 14/2019): softens HRP's binary splits."},
- {d:"2020-06", lane:"hrp", label:"Lohre et al ⚠", sure:false, url:"https://doi.org/10.1002/9781119751182.ch9",
-  note:"Lohre, Rother & Schäfer, 'Hierarchical Risk Parity: Accounting for Tail Dependencies' (Machine Learning for Asset Management, 2020)."},
+ // --- meteorology & spatial statistics ---
+ {d:"1988-01", lane:"spatial", label:"Vecchia ⚠", sure:false, url:"https://doi.org/10.1111/j.2517-6161.1988.tb01729.x",
+  note:"1988, JRSS-B. The factorization is born: condition each location on a few neighbours. The conditionals are Schur complements — undamped."},
+ {d:"2016-09", lane:"spatial", label:"Guinness ⚠", sure:false, url:"https://arxiv.org/abs/1609.05372",
+  note:"Orderings and grouping sharpen Vecchia approximations (arXiv Sep 2016; Technometrics 2018)."},
+ {d:"2021-01", lane:"spatial", label:"Katzfuss–Guinness ⚠", sure:false, url:"https://doi.org/10.1214/19-STS755",
+  note:"Statistical Science 2021: the general Vecchia framework — most scalable GP approximations are one DAG choice."},
+ {d:"2024-09", lane:"spatial", label:"ShrinkTM (Chakraborty–Katzfuss)", big:true, url:"https://arxiv.org/abs/2409.19208",
+  note:"Sep 2024 (arXiv:2409.19208). Damping arrives in spatial statistics: Vecchia/transport-map conditionals are SHRUNK toward a parametric base, intensity by empirical Bayes."},
+ {d:"2025-05", lane:"spatial", label:"LatticeVision", url:"https://arxiv.org/abs/2505.09803",
+  note:"May 14, 2025. Sikorski–Ivanitskiy–Lenssen: image-to-image networks for non-stationary spatial fields; cites ShrinkTM."},
+ {d:"2025-09", lane:"spatial", label:"Calle-Saldarriaga et al", url:"https://arxiv.org/abs/2509.22474",
+  note:"Sep 26, 2025. Generative multi-scale modeling via spatial autoregressive transport maps (Katzfuss group); cites ShrinkTM."},
 
- {d:"2022-11", lane:"schur", label:"Cotton — Schur Complementary Portfolios (blog)", big:true, url:"https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f",
-  note:"Nov 2022, Medium (Geek Culture). The γ-bridge first appears: augment HRP's sub-covariances with Schur-complement information; γ interpolates HRP (γ=0) to minimum variance (γ=1). Discussion thread on LinkedIn, Nov 2022."},
- {d:"2023-06", lane:"schur", label:"CQF slides ⚠", sure:false, url:"https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf",
-  note:"Schur Complementary Portfolios presented at CQF; slides in microprediction/precise."},
- {d:"2024-11", lane:"schur", label:"Cotton — arXiv:2411.05807", big:true, url:"https://arxiv.org/abs/2411.05807",
+ // --- finance & portfolio construction ---
+ {d:"2015-12", lane:"finance", label:"HRP ⚠", sure:false, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2708678",
+  note:"López de Prado, SSRN preprint (JPM 2016). Hierarchical risk parity: divide-and-conquer allocation that discards cross-block information — the γ=0 endpoint."},
+ {d:"2022-11", lane:"finance", label:"Cotton — the γ-bridge (blog)", big:true, url:"https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f",
+  note:"Nov 2022, Medium. Damping arrives in finance: augment HRP's sub-covariances with Schur complements; γ interpolates HRP (γ=0) to minimum variance (γ=1)."},
+ {d:"2023-06", lane:"finance", label:"CQF slides ⚠", sure:false, url:"https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf",
+  note:"Schur Complementary Portfolios presented at CQF."},
+ {d:"2024-03", lane:"finance", label:"Antonov–Lipton–López de Prado", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151",
+  note:"Mar 5, 2024 (SSRN). 'Overcoming Markowitz's Instability with HRP: Theoretical Evidence': analytical noise comparison of HRP vs Markowitz."},
+ {d:"2024-06", lane:"finance", label:"skfolio Schur optimizer ⚠", sure:false, url:"https://skfolio.org/auto_examples/clustering/plot_6_schur.html",
+  note:"skfolio ships a SchurComplementary optimizer (batch/fixed-universe); library paper Jul 2025 (arXiv:2507.04176)."},
+ {d:"2024-11", lane:"finance", label:"Cotton — arXiv:2411.05807", big:true, url:"https://arxiv.org/abs/2411.05807",
   note:"Nov 8, 2024. 'Schur Complementary Allocation: A Unification of Hierarchical Risk Parity and Minimum Variance Portfolios' — the formal paper."},
- {d:"2025-11", lane:"schur", label:"Two Sides of Schur Damping ⚠", sure:false, url:"https://precise.microprediction.org/papers/two-sides-of-schur-damping/",
-  note:"Cotton: the identity between Vecchia conditional shrinkage (spatial statistics) and the HRP↔MVP damping (allocation); closed-form γ* as a reliability."},
+ {d:"2025-01", lane:"finance", label:"Salas-Molina et al ⚠", sure:false, url:"https://doi.org/10.1007/978-3-031-78241-1_5",
+  note:"2025, LNCS Decision Sciences. Empirical HRP estimation-window study; cites Cotton 2024."},
+ {d:"2025-02", lane:"finance", label:"Chitra et al (DeFi)", url:"https://arxiv.org/abs/2502.06028",
+  note:"Feb 9, 2025. 'Perpetual Demand Lending Pools' (Gauntlet/NYU). Appendix B: split one lending pool or keep it whole, decided via Schur complements of the pool covariance — conditions 'similar to hierarchical risk-parity methods [Cot24, LdP16]'."},
+ {d:"2025-03", lane:"finance", label:"Mograby", url:"https://arxiv.org/abs/2503.12328",
+  note:"Mar 16, 2025. 'Hierarchical Minimum Variance Portfolios': exact Schur separator recursion on hierarchical graphs; cites Cotton."},
+ {d:"2026-01", lane:"finance", label:"Pergher et al ⚠", sure:false, url:"https://doi.org/10.1109/ACCESS.2026.3656702",
+  note:"2026, IEEE Access. Orthogonal HRP allocation; cites Cotton 2024."},
+ {d:"2026-04", lane:"finance", label:"Knežević–Posedel Šimović", url:"https://doi.org/10.1142/S2705109926700013",
+  note:"Published Apr 8, 2026, The Journal of FinTech. 'Bridging Risk Parity and Variance Optimization: A Schur Complement Approach to Recursive Asset Allocation'; cites both Cotton 2022 and 2024."},
+ {d:"2026-04", lane:"finance", label:"Wuebben", url:"https://arxiv.org/abs/2604.23833",
+  note:"Apr 26, 2026. 'Beyond De Prado and Cotton': hierarchical/Schur machinery extended to general mean-variance with alpha signals."},
 
- {d:"2024-03", lane:"theory", label:"Antonov–Lipton–López de Prado", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151",
-  note:"Posted Mar 5, 2024 (SSRN 4748151), 'Overcoming Markowitz's Instability with the Help of HRP: Theoretical Evidence' (working title 'HRP: A Closer Look'); Risk.net version 2024. Analytical noise comparison of HRP vs Markowitz."},
- {d:"2025-03", lane:"theory", label:"Mograby", url:"https://arxiv.org/abs/2503.12328",
-  note:"Mar 16, 2025. 'Hierarchical Minimum Variance Portfolios': exact Schur separator recursion on hierarchical (Sierpiński) graphs; cites Cotton's Schur allocation."},
- {d:"2026-04", lane:"theory", label:"Wuebben", url:"https://arxiv.org/abs/2604.23833",
-  note:"Apr 26, 2026. 'Beyond De Prado and Cotton': extends the hierarchical/Schur machinery to general mean-variance with alpha signals (HRP-μ, CRISP)."},
- {d:"2025-02", lane:"theory", label:"Chitra et al", url:"https://arxiv.org/abs/2502.06028",
-  note:"Feb 9, 2025. 'Perpetual Demand Lending Pools' (DeFi market design); cites Cotton 2024."},
- {d:"2025-01", lane:"hrp", label:"Salas-Molina et al ⚠", sure:false, url:"https://doi.org/10.1007/978-3-031-78241-1_5",
-  note:"2025, LNCS Decision Sciences. 'Estimation Windows in HRP Methods': empirical HRP study; cites Cotton 2024."},
- {d:"2026-01", lane:"hrp", label:"Pergher et al ⚠", sure:false, url:"https://doi.org/10.1109/ACCESS.2026.3656702",
-  note:"2026, IEEE Access. 'An Orthogonal HRP Allocation Method for Improved Out-of-Sample Performance'; cites Cotton 2024."},
+ // --- machine learning ---
+ {d:"2015-03", lane:"ml", label:"KFAC", url:"https://arxiv.org/abs/1503.05671",
+  note:"Mar 2015. Martens–Grosse: block-factored curvature approximation; 'damped KFAC' (Tikhonov on the blocks) is an unnamed cousin of γ-damping in optimization."},
 
- {d:"2021-06", lane:"impl", label:"precise ⚠", sure:false, url:"https://github.com/microprediction/precise",
-  note:"microprediction/precise: online covariance estimation; later home of Schur covariance estimators, the Schur pseudo-likelihood, and the experiments."},
- {d:"2024-06", lane:"impl", label:"skfolio Schur optimizer ⚠", sure:false, url:"https://skfolio.org/auto_examples/clustering/plot_6_schur.html",
-  note:"skfolio ships a SchurComplementary optimizer (batch/fixed-universe) with a tutorial."},
- {d:"2025-07", lane:"impl", label:"skfolio paper", url:"https://arxiv.org/abs/2507.04176",
-  note:"Jul 5, 2025. Nicolini, Manzi & Delatte, 'skfolio: Portfolio Optimization in Python' (arXiv)."},
- {d:"2025-09", lane:"impl", label:"allocation ⚠", sure:false, url:"https://github.com/microprediction/allocation",
-  note:"microprediction/allocation: streaming/evolving-universe Schur allocation with Fiedler seriation and online covariance."},
- {d:"2026-01", lane:"impl", label:"schur.microprediction.org ⚠", sure:false, url:"https://schur.microprediction.org",
-  note:"The resource site: introduction, implementations, curated bibliography."},
+ // --- cross-field unification ---
+ {d:"2025-11", lane:"bridge", label:"Two Sides of Schur Damping ⚠", big:true, sure:false, url:"https://precise.microprediction.org/papers/two-sides-of-schur-damping/",
+  note:"Cotton: the identity — the conditional shrinkage a spatial model fits and the diversification-variance tilt a portfolio chooses are the same quantity, with the same closed-form reliability γ*."},
 ];
 
 const W = document.getElementById("timeline").clientWidth, H = 640, M = {l: 30, r: 30};
 const svg = d3.select("#timeline").append("svg").attr("width","100%").attr("height",H).attr("viewBox",[0,0,W,H]);
-const parse = d3.timeParse("%Y-%m");
-EVENTS.forEach(e => e.t = parse(e.d));
-const x = d3.scaleTime().domain([parse("2015-06"), parse("2026-09")]).range([M.l, W - M.r]);
 
-// year gridlines
-const years = d3.timeYear.range(parse("2016-01"), parse("2027-01"));
-svg.append("g").selectAll("line").data(years).join("line")
+// piecewise scale: 1987-2021 compressed into the left fifth; 2022+ gets the room
+const frac = d => { const [y,m] = d.split("-").map(Number); return y + (m-0.5)/12; };
+const x = d3.scaleLinear()
+  .domain([1987, 2021.8, 2026.9])
+  .range([M.l, M.l + 0.22*(W - M.l - M.r), W - M.r]);
+
+// gridlines: sparse before 2022, yearly after
+const gridYears = [1990, 2000, 2010, 2015, 2018, ...d3.range(2021, 2027)];
+svg.append("g").selectAll("line").data(gridYears).join("line")
   .attr("x1", d=>x(d)).attr("x2", d=>x(d)).attr("y1", 40).attr("y2", H-30)
   .attr("stroke", "#eee");
-svg.append("g").selectAll("text").data(years).join("text")
-  .attr("class","yearlabel").attr("x", d=>x(d)+3).attr("y", H-14).text(d=>d.getFullYear());
+svg.append("g").selectAll("text").data(gridYears).join("text")
+  .attr("class","yearlabel").attr("x", d=>x(d)+3).attr("y", H-14).text(d=>d);
 
-// lane bands + labels
+// lane bands + labels; events fill the band in rows so labels never stack
 Object.values(LANES).forEach(l => {
-  svg.append("line").attr("x1", M.l).attr("x2", W-M.r).attr("y1", l.y).attr("y2", l.y)
-     .attr("stroke", l.color).attr("stroke-width", 1).attr("opacity", 0.25);
-  svg.append("text").attr("class","lanelabel").attr("x", M.l+2).attr("y", l.y-34).attr("fill", l.color).text(l.label);
+  svg.append("rect").attr("x", M.l).attr("y", l.y0).attr("width", W-M.l-M.r).attr("height", l.h)
+     .attr("fill", l.color).attr("opacity", 0.05);
+  svg.append("text").attr("class","lanelabel").attr("x", M.l+2).attr("y", l.y0-6).attr("fill", l.color).text(l.label);
+});
+const byLane = {};
+EVENTS.forEach(e => (byLane[e.lane] = byLane[e.lane]||[]).push(e));
+Object.entries(byLane).forEach(([k, evs]) => {
+  evs.sort((a,b)=>frac(a.d)-frac(b.d));
+  const rows = Math.max(1, Math.min(evs.length, Math.floor((LANES[k].h-20)/26)+1));
+  evs.forEach((e,i)=>{ e.y = LANES[k].y0 + 18 + (i%rows)*26; });
 });
 
-// the priority marker
-const t0 = parse("2022-11");
-svg.append("line").attr("x1", x(t0)).attr("x2", x(t0)).attr("y1", 40).attr("y2", H-30)
-   .attr("stroke", "#c0392b").attr("stroke-dasharray", "6,4").attr("stroke-width", 1.5);
-svg.append("text").attr("x", x(t0)-6).attr("y", 54).attr("text-anchor","end")
-   .attr("fill","#c0392b").attr("font-size","11px").attr("font-style","italic")
-   .text("Nov 2022: the γ-bridge appears");
+// arrival-of-damping markers
+[["2022-11","Nov 2022: damping in finance"],["2024-09","Sep 2024: damping in spatial statistics"]].forEach(([d,txt],i)=>{
+  const xx = x(frac(d));
+  svg.append("line").attr("x1",xx).attr("x2",xx).attr("y1",40).attr("y2",H-30)
+     .attr("stroke","#c0392b").attr("stroke-dasharray","6,4").attr("stroke-width",1.2).attr("opacity",0.8);
+  svg.append("text").attr("x",xx-6).attr("y",54+i*15).attr("text-anchor","end")
+     .attr("fill","#c0392b").attr("font-size","11px").attr("font-style","italic").text(txt);
+});
 
 const tooltip = d3.select("#tooltip");
 const ev = svg.append("g").selectAll("g").data(EVENTS).join("g")
@@ -139,22 +153,21 @@ const ev = svg.append("g").selectAll("g").data(EVENTS).join("g")
   .on("click", (e,d)=>{ if(d.url) window.open(d.url,"_blank"); })
   .on("mousemove", (e,d)=>{ tooltip.style("display","block")
       .style("left",(e.pageX+14)+"px").style("top",(e.pageY+8)+"px")
-      .html(`<b>${d.label}</b> — ${d.d}${d.sure===false?" (⚠ approx.)":""}<br>${d.note}`); })
+      .html(`<b>${d.label}</b> — ${d.d.slice(0,7)}${d.sure===false?" (⚠ approx.)":""}<br>${d.note}`); })
   .on("mouseout", ()=>tooltip.style("display","none"));
 
 ev.append("circle")
-  .attr("cx", d=>x(d.t)).attr("cy", d=>LANES[d.lane].y)
+  .attr("cx", d=>x(frac(d.d))).attr("cy", d=>d.y)
   .attr("r", d=>d.big?9:6)
   .attr("fill", d=>LANES[d.lane].color)
   .attr("stroke", "#fff").attr("stroke-width", 1.5)
   .attr("opacity", d=>d.sure===false?0.65:1);
 
-// alternate labels above/below within each lane to reduce collisions
-const counters = {};
+// label sits beside its dot (right of dot; left near the right edge)
 ev.append("text").attr("class","evlabel")
-  .attr("x", d=>x(d.t)).attr("text-anchor","middle")
-  .attr("y", d=>{ const k=d.lane; counters[k]=(counters[k]||0)+1;
-      return LANES[d.lane].y + (counters[k]%2 ? -16 : 24); })
+  .attr("x", d=>{ const xx=x(frac(d.d)); return xx > W-170 ? xx-10 : xx+10; })
+  .attr("text-anchor", d=>x(frac(d.d)) > W-170 ? "end" : "start")
+  .attr("y", d=>d.y+4)
   .text(d=>d.label);
 
 d3.select("#lane-legend").selectAll("span").data(Object.values(LANES)).join("span")

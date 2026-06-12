@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Schur Complementary Portfolios &mdash; Introduction</title>
+  <title>Schur Damping &mdash; Introduction</title>
   <link rel="stylesheet" href="./style.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
@@ -13,11 +13,11 @@
 <body>
   <header class="site-header">
     <div class="nav-inner">
-      <a class="brand" href="./">schur</a>
+      <a class="brand" href="./index.html">schur</a>
       <nav>
         <a href="./intro.html">Introduction</a>
         <a href="https://arxiv.org/abs/2411.05807">Paper</a>
-        <a href="./index.html#implementations">Implementations</a>
+        <a href="./implementations.html">Implementations</a>
         <a href="./index.html#bibliography">Bibliography</a>
         <a href="./map.html">Literature map</a>
         <a href="./timeline.html">Timeline</a>
@@ -27,89 +27,141 @@
   </header>
 
   <main>
-    <p class="pagenav"><a href="./">&larr; Home</a></p>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>An introduction</h1>
-    <p class="subtitle">How the Schur complement bridges hierarchical and optimisation-based allocation.</p>
+    <p class="subtitle">One damped Schur complement &mdash; discovered separately by portfolio
+    managers, spatial statisticians, and (almost) machine learners.</p>
 
     <p class="lead">
-      Cluster the assets into two groups and partition the covariance matrix accordingly:
+      Whenever a covariance matrix is too large or too noisy to trust whole, every field reaches
+      for the same first move: split the variables into groups and handle the groups separately.
+      A portfolio manager clusters assets. A meteorologist conditions each weather station on a few
+      neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows &mdash;
+      how much of the <em>coupling between groups</em> to put back &mdash; turns out to be the same
+      object in every case, and this site is about that object.
     </p>
+
+    <h2>The shared object</h2>
+    <p>Partition the covariance:</p>
     <div class="equation-card">
-      $\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix}$
+      $\Sigma = \begin{pmatrix} A &amp; B \\ B^\top &amp; D \end{pmatrix}$
     </div>
     <p>
-      $A$ and $D$ are the within-cluster covariances; $B$ holds the cross-cluster covariance. The
-      question every allocator faces is how much to trust $B$.
+      $A$ and $D$ are within-group covariances; $B$ is the coupling. Conditioning one group on the
+      other produces two quantities that carry all of $B$&apos;s information: a regression
+      $b = A^{-1}B$ and a <em>Schur complement</em> $S_D = D - B^\top A^{-1} B$, the covariance of
+      the second group once the first is known. The coupling $B$ is also the noisiest part of any
+      estimated $\hat\Sigma$ &mdash; so the practical question, in every field, is how much of it
+      to believe.
     </p>
 
-    <h2>Where hierarchical risk parity sits</h2>
-    <p>
-      <strong>Hierarchical Risk Parity (HRP)</strong> allocates between the two clusters using the
-      diagonal blocks $A$ and $D$, and sets the cross block $B$ aside. This is a deliberate,
-      sensible choice: $B$ is the noisiest part of an estimated covariance, and ignoring it makes
-      HRP robust and stable out of sample. The cost is that genuine cross-cluster information in
-      $B$ goes unused &mdash; which is the main reason HRP and direct mean-variance optimisation can
-      pull in different directions. Schur complementary portfolios put $B$ back gradually, on a
-      dial, so you can keep HRP&apos;s robustness while recovering as much of that information as
-      your estimate deserves.
-    </p>
-
-    <h2>What the Schur complement puts back</h2>
-    <p>
-      The block-inverse identity says exactly how $B$ should re-enter. The inverse of the
-      partitioned covariance is
-    </p>
-    <div class="equation-card">
-      $\Sigma^{-1} = \begin{pmatrix} S_A^{-1} & \star \\ \star & S_D^{-1} \end{pmatrix},
-       \qquad
-       S_A = A - B D^{-1} B^\top,
-       \qquad
-       S_D = D - B^\top A^{-1} B$
-    </div>
-    <p>
-      $S_A$ is the <em>Schur complement</em> of $D$ in $\Sigma$ &mdash; the within-cluster
-      covariance with the cross-cluster effect already absorbed. Allocate between clusters using
-      $S_A$ and $S_D$ instead of $A$ and $D$, and the hierarchical, top-down decomposition
-      reproduces the global minimum-variance result exactly. The hierarchy stops being a heuristic
-      and becomes an identity.
-    </p>
-
-    <h2>The interpolation</h2>
-    <p>
-      Schur complementary portfolios introduce a single dial $\gamma \in [0, 1]$:
-    </p>
+    <h2>One dial, three readings</h2>
+    <p>Damp the coupling with a single parameter $\gamma \in [0,1]$:</p>
     <div class="equation-card">
       $S_A(\gamma) = A - \gamma\,B D^{-1} B^\top,
        \qquad
        S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
     </div>
-    <ul>
-      <li>$\gamma = 0$ &mdash; plain <strong>HRP</strong>: allocate top-down on the diagonal
-        blocks, with $B$ set aside.</li>
-      <li>$\gamma = 1$ &mdash; <strong>exact global MVP</strong>, recovered hierarchically via the
-        block-inverse identity.</li>
-      <li>$\gamma \in (0, 1)$ &mdash; trust $B$ in proportion to how much you trust your covariance
-        estimate. Empirically the sweet spot is interior: a noisy $\hat\Sigma$ rewards partial
-        trust in the off-diagonal block, not full trust.</li>
-    </ul>
+    <p><strong>Finance.</strong> Allocate top-down between clusters using the damped complements
+      and recurse. At $\gamma=0$ the cross block is set aside and you have
+      <strong>hierarchical risk parity</strong> &mdash; robust, and deliberately blind to $B$. At
+      $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: the recursion
+      reproduces the global <strong>minimum-variance portfolio</strong>. The dial turns a heuristic
+      into an identity, with everything in between a tunable trade-off between estimation noise and
+      information.
+    </p>
 
-    <h2>The recursion</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 760 210" role="img"
+           aria-label="The Schur complement as a bridge between hierarchical risk parity and minimum-variance optimisation">
+        <defs>
+          <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+            <path d="M0,0 L6.5,3 L0,6 Z" fill="#4a3aff"/>
+          </marker>
+        </defs>
+        <rect x="8" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Top-down</text>
+        <text x="120" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Hierarchical Risk Parity</text>
+        <text x="120" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">allocate on diagonal blocks</text>
+        <rect x="528" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Bottom-up</text>
+        <text x="640" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Minimum-Variance</text>
+        <text x="640" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">invert the full covariance</text>
+        <line x1="300" y1="72" x2="236" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
+        <line x1="460" y1="72" x2="524" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
+        <rect x="300" y="49" width="160" height="46" rx="23" fill="#4a3aff"/>
+        <text x="380" y="71" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Schur complement</text>
+        <text x="380" y="87" text-anchor="middle" font-size="10.5" fill="#cfcaff">the bridge</text>
+        <line x1="120" y1="158" x2="640" y2="158" stroke="#e2e2e2" stroke-width="2"/>
+        <circle cx="120" cy="158" r="5" fill="#4a3aff"/>
+        <circle cx="640" cy="158" r="5" fill="#4a3aff"/>
+        <circle cx="380" cy="158" r="6" fill="#4a3aff"/>
+        <text x="120" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 0</text>
+        <text x="120" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">HRP</text>
+        <text x="640" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 1</text>
+        <text x="640" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">MVP</text>
+        <text x="380" y="180" text-anchor="middle" font-size="12" fill="#4a3aff">&#947; &#8712; (0, 1)</text>
+        <text x="380" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">the interesting region</text>
+      </svg>
+      <p class="caption">
+        The finance reading of the dial: $\gamma = 0$ recovers hierarchical risk parity,
+        $\gamma = 1$ recovers the minimum-variance portfolio, and the interior interpolates.
+        The spatial-statistics reading replaces the endpoints with &ldquo;independent
+        conditionals&rdquo; and &ldquo;full Vecchia conditioning.&rdquo;
+      </p>
+    </div>
+    <p><strong>Spatial statistics.</strong> The Vecchia approximation &mdash; the workhorse for
+      fitting Gaussian fields over tens of thousands of locations &mdash; writes the likelihood as
+      a product of per-location conditionals. Each conditional <em>is</em> a Schur complement, and
+      each is estimated, hence noisy. Shrinking those conditionals (as ShrinkTM does toward a
+      parametric base, or as the damped form above does toward independence, base-free) is the same
+      $\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
+      variance a weather model keeps after conditioning on neighbours.
+    </p>
+    <p><strong>Machine learning.</strong> KFAC and its descendants precondition optimizers with
+      block-factored curvature matrices, stabilized by &ldquo;damping&rdquo; added to the blocks.
+      The community never named the dial, but it is a cousin of the same operation &mdash; partial
+      trust in estimated coupling.
+    </p>
+
+    <h2>How much to trust the coupling: a closed form</h2>
     <p>
-      Cluster the assets and partition $\Sigma$. Compute $S_A(\gamma)$ and $S_D(\gamma)$. Use the
-      inverse-volatility of the Schur complements (or any reasonable allocator) to split mass
-      between the two clusters, then recurse inside each cluster on its own sub-covariance. That is
-      the whole algorithm. Set $\gamma = 1$ and the recursion is mathematically equivalent to
-      solving global MVP; set $\gamma = 0$ and you get HRP back; everything in between is a smoothly
-      tunable trade-off between estimation noise and information content.
+      The right $\gamma$ is not a style preference; it is the <em>reliability</em> of the estimated
+      coupling &mdash; a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
+      two-block case with conditional correlation $\rho$ estimated from $n$ observations,
+    </p>
+    <div class="equation-card">
+      $\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}$
+    </div>
+    <p>
+      More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation deserves your
+      trust. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
+      heuristic was right all along. Empirically &mdash; on portfolios, crypto correlation,
+      weather fields, and simulated processes &mdash; the sweet spot is interior, and the closed
+      form tracks the validation-tuned optimum with zero tuning.
+    </p>
+
+    <h2>Why this is one idea and not three</h2>
+    <p>
+      The fields solved complementary halves. Finance contributed the <em>bridge</em>: the
+      observation that $\gamma$ connects two allocation philosophies previously seen as rivals.
+      Spatial statistics contributed <em>scale and fitting</em>: orderings, conditioning sets, and
+      empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other
+      &mdash; the <a href="https://precise.microprediction.org/papers/two-sides-of-schur-damping/">
+      Two Sides</a> note makes the correspondence precise, and the
+      <a href="./timeline.html">timeline</a> shows the idea arriving in each field. What remains
+      open &mdash; robust conditional regressions, massive-scale semi-local maintenance, the
+      completion-theory connection &mdash; is drawn as the dashed red edges on the
+      <a href="./map.html">literature map</a>.
     </p>
 
     <div class="next-steps">
       <p>
-        The same idea generalises beyond the two-block case. See the
-        <a href="https://arxiv.org/abs/2411.05807">paper</a> for the recursion at arbitrary
-        hierarchy depth, the connection to Newton&apos;s method on the Riccati equation, and the
-        empirical comparisons &mdash; or head back to the
-        <a href="./#implementations">implementations</a> to try it.
+        For the recursion at arbitrary hierarchy depth and the empirical comparisons, see the
+        <a href="https://arxiv.org/abs/2411.05807">paper</a>. To use it today, head to the
+        <a href="./implementations.html">implementations</a>: skfolio for batch portfolios,
+        <code>allocation</code> for streaming universes, <code>precise</code> for online covariance
+        estimation and the Schur pseudo-likelihood.
       </p>
     </div>
   </main>
