@@ -36,10 +36,11 @@
 <div id="tl-wrap">
   <h1>Schur damping across fields: a timeline</h1>
   <p>The same object — a Schur-complement conditional, shrunk toward independence by a damping
-  parameter — has appeared in more than one field. One lane per field; events at their earliest
-  public date (preprint or blog post, not journal acceptance). The dashed lines mark damping's
-  arrival in finance (Nov 2022) and in spatial statistics (Sep 2024). Hover for details; click to
-  open. Dates marked ⚠ are month-approximate.</p>
+  parameter — has appeared in two fields, so far. One lane per field; events at their earliest
+  public date (preprint or blog post, not journal acceptance); scope is strict — only work that
+  actually uses Schur complements. The dashed lines mark damping's arrival in finance (Nov 2022)
+  and in spatial statistics (Sep 2024). Hover for details; click to open. Dates marked ⚠ are
+  month-approximate.</p>
   <div class="legend" id="lane-legend"></div>
   <div id="timeline"></div>
   <p class="hint">Corrections welcome — file an issue on
@@ -50,10 +51,9 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <script>
 const LANES = {
-  spatial: {label:"Meteorology & spatial statistics", color:"#2980b9", y0:55,  h:125},
-  finance: {label:"Finance & portfolio construction", color:"#27ae60", y0:210, h:175},
-  ml:      {label:"Machine learning",                 color:"#e74c8b", y0:415, h:50},
-  bridge:  {label:"Cross-field unification",          color:"#222222", y0:495, h:50},
+  spatial: {label:"Meteorology & spatial statistics", color:"#2980b9", y0:55,  h:150},
+  finance: {label:"Finance & portfolio construction", color:"#27ae60", y0:245, h:230},
+  bridge:  {label:"Cross-field unification",          color:"#222222", y0:530, h:50},
 };
 
 // d: YYYY-MM (earliest public date). sure:false => month-approximate (⚠)
@@ -98,9 +98,6 @@ const EVENTS = [
  {d:"2026-04", lane:"finance", label:"Wuebben", url:"https://arxiv.org/abs/2604.23833",
   note:"Apr 26, 2026. 'Beyond De Prado and Cotton': hierarchical/Schur machinery extended to general mean-variance with alpha signals."},
 
- // --- machine learning ---
- {d:"2015-03", lane:"ml", label:"KFAC", url:"https://arxiv.org/abs/1503.05671",
-  note:"Mar 2015. Martens–Grosse: block-diagonal/tridiagonal inverse-Fisher = binary coupling choices on the gradient covariance (its λI 'damping' is spectrum loading, not coupling attenuation). The continuous dial is unoccupied in ML."},
 
  // --- cross-field unification ---
  {d:"2025-11", lane:"bridge", label:"Two Sides of Schur Damping ⚠", big:true, sure:false, url:"https://precise.microprediction.org/papers/two-sides-of-schur-damping/",
