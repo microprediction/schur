@@ -118,10 +118,13 @@
       $\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
       variance a weather model keeps after conditioning on neighbours.
     </p>
-    <p><strong>Machine learning.</strong> KFAC and its descendants precondition optimizers with
-      block-factored curvature matrices, stabilized by &ldquo;damping&rdquo; added to the blocks.
-      The community never named the dial, but it is a cousin of the same operation &mdash; partial
-      trust in estimated coupling.
+    <p><strong>Machine learning.</strong> The natural gradient is the minimum-variance operation
+      applied to the <em>gradient</em> covariance, and the optimizer hierarchy lines up with the
+      portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC&apos;s
+      block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices &mdash;
+      trust a cross-layer coupling completely or zero it exactly. KFAC&apos;s own
+      &ldquo;damping&rdquo; (&lambda;I) is spectrum loading, not coupling attenuation. Every rung
+      of the ladder is discrete; the continuous dial is unoccupied there.
     </p>
 
     <h2>How much to trust the coupling: a closed form</h2>
