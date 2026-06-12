@@ -217,11 +217,30 @@ const g = svg.append("g");
 svg.call(d3.zoom().scaleExtent([0.4,3]).on("zoom", ev => g.attr("transform", ev.transform)));
 
 const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
+
+// Radial layout: hub pinned at center; Cotton 2022/2024 + ShrinkTM on an inner
+// ring; everything else fans out beyond, seeded into angular sectors by cluster.
+const cx = W/2, cy = H/2, R_INNER = 115, R_OUTER = 300;
+const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
+const sectors = {};
+Object.keys(CLUSTERS).forEach((k,i,arr) => { sectors[k] = (i/arr.length)*2*Math.PI - Math.PI/2; });
+NODES.forEach((d,i) => {
+  if (d.id === "hub") { d.fx = cx; d.fy = cy; return; }
+  const ring = INNER.has(d.id) ? R_INNER : R_OUTER;
+  const a = (INNER.has(d.id) ? (i*2.1) : sectors[d.c] + ((i%5)-2)*0.18);
+  d.x = cx + ring*Math.cos(a); d.y = cy + ring*Math.sin(a);
+});
+
 const sim = d3.forceSimulation(NODES)
-  .force("link", d3.forceLink(links).id(d=>d.id).distance(d => d.label ? 160 : (d.type==="lineage"?80:120)).strength(0.4))
-  .force("charge", d3.forceManyBody().strength(-480))
-  .force("center", d3.forceCenter(W/2, H/2))
-  .force("collide", d3.forceCollide().radius(d => (d.r||9)+16));
+  .force("link", d3.forceLink(links).id(d=>d.id).distance(d => d.label ? 150 : 90).strength(0.12))
+  .force("charge", d3.forceManyBody().strength(-330))
+  .force("radial", d3.forceRadial(d => d.id==="hub" ? 0 : (INNER.has(d.id) ? R_INNER : R_OUTER), cx, cy)
+                     .strength(d => d.id==="hub" ? 1 : (INNER.has(d.id) ? 0.95 : 0.32)))
+  .force("collide", d3.forceCollide().radius(d => (d.r||9)+17));
+
+// faint guide ring for the inner circle
+g.append("circle").attr("cx",cx).attr("cy",cy).attr("r",R_INNER)
+  .attr("fill","none").attr("stroke","#ddd").attr("stroke-dasharray","3,5");
 
 const link = g.append("g").selectAll("line").data(links).join("line")
   .attr("stroke", d=>STYLE[d.type].stroke).attr("stroke-width", d=>STYLE[d.type].width)
