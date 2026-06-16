@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schur Damping &mdash; Damping in Perpetual Demand Lending Pools</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">schur</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="./map.html">Literature map</a>
+        <a href="./timeline.html">Timeline</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Damping in perpetual demand lending pools</h1>
+    <p class="subtitle">A note on what the &gamma;-dial adds to the single-pool-vs-two-pools
+    question that Chitra, Diamandis, Sheng, Sterle, and Yusubov pose in DeFi.</p>
+
+    <p class="lead">
+      Chitra et al.&rsquo;s <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual Demand
+      Lending Pools</em></a> reaches, in Appendix B, for exactly the object this site is about: the
+      Schur complement of a partitioned covariance. But they reach for it in its <em>undamped</em>
+      form, and they use it to answer a <em>binary</em> question &mdash; merge two pools or keep
+      them apart. This note works out what the damped form would add: a continuous architecture dial
+      whose setting is fixed by how well the cross-pool covariance can actually be estimated &mdash;
+      which, in DeFi, is the whole problem.
+    </p>
+
+    <h2>The setup, in their notation</h2>
+    <p>
+      A PDLP holds a portfolio of risky assets with covariance $\Sigma$. To ask whether two pools
+      should be one, Appendix B splits the assets into a pool-1 block and a pool-2 block with no
+      assets in common, and writes
+    </p>
+    <div class="equation-card">
+      $\Sigma = \begin{bmatrix} A & B \\ B^{\mathsf T} & C \end{bmatrix}, \qquad
+      A \in \mathbb{R}^{m_1\times m_1},\; C \in \mathbb{R}^{m_2\times m_2},\; B \in \mathbb{R}^{m_1\times m_2}.$
+    </div>
+    <p>
+      $A$ is pool 1&rsquo;s own covariance, $C$ is pool 2&rsquo;s, and $B$ is the
+      <em>cross-pool</em> block &mdash; how the two pools&rsquo; assets co-move. The mean-variance
+      delta hedge for a <em>merged</em> pool uses the conditional covariances, the Schur complements
+    </p>
+    <div class="equation-card">
+      $\Sigma/C = A - B\,C^{-1}B^{\mathsf T}, \qquad \Sigma/A = C - B^{\mathsf T}A^{-1}B,$
+    </div>
+    <p>
+      while an <em>isolated</em> pool hedges against $A$ (or $C$) alone, as if the other pool did not
+      exist. Claim&nbsp;B.1 then gives a spectral sufficient condition &mdash;
+      $\sigma_{\max}(A) < \sigma_{\min}(\Sigma/A)$ &mdash; under which the single merged pool delta-hedges
+      better than the two isolated ones, and the authors note these conditions are
+      &ldquo;similar to hierarchical risk-parity methods&rdquo; ([Cot24], [LdP16]).
+    </p>
+
+    <h2>The decision is the two endpoints of the &gamma;-bridge</h2>
+    <p>
+      Read the two options through the bridge and they are not two architectures but the two ends of
+      one. The isolated pool keeps only its own block $A$; the merged pool conditions fully on the
+      other through $A - B C^{-1}B^{\mathsf T}$. Interpolating the coupling gives a one-parameter
+      family of <em>partially merged</em> pools:
+    </p>
+    <div class="equation-card">
+      $A(\gamma) = A - \gamma\, B\,C^{-1}B^{\mathsf T}, \qquad \gamma \in [0,1].$
+    </div>
+    <p>
+      At $\gamma=0$ the pools are split &mdash; no cross-pool hedging, robust but blind to real
+      diversification. At $\gamma=1$ the pools are fully merged &mdash; maximal diversification
+      credit, but the hedge now leans on every entry of $B$ being correct. Chitra et al. test which
+      of these two endpoints is better; they never sit at an interior point. This is precisely the
+      $\gamma\in\{0,1\}$ binary that the <a href="./map.html">literature map</a> marks for KFAC and
+      for HRP-vs-min-variance &mdash; the same dial, left at its stops.
+    </p>
+
+    <h2>Why the interior is the right place to be here</h2>
+    <p>
+      The binary choice assumes $B$ is known. In a PDLP it is the opposite of known. The pools are
+      disjoint by construction, so $B$ is the cross-<em>block</em> covariance &mdash; the entries
+      with the fewest joint observations and the most estimation noise. On-chain return histories are
+      short, pools rebalance fast, and the asset count can rival or exceed the number of return
+      samples. Trusting $B$ completely (merge) over-fits noise; discarding it (split) throws away
+      signal. The right answer is to trust it <em>in proportion to how well it is measured</em> &mdash;
+      which is exactly what $\gamma$ encodes.
+    </p>
+    <p>
+      The reliability that sets $\gamma$ is a James&ndash;Stein / Wiener ratio of signal to
+      signal-plus-noise. In the two-block case with conditional correlation $\rho$ estimated from $n$
+      observations,
+    </p>
+    <div class="equation-card">
+      $\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}.$
+    </div>
+    <p>
+      Strong, well-sampled cross-pool coupling pushes $\gamma^\star \to 1$ and the merge deserves
+      trust; weak or undersampled coupling pushes $\gamma^\star \to 0$ and keeping the pools apart was
+      right. The undersampled DeFi regime &mdash; small $n$ &mdash; pulls $\gamma^\star$ toward $0$:
+      the theory predicts pools should usually stay <em>mostly</em> split, merging only as the
+      cross-coupling proves both strong and stable. That is a graded, testable prediction the
+      threshold test in Claim&nbsp;B.1 cannot make &mdash; it can only flip from &ldquo;split&rdquo;
+      to &ldquo;merge&rdquo; the instant the spectral condition is met.
+    </p>
+
+    <h2>What it would change operationally</h2>
+    <p>
+      Concretely, a damped PDLP delta-hedges pool 1 against $A(\gamma^\star)$ rather than against
+      either $A$ or $\Sigma/C$ &mdash; a soft sharing of risk across pools, with the sharing fraction
+      a function of data, not a governance flag. This speaks directly to the paper&rsquo;s closing
+      observation that GMX V2&rsquo;s dynamic-pricing upgrade &ldquo;does not take into account pool
+      asset covariance&rdquo;: a target-weight mechanism that sets inter-pool collateral sharing in
+      proportion to $\gamma^\star$ would put exactly that covariance information back, at the
+      reliability-weighted amount, and would degrade gracefully as histories shorten instead of
+      flipping discretely.
+    </p>
+
+    <h2>It is the same damping as everywhere else</h2>
+    <p>
+      None of this is new machinery. $A - \gamma B C^{-1}B^{\mathsf T}$ is the augmented sub-covariance
+      of <a href="https://arxiv.org/abs/2411.05807">Schur Complementary Allocation</a>, and the
+      identity that the damping a portfolio needs when assets outnumber returns is, term for term,
+      the damping a spatial model needs when stations outnumber observations is the subject of
+      <a href="https://arxiv.org/abs/2606.14798"><em>Two Sides of Schur Damping</em></a>. A perpetual
+      demand lending pool is just an unusually sharp instance of the outnumbered regime &mdash; short
+      histories, fast pools &mdash; which is why the interior of the dial, rather than its endpoints,
+      is where its architecture question is most likely to live.
+    </p>
+
+    <div class="next-steps">
+      <p>
+        This is a forward-looking note, not a result in [Chitra&nbsp;et&nbsp;al.&nbsp;2025] &mdash;
+        they pose the binary question; the damped reading is the open direction. See the
+        <a href="./map.html">literature map</a> for where it sits among the other unoccupied interior
+        dials, and the <a href="./intro.html">introduction</a> for the shared object.
+      </p>
+    </div>
+  </main>
+</body>
+</html>
