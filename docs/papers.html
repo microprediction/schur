@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Schur Damping &mdash; Papers</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">schur</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="./map.html">Literature map</a>
+        <a href="./timeline.html">Timeline</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
+    <h1>Papers</h1>
+    <p class="subtitle">The core write-ups of Schur damping. For the wider literature &mdash; antecedents,
+    independent rediscoveries, and derived works across fields &mdash; see the
+    <a href="./index.html#bibliography">bibliography</a>.</p>
+
+    <div class="bib">
+    <h2>Core</h2>
+    <ul>
+      <li>
+        Cotton, P. (2024).
+        <a href="https://arxiv.org/abs/2411.05807"><em>Schur Complementary Allocation: A
+        Unification of Hierarchical Risk Parity and Minimum Variance Portfolios</em></a>.
+        arXiv:2411.05807. <em>The canonical write-up: the damped Schur complement and the recursion
+        at arbitrary hierarchy depth, with &gamma; interpolating HRP and minimum variance.</em>
+      </li>
+      <li>
+        Cotton, P. (2026). <em>Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods and
+        Portfolio Allocation</em>.
+        <a href="https://arxiv.org/abs/2606.14798">arXiv:2606.14798</a>.
+        <em>The cross-field identity: the same damping, and the same closed-form reliability
+        &gamma;*, in portfolio allocation and in spatial pseudo-likelihoods.</em>
+      </li>
+    </ul>
+
+    <h2>Working papers &amp; notes</h2>
+    <ul>
+      <li>
+        Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
+        Working paper &mdash; <a href="./schur-damping-pdlp.pdf">PDF</a>,
+        <a href="./damping-in-pdlps.html">web note</a>.
+        <em>Proposes the interior of the dial for the single-pool-vs-two-pools decision of
+        Chitra et al.: a partially-merged DeFi lending pool that hedges against
+        $A - \gamma B C^{-1} B^{\mathsf T}$, with &gamma;* set by how well the cross-pool
+        covariance can be estimated. In the undersampled on-chain regime, &gamma;* is pulled
+        toward 0.</em>
+      </li>
+    </ul>
+    </div>
+  </main>
+</body>
+</html>

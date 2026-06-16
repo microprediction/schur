@@ -1,0 +1,247 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage[round,authoryear]{natbib}
+\usepackage[colorlinks=true,allcolors=blue]{hyperref}
+\usepackage{microtype}
+
+\newtheorem{claim}{Claim}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Sig}{\Sigma}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\smin}{\sigma_{\min}}
+\newcommand{\smax}{\sigma_{\max}}
+
+\title{\textbf{Schur Damping for Perpetual Demand Lending Pools}}
+\author{Peter Cotton}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Perpetual demand lending pools (PDLPs) must decide whether to operate as one
+pool or several. \citet{chitra2025} resolve this with the \emph{undamped} Schur
+complement of the asset covariance and a binary spectral threshold: merge the
+pools if a single condition number test passes, keep them apart otherwise. We
+observe that the merged and isolated pools are the two endpoints, $\gamma=1$ and
+$\gamma=0$, of the Schur-complementary damping family of \citet{cotton2024}, and
+we propose occupying its interior. A \emph{partially merged} pool hedges against
+$A-\gamma\,B C^{-1} B\T$, with the coupling fraction $\gamma$ set not by a
+threshold but by the statistical reliability of the cross-pool covariance block
+$B$. We give the closed-form $\gamma^\star$ implied by viewing the choice as a
+James--Stein shrinkage problem \citep{cotton2026}. Because PDLPs live in an acute
+undersampled regime---short on-chain return histories, fast rebalancing, asset
+counts that rival or exceed the number of return samples---$\gamma^\star$ is
+pulled toward $0$: the theory predicts pools should stay \emph{mostly} split,
+merging only as cross-pool coupling proves both strong and well-sampled. The
+result is a graded, data-driven target-weight mechanism that degrades gracefully
+where the binary test flips discretely, and it supplies precisely the pool
+covariance that GMX~V2's dynamic-pricing upgrade is noted to omit.
+\end{abstract}
+
+\section{Introduction}
+
+Perpetual futures are the most liquid crypto markets, and a growing share trades
+on decentralized venues---GMX, Jupiter, Hyperliquid---that fund market-maker
+leverage through on-chain liquidity pools. \citet{chitra2025} formalize this
+mechanism as a \emph{perpetual demand lending pool} (PDLP): liquidity providers
+deposit assets into a pool with a target composition, traders borrow against it
+to open leveraged positions, and arbitrageurs keep the pool near target. The
+authors give conditions under which a PDLP's liquidity providers can be delta
+hedged, partially explaining why these pools have grown to billions of dollars in
+assets.
+
+A recurring architectural question, raised explicitly in their Appendix~B, is
+when several pools should be combined into one. GMX itself migrated from a single
+pool to a multi-pool system; the inverse question---when to re-aggregate---is
+decided in \citet{chitra2025} by partitioning the asset covariance into blocks and
+comparing a pool's own covariance against its Schur complement. The comparison is
+binary: a spectral inequality either holds, and one merged pool delta hedges
+better, or it fails, and the pools should stay apart.
+
+This note makes a single observation and develops its consequence. The two
+options being compared---the isolated pool and the merged pool---are not two
+unrelated architectures. They are the $\gamma=0$ and $\gamma=1$ endpoints of the
+damped Schur complement that interpolates hierarchical risk parity and minimum
+variance \citep{cotton2024,cotton2022}. The interesting regime for a PDLP is the
+interior, $0<\gamma<1$: a pool that is \emph{partially} merged, sharing risk
+across pools in proportion to how reliably that shared risk can be estimated. In
+the data-poor conditions typical of DeFi, that proportion is small, and the
+interior solution differs materially from either endpoint.
+
+\section{The pool-merging decision is the $\gamma$-bridge endpoints}
+
+We recall the setup of \citet[App.~B]{chitra2025}. A PDLP holds risky assets with
+covariance $\Sig \succ 0$. To ask whether two pools should be one, partition the
+assets into a pool-1 block of size $m_1$ and a pool-2 block of size $m_2$ with
+disjoint supports, $m_1+m_2=n$, and write
+\begin{equation}
+  \Sig = \begin{bmatrix} A & B \\ B\T & C \end{bmatrix},
+  \qquad A\in\R^{m_1\times m_1},\ C\in\R^{m_2\times m_2},\ B\in\R^{m_1\times m_2},
+\end{equation}
+with $A,C$ nonsingular and positive definite. Here $A$ is pool~1's own
+covariance, $C$ is pool~2's, and $B$ is the \emph{cross-pool} block. For
+mean-variance delta hedging the relevant objects are the conditional covariances,
+the Schur complements
+\begin{equation}
+  \Sig/C = A - B\,C^{-1}B\T, \qquad \Sig/A = C - B\T A^{-1} B .
+\end{equation}
+A merged pool incorporates information from both blocks and hedges against
+$\Sig/C$ (resp.\ $\Sig/A$); an isolated pool hedges against $A$ (resp.\ $C$)
+alone, as though the other pool did not exist. \citet{chitra2025} prove a
+sufficient condition for one pool to be better than two.
+
+\begin{claim}[{\citealp[Claim~B.1]{chitra2025}}]
+\label{claim:b1}
+If $\smax(A) < \smin(\Sig/A)$ and $\smax(B\T)<\smin(\Sig/C)$ then the single
+merged pool delivers better delta-hedged returns than the two isolated pools.
+\end{claim}
+
+The authors note these conditions are ``similar to hierarchical risk-parity
+methods'' \citep{cotton2024,deprado2016}. The similarity is exact, and it is the
+point of departure for what follows: the isolated pool keeps only its diagonal
+block $A$, while the merged pool conditions fully through $A - BC^{-1}B\T$. These
+are the two ends of one dial.
+
+\section{Damped pool merging}
+
+Following \citet{cotton2024}, interpolate the coupling. For $\gamma\in[0,1]$
+define the \emph{damped sub-covariance}
+\begin{equation}
+\label{eq:damped}
+  A(\gamma) \;=\; A - \gamma\, B\,C^{-1}B\T,
+  \qquad
+  C(\gamma) \;=\; C - \gamma\, B\T A^{-1} B ,
+\end{equation}
+and let a \emph{partially merged} PDLP delta hedge pool~1 against $A(\gamma)$ and
+pool~2 against $C(\gamma)$.
+
+\begin{proposition}[Endpoints]
+$A(0)=A$ recovers the isolated pool, and $A(1)=\Sig/C$ recovers the fully merged
+pool of \citet{chitra2025}. The single-pool-versus-two-pools decision of
+Claim~\ref{claim:b1} is the comparison of the two endpoints $\gamma\in\{0,1\}$.
+\end{proposition}
+
+\noindent The proposition is immediate from \eqref{eq:damped}, but it reframes the
+problem. Rather than testing which endpoint is better, choose $\gamma$. And
+$\gamma$ has a meaning: it is how much of the estimated cross-pool coupling to
+trust.
+
+\paragraph{Choosing $\gamma$.} The right $\gamma$ is the reliability of the
+estimated coupling, a James--Stein / Wiener ratio of signal to signal-plus-noise
+rather than a style preference \citep{cotton2026}. In the two-block case with
+conditional correlation $\rho$ estimated from $n$ return observations,
+\begin{equation}
+\label{eq:gammastar}
+  \gamma^\star \;=\; \frac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)} .
+\end{equation}
+Strong, well-sampled cross-pool coupling sends $\gamma^\star\to 1$ and the merge
+deserves trust; weak or undersampled coupling sends $\gamma^\star\to 0$ and the
+divide-and-conquer split was right. The estimate $\gamma^\star$ tracks the
+validation-tuned optimum with no tuning, on portfolios, crypto correlation, and
+simulated processes \citep{cotton2024,cotton2026}.
+
+\section{The undersampled regime is where DeFi lives}
+
+The binary test of Claim~\ref{claim:b1} silently assumes $B$ is known. In a PDLP
+it is the least-known part of the model. The pools are disjoint by construction,
+so $B$ is a cross-\emph{block} covariance---the entries with the fewest joint
+observations and the most estimation noise. On-chain return histories are short,
+pools rebalance on the order of hours, and the number of pooled assets can rival
+or exceed the number of return samples $n$. Trusting $B$ completely (merge)
+overfits noise into the hedge; discarding it (split) throws away genuine
+diversification. The reliability-weighted answer is to trust $B$ in proportion to
+how well it is measured, which is exactly \eqref{eq:gammastar}.
+
+Small $n$ pulls $\gamma^\star$ toward $0$. The theory therefore predicts that
+PDLP pools should remain \emph{mostly} split, merging incrementally only as the
+cross-pool coupling proves both strong (large $\rho$) and stable (large $n$).
+This is a graded, falsifiable prediction. The threshold test of
+Claim~\ref{claim:b1} cannot make it: it flips from ``split'' to ``merge'' the
+instant a spectral inequality is met and is silent on the long approach to that
+boundary, which is where a young, data-poor pool actually operates.
+
+This is the same identity that drives \citet{cotton2026}: the damping a portfolio
+needs when assets outnumber returns is, term for term, the damping a spatial
+pseudo-likelihood needs when stations outnumber observations. A perpetual demand
+lending pool is an unusually sharp instance of the outnumbered regime, which is
+why its architecture question lives in the interior of the dial rather than at its
+ends.
+
+\section{A reliability-weighted target-weight mechanism}
+
+\citet{chitra2025} maintain a pool near a target portfolio through a
+target-weight mechanism, and close Appendix~B by noting that GMX~V2's
+dynamic-pricing upgrade ``does not take into account pool asset covariance.''
+Equation~\eqref{eq:damped} supplies exactly that covariance, at a
+reliability-weighted amount. Concretely, a damped PDLP hedges pool~1 against
+$A(\gamma^\star)$ rather than against either $A$ or $\Sig/C$, and a target-weight
+mechanism can set inter-pool collateral sharing proportional to $\gamma^\star$:
+\begin{equation}
+  \text{shared coupling} \;=\; \gamma^\star \cdot B\,C^{-1}B\T,
+  \qquad
+  \gamma^\star \in [0,1].
+\end{equation}
+When the cross-pool block is well estimated the mechanism behaves like a single
+diversified pool; when it is not, it falls back continuously toward isolated
+pools, degrading gracefully rather than discretely. No new primitive is required:
+$A(\gamma^\star)$ is the augmented sub-covariance of \citet{cotton2024}, and the
+only added ingredient is a running estimate of $\rho$ and $n$ for each pool pair,
+both available on chain.
+
+\section{Discussion}
+
+The contribution is deliberately small. \citet{chitra2025} already reach for the
+Schur complement and already note its kinship with hierarchical risk parity; what
+is missing is the damping parameter that turns a binary architectural test into a
+continuous, self-tuning one. The same move---occupying the interior of a dial that
+a field has only used at its endpoints---recurs in portfolio construction (HRP
+versus minimum variance), in spatial statistics (base-shrunk versus full Vecchia
+conditionals), and in optimization (KFAC's binary block-coupling choices)
+\citep{cotton2024,cotton2026}. DeFi lending pools are, if anything, the cleanest
+case for damping, because their estimation problem is the most severe. We leave to
+future work an empirical comparison of damped versus binary pool architectures on
+historical PDLP data, and the connection between the dynamic-pricing model and the
+cost of delta hedging that \citet{chitra2025} flag as open.
+
+\begin{thebibliography}{9}
+
+\bibitem[Chitra et al.(2025)]{chitra2025}
+T.~Chitra, T.~Diamandis, N.~Sheng, L.~Sterle, and K.~Yusubov.
+\newblock Perpetual Demand Lending Pools.
+\newblock arXiv:2502.06028, 2025.
+
+\bibitem[Cotton(2022)]{cotton2022}
+P.~Cotton.
+\newblock Schur Complementary Portfolios Fix Hierarchical Risk Parity.
+\newblock \emph{Geek Culture} (Medium), 2022.
+
+\bibitem[Cotton(2024)]{cotton2024}
+P.~Cotton.
+\newblock Schur Complementary Allocation: A Unification of Hierarchical Risk
+Parity and Minimum Variance Portfolios.
+\newblock arXiv:2411.05807, 2024.
+
+\bibitem[Cotton(2026)]{cotton2026}
+P.~Cotton.
+\newblock Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods and
+Portfolio Allocation.
+\newblock arXiv:2606.14798, 2026.
+
+\bibitem[L\'opez de Prado(2016)]{deprado2016}
+M.~L\'opez de Prado.
+\newblock Building Diversified Portfolios that Outperform Out of Sample.
+\newblock \emph{Journal of Portfolio Management}, 42(4), 2016.
+
+\end{thebibliography}
+
+\end{document}

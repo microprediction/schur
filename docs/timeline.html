@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./style.css">
   <style>
     #tl-wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    #timeline { width: 100%; height: 640px; border: 1px solid #ddd; background: #fdfdfc; border-radius: 4px; }
+    #timeline { width: 100%; height: 700px; border: 1px solid #ddd; background: #fdfdfc; border-radius: 4px; }
     .legend { font-size: 0.85em; color: #444; display: flex; flex-wrap: wrap; gap: 14px 22px; margin: 10px 0; }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
     .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
@@ -26,7 +26,7 @@
       <a class="brand" href="./index.html">schur</a>
       <nav>
         <a href="./intro.html">Introduction</a>
-        <a href="https://arxiv.org/abs/2411.05807">Paper</a>
+        <a href="./papers.html">Papers</a>
         <a href="./map.html">Literature map</a>
         <a href="https://github.com/microprediction/schur">GitHub</a>
       </nav>
@@ -53,7 +53,8 @@
 const LANES = {
   spatial: {label:"Meteorology & spatial statistics", color:"#2980b9", y0:55,  h:150},
   finance: {label:"Finance & portfolio construction", color:"#27ae60", y0:245, h:230},
-  bridge:  {label:"Cross-field unification",          color:"#222222", y0:530, h:50},
+  defi:    {label:"DeFi & on-chain markets",          color:"#8e44ad", y0:515, h:55},
+  bridge:  {label:"Cross-field unification",          color:"#222222", y0:600, h:45},
 };
 
 // d: YYYY-MM (earliest public date). sure:false => month-approximate (⚠)
@@ -87,8 +88,10 @@ const EVENTS = [
   note:"Nov 8, 2024. 'Schur Complementary Allocation: A Unification of Hierarchical Risk Parity and Minimum Variance Portfolios' — the formal paper."},
  {d:"2025-01", lane:"finance", label:"Salas-Molina et al ⚠", sure:false, url:"https://doi.org/10.1007/978-3-031-78241-1_5",
   note:"2025, LNCS Decision Sciences. Empirical HRP estimation-window study; cites Cotton 2024."},
- {d:"2025-02", lane:"finance", label:"Chitra et al (DeFi)", url:"https://arxiv.org/abs/2502.06028",
+ {d:"2025-02", lane:"defi", label:"Chitra et al (PDLPs)", url:"https://arxiv.org/abs/2502.06028",
   note:"Feb 9, 2025. 'Perpetual Demand Lending Pools' (Gauntlet/NYU). Appendix B: split one lending pool or keep it whole, decided via the undamped Schur complement of the pool covariance (the exact conditional covariance, no γ) — conditions 'similar to hierarchical risk-parity methods [Cot24, LdP16]'."},
+ {d:"2026-06", lane:"defi", label:"Cotton — Schur damping for PDLPs ⚠", big:true, sure:false, url:"./schur-damping-pdlp.pdf",
+  note:"Jun 2026, working paper. Proposes the interior of the dial for the PDLP merge/split decision: a partially-merged pool hedges against A − γ·BC⁻¹Bᵀ, with γ* set by the reliability of the cross-pool covariance. The undersampled DeFi regime pulls γ* toward 0 — pools should stay mostly split until cross-coupling is strong and well-sampled."},
  {d:"2025-03", lane:"finance", label:"Mograby", url:"https://arxiv.org/abs/2503.12328",
   note:"Mar 16, 2025. 'Hierarchical Minimum Variance Portfolios': exact Schur separator recursion on hierarchical graphs; cites Cotton."},
  {d:"2026-01", lane:"finance", label:"Pergher et al ⚠", sure:false, url:"https://doi.org/10.1109/ACCESS.2026.3656702",
@@ -104,7 +107,7 @@ const EVENTS = [
   note:"Jun 2026 (arXiv:2606.14798). Cotton: the identity — the conditional shrinkage a spatial model fits and the diversification-variance tilt a portfolio chooses are the same quantity, with the same closed-form reliability γ*."},
 ];
 
-const W = document.getElementById("timeline").clientWidth, H = 640, M = {l: 30, r: 30};
+const W = document.getElementById("timeline").clientWidth, H = 700, M = {l: 30, r: 30};
 const svg = d3.select("#timeline").append("svg").attr("width","100%").attr("height",H).attr("viewBox",[0,0,W,H]);
 
 // piecewise scale: 1987-2021 compressed into the left fifth; 2022+ gets the room
