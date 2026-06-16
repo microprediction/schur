@@ -138,10 +138,10 @@ Object.entries(byLane).forEach(([k, evs]) => {
   evs.forEach((e,i)=>{ e.y = LANES[k].y0 + 18 + (i%rows)*26; });
 });
 
-// arrival markers. The DeFi line is placed at Cotton 2024 (the damping), not at Chitra et al.:
-// the DeFi pool problem forms the Schur complement but uses only the gamma=0/gamma=1 endpoints,
-// so the damping it would need traces to this paper, not theirs.
-[["2022-11","Nov 2022: damping in finance"],["2024-09","Sep 2024: damping in spatial statistics"],["2024-11","Nov 2024: the damping DeFi pools would need (Cotton)"]].forEach(([d,txt],i)=>{
+// arrival markers — one per field, placed at the work that first applies continuous damping there.
+// DeFi line goes through Cotton's PDLP paper (Jun 2026), not Chitra et al. (who used only the
+// undamped endpoints).
+[["2022-11","Nov 2022: damping in finance"],["2024-09","Sep 2024: damping in spatial statistics"],["2026-06","Jun 2026: damping in DeFi (Cotton)"]].forEach(([d,txt],i)=>{
   const xx = x(frac(d));
   svg.append("line").attr("x1",xx).attr("x2",xx).attr("y1",40).attr("y2",H-30)
      .attr("stroke","#c0392b").attr("stroke-dasharray","6,4").attr("stroke-width",1.2).attr("opacity",0.8);
