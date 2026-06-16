@@ -138,8 +138,9 @@ Object.entries(byLane).forEach(([k, evs]) => {
   evs.forEach((e,i)=>{ e.y = LANES[k].y0 + 18 + (i%rows)*26; });
 });
 
-// arrival-of-damping markers
-[["2022-11","Nov 2022: damping in finance"],["2024-09","Sep 2024: damping in spatial statistics"]].forEach(([d,txt],i)=>{
+// arrival markers (the first two are continuous damping; DeFi forms the Schur complement
+// but at the gamma=0/gamma=1 endpoints — split vs aggregate pools — not continuous damping)
+[["2022-11","Nov 2022: damping in finance"],["2024-09","Sep 2024: damping in spatial statistics"],["2025-02","Feb 2025: Schur complements in DeFi"]].forEach(([d,txt],i)=>{
   const xx = x(frac(d));
   svg.append("line").attr("x1",xx).attr("x2",xx).attr("y1",40).attr("y2",H-30)
      .attr("stroke","#c0392b").attr("stroke-dasharray","6,4").attr("stroke-width",1.2).attr("opacity",0.8);
