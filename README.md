@@ -1,7 +1,7 @@
 # schur damping literature
 
 Schur complementary portfolios — a unification of hierarchical and optimisation-based portfolio
-construction via block-matrix inversion (Schur complement) is implemented at [https://allocation.microprediction.org](https://allocation.microprediction.org). 
+construction via block-matrix inversion (Schur complement) and related applications in applied mathematics. 
 
 **Paper:** [arXiv:2411.05807](https://arxiv.org/abs/2411.05807)
 **Site:** [microprediction.github.io/schur/](https://microprediction.github.io/schur/) *(after Pages is enabled)*
@@ -23,6 +23,3 @@ construction via block-matrix inversion (Schur complement) is implemented at [ht
 }
 ```
 
-## Implementation
-
-See [https://allocation.microprediction.org](https://allocation.microprediction.org)
