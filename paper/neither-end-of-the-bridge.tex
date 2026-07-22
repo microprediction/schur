@@ -151,8 +151,11 @@ block.
 collapsed matrix below satisfies $\widetilde A^{-1}\mathbf{1} =
 (A^c)^{-1}b_A$ at the vector level, but the naive fitness \eqref{eq:naive}
 and the symmetrization make $\gamma = 1$ \emph{approach} the minimum-variance
-portfolio rather than replicate it. None of the results below rely on
-exactness at $\gamma = 1$.
+portfolio rather than replicate it. One requirement is not negotiable: the
+inter-group fitness must be a genuine quadratic form on the \emph{augmented}
+block, as above --- a diagonal-only $\nu$, used in some HRP variants, never
+sees the augmentation and severs the bridge at any $\gamma$. None of the
+results below rely on exactness at $\gamma = 1$.
 
 \emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
 equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
@@ -173,7 +176,8 @@ recursion we analyze: each child block is replaced by
 where $\operatorname{sym}(X) = \tfrac12(X + X^\top)$; note
 $\big(I - \gamma BD^{-1}\big)\mathbf{1} = b_A(\gamma)$, so
 \eqref{eq:aug} is the collapse of \eqref{eq:family}, up to the
-symmetrization. The fitness is the \emph{naive portfolio variance}
+symmetrization. The fitness is the \emph{naive portfolio
+variance}
 \begin{equation}
   \nu(X) \;=\; \tilde w^\top X\, \tilde w,
   \qquad
@@ -385,8 +389,7 @@ recover the prior results: as $\gamma \to 1$ the augmentation approaches the
 exact Schur complement and $G'$ inherits the inversion sensitivity of minimum
 variance --- the instability quantified at the endpoint by
 \cite{antonov2025} --- so full coupling is optimal only as the noise
-vanishes, exactness \cite{mograby2025} notwithstanding; as $\gamma \to 0$,
-$G'$ vanishes while the population gain $-V_0'(0)$ does not.
+vanishes, exactness \cite{mograby2025} notwithstanding.
 \end{remark}
 
 \begin{remark}[Verification in the witness family]
@@ -419,10 +422,8 @@ noise-robustness of HRP does not confer it either: under covariance
 estimation error the Schur coupling is a bias--variance dial whose optimal
 setting is interior, decreasing in the noise, and characterized by
 $\tau^2 = -V_0'/G'$. The empirical counterpart --- a walk-forward bridge on
-Dow constituents with one-year training windows, minimum near
-$\gamma \approx 0.55$ and robust to Ledoit--Wolf shrinkage of the inputs ---
-is interactive at \texttt{schur.microprediction.org} (the ``Demo'' page), with the
-wider demonstration suite at \texttt{allocation.microprediction.org}.
+Dow constituents, minimum near $\gamma \approx 0.55$, robust to Ledoit--Wolf
+shrinkage --- is interactive at \texttt{schur.microprediction.org}.
 
 \begin{thebibliography}{9}
 
