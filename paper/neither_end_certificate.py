@@ -538,6 +538,45 @@ def singularity_certificates():
     print("          Bernstein-certified positive on [3/20, 3/5]; direct FOC positive")
     print("          at 45 exact points; hence gamma*(e) < a/(c+e)  (Theorem 4(v))")
 
+    # (4) Lemma 3 denominator identities: augmented diagonals and fitness sum
+    #     (A_g)_ii = nu_A + 1/4,  (D_g)_ii = nu_D + 1,  and the sum formula;
+    #     grid avoids gamma z = a.
+    for g in (Fr(1, 3), Fr(3, 5), Fr(9, 10), Fr(1)):
+        for eps in (Fr(0), Fr(3, 20), Fr(3, 10)):
+            zz = c + 2 * eps
+            Sg4 = Sig_rho(eps)
+            A2 = [row[:2] for row in Sg4[:2]]
+            D2 = [row[2:] for row in Sg4[2:]]
+            B2 = [row[2:] for row in Sg4[:2]]
+            Aa = aug(A2, B2, D2, g) if g != 0 else A2
+            Da = aug(D2, mtrans(B2), A2, g) if g != 0 else D2
+            nuA = (a * d - g * zz * zz) / (d - g * zz)
+            nuD = (a * d - g * zz * zz) / (a - g * zz)
+            assert Aa[0][0] == Aa[1][1] == nuA + Fr(1, 4)
+            assert Da[0][0] == Da[1][1] == nuD + 1
+            assert nuD + 1 == (a * (d + 1) - g * zz * (zz + 1)) / (a - g * zz)
+            assert naive_var(Aa) == nuA and naive_var(Da) == nuD
+            assert (nuA + nuD ==
+                    (a * d - g * zz * zz) * (Sv - 2 * g * zz)
+                    / ((d - g * zz) * (a - g * zz)))
+    print("Lemma 3 denominators: (A_g)_ii = nu_A + 1/4, (D_g)_ii = nu_D + 1 =")
+    print("          (a(d+1) - gz(z+1))/(a - gz), and the fitness-sum formula,")
+    print("          all exact on a 12-point grid; only hole is gamma z = a")
+
+    # (5) two-singularity counterexample from the third referee report:
+    #     a=1, d=6, c=11/10 meets a<d, 4c^2<ad, S>6c, yet BOTH branches are
+    #     singular at e=1/20 (so restricting Lemma 3's location claim to the
+    #     numerical family, where c < a, is necessary).
+    ax, dx, cx, ex = Fr(1), Fr(6), Fr(11, 10), Fr(1, 20)
+    assert ax < dx and 4 * cx * cx < ax * dx and ax + dx > 6 * cx
+    assert not (cx < ax)
+    zlo, zhi = cx - ex, cx + ex
+    for zc, gs in ((zlo, Fr(20, 21)), (zhi, Fr(20, 23))):
+        assert gs * zc == ax and Fr(0) < gs < Fr(1)
+    print("counterexample: a=1, d=6, c=11/10, e=1/20 satisfies the general")
+    print("          hypotheses yet is singular on BOTH branches (gamma = 20/21")
+    print("          and 20/23); c < a is what confines the family to one")
+
 
 if __name__ == "__main__":
     main()
