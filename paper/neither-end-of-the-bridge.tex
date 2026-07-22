@@ -22,7 +22,8 @@
 \newcommand{\E}{\mathbb{E}}
 \DeclareMathOperator*{\argminop}{arg\,min}
 
-\title{Neither End of the Bridge:\\ Estimation Noise Makes Interior Schur Coupling Optimal}
+\title{When Neither Minimum Variance nor Hierarchical Risk Parity Is Optimal:\\
+An Analytical Result for the Schur Bridge Between Them}
 \author{Peter Cotton\thanks{[Affiliation and postal address to be supplied.]
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
 certificate for Proposition~\ref{prop:witness} is
@@ -35,26 +36,20 @@ the \texttt{allocation} and \texttt{precise} packages.}}
 \maketitle
 
 \begin{abstract}
-Schur-complementary allocation interpolates hierarchical risk parity (HRP,
-$\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
-$\gamma$ that scales how much of the estimated cross-block covariance the
-recursion uses. Antonov, Lipton, and L\'opez de Prado prove that of the two
-endpoints, HRP is the less noisy; Mograby shows the $\gamma = 1$ endpoint is
-computable exactly on hierarchical structures. We prove that, generically,
-neither endpoint is optimal. The $\gamma = 0$ recursion never reads the
-top-level cross-block, so its expected out-of-sample variance $F(0)$ is exact
-while $F'(0)$ equals the strictly negative population slope: HRP is never the
-minimizer under small noise. Every appearance of the estimated cross-block
-carries a factor of $\gamma$, so the noise cost is $O(\gamma^2 \tau^2)$ near
-zero yet order one at $\gamma = 1$: above an explicit noise threshold, full
-coupling is never the minimizer either. A four-asset witness makes the
-conclusion unconditional --- $F(9/10) < F(0)$ and $F(9/10) < F(1)$ hold as
-exact rational inequalities, machine-verifiable because the recursion is
-rational arithmetic. Finally, under decreasing-convex population value and
-increasing-convex noise cost, the optimal coupling is the unique root of
-$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and sweeps the bridge monotonically:
-every interior $\gamma$ is optimal at exactly one noise level, full coupling
-only as noise vanishes, HRP only as it diverges.
+Schur-complementary allocation interpolates hierarchical risk parity
+($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
+$\gamma$ that sets how much of the estimated cross-block covariance the
+recursion uses. We prove that under covariance estimation error neither
+endpoint is optimal: for all sufficiently small noise the expected
+out-of-sample variance strictly improves away from hierarchical risk parity,
+and above an explicit noise threshold it strictly deteriorates toward full
+coupling, so the minimizer is interior --- a conclusion made unconditional by
+a four-asset example verified in exact rational arithmetic. Under natural
+shape conditions the optimal coupling is the unique root of
+$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and decreases monotonically in the noise
+level, sweeping the entire bridge: every interior coupling is optimal at
+exactly one noise level, minimum variance only as the noise vanishes,
+hierarchical risk parity only as it diverges.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -98,13 +93,18 @@ limit and full coupling the zero-noise limit.
 \section{The recursion}
 \label{sec:setup}
 
-Fix an asset order and a balanced bisection tree over $n$ assets. Given
-$M \succ 0$ and $\gamma \in [0,1]$, the Schur-complementary allocation
-$w(\gamma; M)$ is defined recursively \cite{cotton2024schur}: at a node with
-children $(L, R)$ and blocks
-$M = \left(\begin{smallmatrix} A & B \\ B^\top & D \end{smallmatrix}\right)$,
-each child block is augmented with the $\gamma$-scaled Schur complement of
-the other,
+Fix an asset order and a balanced bisection tree over $n$ assets; assume for
+notational simplicity that $n$ is a power of two, so sibling blocks have
+equal size (in the general case a step-up matrix enters the augmentation
+below; see \cite{cotton2024schur}). Given a covariance matrix
+$M \succ 0$ and $\gamma \in [0,1]$, the Schur-complementary
+allocation $w(\gamma; M)$ is defined recursively
+\cite{cotton2024schur}. At a node whose block of the (possibly already
+augmented) covariance is
+$\left(\begin{smallmatrix} A & B \\ B^\top & D \end{smallmatrix}\right)$,
+with $A$ the left child's block, $D$ the right child's, and $B$ the
+cross-block between them, each child block is augmented with the
+$\gamma$-scaled Schur complement of the other:
 \begin{equation}
   A_\gamma \;=\; \operatorname{sym}\!\Big[\big(I - \gamma B D^{-1}\big)^{-1}
   \big(A - \gamma\, B D^{-1} B^\top\big)\Big],
@@ -112,11 +112,25 @@ the other,
   D_\gamma \;=\; \big(A \leftrightarrow D,\ B \to B^\top\big),
   \label{eq:aug}
 \end{equation}
-the budget is split between children in inverse proportion to the naive
-portfolio variances $\nu(A_\gamma), \nu(D_\gamma)$ (inverse-diagonal
-weights), and the recursion continues inside each augmented block. At
-$\gamma = 0$ the augmentation is the identity and the recursion is HRP over
-the fixed order.
+where $\operatorname{sym}(X) = \tfrac12(X + X^\top)$ (the damped product is
+not exactly symmetric for $0 < \gamma < 1$). The capital allocated to the
+node is split between its children in inverse proportion to their
+\emph{naive portfolio variances}
+\begin{equation}
+  \nu(X) \;=\; \tilde w^\top X\, \tilde w,
+  \qquad
+  \tilde w_i \;=\; \frac{1/X_{ii}}{\sum_j 1/X_{jj}},
+  \label{eq:naive}
+\end{equation}
+i.e.\ the left child receives the fraction
+$\nu(D_\gamma) / \big(\nu(A_\gamma) + \nu(D_\gamma)\big)$, and the recursion
+continues inside each augmented block, down to singletons. (Nodes whose
+children are singletons perform no augmentation --- matching the reference
+implementations --- so a two-asset node splits by the inverse of its, already
+augmented, diagonal entries.) At $\gamma = 0$
+the augmentation is the identity, \eqref{eq:aug} returning $A$ and $D$
+unchanged, and the recursion is exactly HRP over the fixed order; as
+$\gamma \to 1$ it recovers minimum variance \cite{cotton2024schur}.
 
 Let $\Sigma \succ 0$ be the population covariance and
 $\widehat\Sigma_\tau = \Sigma + \tau N$ an estimate, with $N$ a bounded
@@ -344,8 +358,8 @@ setting is interior, decreasing in the noise, and characterized by
 $\tau^2 = -V_0'/G'$. The empirical counterpart --- a walk-forward bridge on
 Dow constituents with one-year training windows, minimum near
 $\gamma \approx 0.55$ and robust to Ledoit--Wolf shrinkage of the inputs ---
-is at \texttt{allocation.microprediction.org}, alongside the interactive
-demonstrations.
+is interactive at \texttt{schur.microprediction.org} (the ``Demo'' page), with the
+wider demonstration suite at \texttt{allocation.microprediction.org}.
 
 \begin{thebibliography}{9}
 
