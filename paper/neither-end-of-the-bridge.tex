@@ -82,8 +82,10 @@ is strictly suboptimal under all sufficiently small noise, of any support.
 (iii)~Because the estimated cross-block enters the recursion only with a
 $\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
 while it is order one at full coupling; above an explicit threshold the
-minimizer is interior --- and a four-asset witness, verified in exact
-rational arithmetic, makes the conclusion unconditional. (iv)~Under shape
+minimizer is interior --- and a witness in the minimal non-trivial
+configuration (four assets in two blocks, the smallest universe on which
+$\gamma$ acts at all), verified in exact rational arithmetic, makes the
+conclusion unconditional. (iv)~Under shape
 conditions verified in the witness family, the optimal coupling
 $\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
 monotonically in the noise, sweeping the entire bridge: an optimal-shrinkage
@@ -93,44 +95,108 @@ limit and full coupling the zero-noise limit.
 \section{The recursion}
 \label{sec:setup}
 
-Fix an asset order and a balanced bisection tree over $n$ assets; assume for
-notational simplicity that $n$ is a power of two, so sibling blocks have
-equal size (in the general case a step-up matrix enters the augmentation
-below; see \cite{cotton2024schur}). Given a covariance matrix
-$M \succ 0$ and $\gamma \in [0,1]$, the Schur-complementary
-allocation $w(\gamma; M)$ is defined recursively
-\cite{cotton2024schur}. At a node whose block of the (possibly already
-augmented) covariance is
+\emph{The family.} Following \cite{cotton2024schur}, fix an asset order and a
+balanced bisection tree; assume for notational simplicity that $n$ is a power
+of two, so sibling blocks have equal size (a step-up matrix enters in the
+general case \cite{cotton2024schur}). A hierarchical allocation assigns a node's
+capital to its children $(L, R)$ in the ratio $1/\nu(\cdot_L) : 1/\nu(\cdot_R)$
+for an inverse-fitness functional $\nu$, and recurses. Writing a node's block
+of the covariance as
 $\left(\begin{smallmatrix} A & B \\ B^\top & D \end{smallmatrix}\right)$,
-with $A$ the left child's block, $D$ the right child's, and $B$ the
-cross-block between them, each child block is augmented with the
-$\gamma$-scaled Schur complement of the other:
+hierarchical risk parity passes $A$ and $D$ to the children unchanged; the
+Schur-complementary family instead passes \emph{augmented} blocks built from
+the $\gamma$-damped Schur complement and its companion vector,
+\begin{equation}
+  A^c(\gamma) \;=\; A - \gamma\, B D^{-1} B^\top,
+  \qquad
+  b_A(\gamma) \;=\; \mathbf{1} - \gamma\, B D^{-1} \mathbf{1},
+  \label{eq:family}
+\end{equation}
+and symmetrically for $D^c(\gamma), b_D(\gamma)$. In the canonical
+presentation the intra-group matrix is $A^c(\gamma)$ with an elementwise
+division by $b_A b_A^\top$ and the inter-group fitness is evaluated on
+$\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$; at $\gamma = 0$ every
+member is HRP, and at $\gamma = 1$ the scheme replicates the minimum-variance
+portfolio exactly. For completeness we record the one-step form of that
+equivalence, following Appendix~A of \cite{cotton2024schur}.
+
+\begin{proposition}[$\gamma = 1$ replicates minimum variance]
+\label{prop:minvar}
+For $b \ne 0$ let $w(Q, b) = \argminop_{w : b^\top w = 1} w^\top Q w
+= Q^{-1}b / (b^\top Q^{-1} b)$ with attained variance
+$\nu(Q, b) = 1/(b^\top Q^{-1} b)$. Then
+\[
+  \Sigma^{-1}\mathbf{1}
+  \;=\;
+  \begin{pmatrix}
+    \nu\big(A^c, b_A\big)^{-1}\, w\big(A^c, b_A\big) \\[2pt]
+    \nu\big(D^c, b_D\big)^{-1}\, w\big(D^c, b_D\big)
+  \end{pmatrix},
+  \qquad A^c = A^c(1),\ b_A = b_A(1),\ \text{etc.},
+\]
+so the two-block scheme with these sub-portfolios and inter-group ratio
+$1/\nu(A^c, b_A) : 1/\nu(D^c, b_D)$ yields $w \propto \Sigma^{-1}\mathbf{1}$;
+recursive application to the sub-problems (each again of the form
+$Q^{-1}b$) extends this down the tree.
+\end{proposition}
+\begin{proof}
+The block inversion identity gives
+$\Sigma^{-1}\mathbf{1} = \big((A^c)^{-1} b_A;\; (D^c)^{-1} b_D\big)$ with
+$A^c = A - BD^{-1}B^\top$, $b_A = \mathbf{1} - BD^{-1}\mathbf{1}$. For any
+SPD $Q$, from the displayed solution of the constrained problem,
+$Q^{-1} b = w(Q,b)\,(b^\top Q^{-1} b) = w(Q,b)/\nu(Q,b)$. Apply this to each
+block.
+\end{proof}
+
+\noindent The implementations trade this exactness for simplicity: the
+collapsed matrix below satisfies $\widetilde A^{-1}\mathbf{1} =
+(A^c)^{-1}b_A$ at the vector level, but the naive fitness \eqref{eq:naive}
+and the symmetrization make $\gamma = 1$ \emph{approach} the minimum-variance
+portfolio rather than replicate it. None of the results below rely on
+exactness at $\gamma = 1$.
+
+\emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
+equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
+$\widetilde A$ with $\widetilde A^{-1}\mathbf{1} = A^c(\gamma)^{-1}
+b_A(\gamma)$. The reference implementations --- \texttt{skfolio}'s
+\texttt{SchurComplementary} and the \texttt{allocation}
+package\footnote{\texttt{github.com/skfolio/skfolio} and
+\texttt{github.com/microprediction/allocation}; the two use identical
+augmentation and fitness routines.} --- take exactly this route, and it is the
+recursion we analyze: each child block is replaced by
 \begin{equation}
   A_\gamma \;=\; \operatorname{sym}\!\Big[\big(I - \gamma B D^{-1}\big)^{-1}
-  \big(A - \gamma\, B D^{-1} B^\top\big)\Big],
+  A^c(\gamma)\Big],
   \qquad
   D_\gamma \;=\; \big(A \leftrightarrow D,\ B \to B^\top\big),
   \label{eq:aug}
 \end{equation}
-where $\operatorname{sym}(X) = \tfrac12(X + X^\top)$ (the damped product is
-not exactly symmetric for $0 < \gamma < 1$). The capital allocated to the
-node is split between its children in inverse proportion to their
-\emph{naive portfolio variances}
+where $\operatorname{sym}(X) = \tfrac12(X + X^\top)$; note
+$\big(I - \gamma BD^{-1}\big)\mathbf{1} = b_A(\gamma)$, so
+\eqref{eq:aug} is the collapse of \eqref{eq:family}, up to the
+symmetrization. The fitness is the \emph{naive portfolio variance}
 \begin{equation}
   \nu(X) \;=\; \tilde w^\top X\, \tilde w,
   \qquad
   \tilde w_i \;=\; \frac{1/X_{ii}}{\sum_j 1/X_{jj}},
   \label{eq:naive}
 \end{equation}
-i.e.\ the left child receives the fraction
-$\nu(D_\gamma) / \big(\nu(A_\gamma) + \nu(D_\gamma)\big)$, and the recursion
-continues inside each augmented block, down to singletons. (Nodes whose
-children are singletons perform no augmentation --- matching the reference
-implementations --- so a two-asset node splits by the inverse of its, already
-augmented, diagonal entries.) At $\gamma = 0$
-the augmentation is the identity, \eqref{eq:aug} returning $A$ and $D$
-unchanged, and the recursion is exactly HRP over the fixed order; as
-$\gamma \to 1$ it recovers minimum variance \cite{cotton2024schur}.
+so the left child receives the fraction
+$\nu(D_\gamma)/\big(\nu(A_\gamma) + \nu(D_\gamma)\big)$ of the node's capital,
+and the recursion continues inside each augmented block down to singletons
+(nodes whose children are singletons perform no augmentation, matching the
+implementations, so a two-asset node splits by the inverse of its --- already
+augmented --- diagonal entries). At $\gamma = 0$ the augmentation
+\eqref{eq:aug} is the identity and the recursion is exactly HRP over the
+fixed order. Implementations optionally cap $\gamma$ at an in-sample variance
+turning point (\texttt{keep\_monotonic}); we analyze the raw recursion, the
+cap being an in-sample device orthogonal to the out-of-sample question
+studied here.
+
+Two structural facts, used throughout, hold across the entire family and not
+just the variant \eqref{eq:aug}: by \eqref{eq:family} the cross-block $B$
+enters every member only through the products $\gamma B D^{-1}(\cdot)$, and at
+$\gamma = 0$ the augmentation is the identity with $b_A = \mathbf{1}$.
 
 Let $\Sigma \succ 0$ be the population covariance and
 $\widehat\Sigma_\tau = \Sigma + \tau N$ an estimate, with $N$ a bounded
@@ -141,10 +207,11 @@ the expected out-of-sample variance and its population limit,
   F(\gamma; \tau) \;=\; \E\big[\, w(\gamma; \widehat\Sigma_\tau)^\top \Sigma\,
   w(\gamma; \widehat\Sigma_\tau) \,\big],
   \qquad
-  V_0(\gamma) \;=\; F(\gamma; 0).
+  V_0(\gamma) \;=\; F(\gamma; 0),
   \label{eq:F}
 \end{equation}
-Every operation in the recursion is rational in $(\gamma, M)$, so $w$, $F$,
+where $w(\gamma; M)$ denotes the allocation the recursion produces from an
+input matrix $M$. Every operation is rational in $(\gamma, M)$, so $w$, $F$,
 $V_0$ are rational functions where denominators do not vanish --- in
 particular $C^\infty$ there, which is all the regularity used below.
 
@@ -254,7 +321,10 @@ rational arithmetic,
 \]
 so every minimizer of $F$ on $[0,1]$ is strictly interior. All augmented
 blocks remain positive definite on both noise branches for every
-$\gamma \in [0,1]$: no repair or projection is involved.
+$\gamma \in [0,1]$: no repair or projection is involved. This is the minimal
+non-trivial configuration: with singleton-children nodes performing no
+augmentation, $n \le 3$ admits no $\gamma$-dependence at all, so $n = 4$ in
+two blocks of two is the smallest universe on which the bridge exists.
 \end{proposition}
 \begin{proof}
 $F$ at rational arguments is an exact rational number, being a finite
