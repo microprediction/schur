@@ -42,15 +42,17 @@ are in the \texttt{allocation} and \texttt{precise} packages.}}
 \maketitle
 
 \begin{abstract}
-Schur-complementary allocation interpolates hierarchical risk parity
-($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
-$\gamma$ that sets how much of the estimated cross-block covariance the
-recursion uses. We ask where on the bridge to sit when the covariance is
-estimated with error, and answer in three layers. A structural theorem
+The canonical Schur-complementary construction interpolates hierarchical
+risk parity ($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a
+coupling $\gamma$ that sets how much of the estimated cross-block
+covariance the recursion uses. We study the implemented collapse variant,
+which shares the hierarchical endpoint and reaches minimum variance under
+additional structure. We ask where on the bridge to sit when the covariance
+is estimated with error, and answer in three layers. A structural theorem
 shows that top-level cross-block noise is invisible at the hierarchical end
-and prices coupling at order $\gamma\tau^2$, so small noise moves the
-optimum uniformly away from hierarchical risk parity whenever coupling has
-first-order population value. A local theorem at an exact minimum-variance endpoint
+and prices coupling at order $\gamma\tau^2$, so whenever coupling has
+first-order population value the optimum stays uniformly separated from
+hierarchical risk parity at all sufficiently small noise levels. A local theorem at an exact minimum-variance endpoint
 shows that positive marginal noise sensitivity pushes the optimum into the
 interior. An exchangeable four-asset family is then solved exactly: its
 unique optimizer is interior at every admissible noise level and decreases
@@ -517,10 +519,13 @@ generically, because
   \;=\; B D^{-1} B^\top + \tau^2\, \E\big[N_B D^{-1} N_B^\top\big],
 \]
 and that quadratic bias enters \eqref{eq:aug} multiplied by a single power
-of $\gamma$. Both exact examples in this paper happen to possess a further
-downstream cancellation (Remark~\ref{rem:cancel}), which is why numerical
-evidence from them alone can suggest, wrongly, that the quadratic bound is
-general.
+of $\gamma$. Both noise models on the solved family's covariance
+\eqref{eq:familycov} happen to possess a further downstream cancellation
+(Remark~\ref{rem:cancel}): the common cross-correlation noise of
+Section~\ref{sec:family} and the one-entry noise of
+Example~\ref{ex:interior}. Numerical evidence from them alone can therefore
+suggest, wrongly, that the quadratic bound is general.
+Example~\ref{ex:boundary} has no such cancellation.
 \end{remark}
 
 \begin{example}[HRP locally optimal at a finite noise level]
@@ -628,7 +633,10 @@ automatic for the implemented variant in general.
 
 \begin{lemma}[Flatness at an exact minimum-variance endpoint]
 \label{lem:mv}
-Under the above, $V_0$ is differentiable at $\gamma = 1$ with
+Under the above, assume also that $\gamma \mapsto w(\gamma;\Sigma)$ is
+twice differentiable in a neighborhood of $\gamma = 1$; the recursion is
+rational in $\gamma$, so this holds wherever its denominators are nonzero.
+Then
 \[
   V_0'(1) \;=\; 0,
   \qquad
@@ -662,16 +670,21 @@ $F(\cdot\,;\tau)$ with
   \;<\; 1 \quad (\tau > 0).
   \label{eq:mvshift}
 \end{equation}
-If moreover $\gamma = 1$ is the unique global minimizer of $V_0$ on
-$[0,\bar\gamma]$, then for all sufficiently small $\tau$ the curve gives
-the unique global minimizer of $F(\cdot\,;\tau)$. The sign condition is essential: if $G'(1) < 0$, full
+If moreover $F(\cdot\,;\tau) \to V_0$ uniformly on $[0,\bar\gamma]$ as
+$\tau \to 0$, as follows from \eqref{eq:gt2} under Assumptions~\ref{ass:reg}
+and~\ref{ass:noise}, and $\gamma = 1$ is the unique global minimizer of
+$V_0$ on $[0,\bar\gamma]$, then for all sufficiently small $\tau$ the curve
+gives the unique global minimizer of $F(\cdot\,;\tau)$. The sign condition is essential: if $G'(1) < 0$, full
 coupling remains locally optimal for small noise.
 \end{theorem}
 \begin{proof}
 Let $g(\gamma, s) = \partial_\gamma F(\gamma; \sqrt{s})$ for $s = \tau^2 \ge
-0$; by \eqref{eq:expansion} in $C^2$, $g(\gamma, s) = V_0'(\gamma) +
-s\,G'(\gamma) + O(s^2)$ with the error uniform in $\gamma$ near $1$, and $g$
-is $C^1$ in $(\gamma, s)$ there. By Lemma~\ref{lem:mv}, $g(1, 0) =
+0$. This is $C^1$ through $s = 0$: $F$ is smooth and even in $\tau$
+(Assumption~\ref{ass:noise}), and a smooth even function of $\tau$ is a
+smooth function of $\tau^2$ (Whitney), so the regularity does not rest on
+the $O(s^2)$ notation alone. By \eqref{eq:expansion} in $C^2$,
+$g(\gamma, s) = V_0'(\gamma) + s\,G'(\gamma) + O(s^2)$ with the error
+uniform in $\gamma$ near $1$. By Lemma~\ref{lem:mv}, $g(1, 0) =
 V_0'(1) = 0$ and $\partial_\gamma g(1,0) = V_0''(1) > 0$. The implicit
 function theorem gives a $C^1$ curve $\gamma^*(s)$ with
 $g(\gamma^*(s), s) = 0$, $\gamma^*(0) = 1$, and
@@ -871,7 +884,9 @@ particular
   \label{eq:closedforms}
 \end{equation}
 where $G$ is the coefficient of $e^2$ in the small-noise expansion of
-$F_{\mathrm{ext}}(\gamma; e)$; for $e < a - c$ there is no singular point
+$F_{\mathrm{ext}}(\gamma; e)$; in the $\tau$ parametrization of
+\eqref{eq:expansion}, with $e = 2\tau$, the coefficient of $\tau^2$ is
+$4G$. For $e < a - c$ there is no singular point
 and $F_{\mathrm{ext}}$ is the raw objective outright.
 \end{proposition}
 \begin{proof}
@@ -1069,16 +1084,25 @@ on $(0,1)$, and
         {25\,\gamma\,(64\gamma^2 + 608\gamma + 25)}
 \]
 decreases strictly from $+\infty$ (at $\gamma \downarrow 0$) to $0$ (at
-$\gamma \uparrow 1$). In the language of Theorem~\ref{thm:frontier} below,
-$t_0 = \infty$ and $t_1 = 0$: for this family, and only because of these
-endpoint limits, the surrogate optimizer sweeps the entire open bridge and
-neither endpoint is surrogate-optimal at any positive finite noise level.
+$\gamma \uparrow 1$). Theorem~\ref{thm:frontier} below is applied here with
+$e$ as the noise coordinate, $s = e^2$; in the $\tau$ parametrization the
+coefficient is $4G$ and $t$ is divided by four, which changes neither
+endpoint limit. In its language, $t_0 = \infty$ and $t_1 = 0$: for this
+family, and only because of these endpoint limits, the surrogate optimizer
+sweeps the entire open bridge and neither endpoint is surrogate-optimal at
+any positive finite noise level.
 The surrogate optimizer is not the exact optimizer at finite noise. At
 $e = c$ the exact minimizer is $\tfrac12$ (Theorem~\ref{thm:family}), while
 $t(\tfrac12) = \tfrac{1323}{2875} \ne e^2 = \tfrac{9}{25}$ and the
-surrogate optimizer sits near $0.537$. The two agree to order $e^2$ as
-$e \to 0$ (Proposition~\ref{prop:transfer}); what they share exactly is the
-sweep of the whole open bridge.
+surrogate optimizer sits near $0.537$. The two have the same small-noise
+expansion through order $e^2$: each is $1 - \tfrac{1025}{153}\,e^2 +
+O(e^4)$, by \eqref{eq:smalle} for the exact optimizer, and for the
+surrogate because $t(\gamma) = \tfrac{V_0''(1)}{G'(1)}(1 - \gamma) +
+O\big((1-\gamma)^2\big)$ with $G'(1)/V_0''(1) = \tfrac{1025}{153}$,
+verified exactly by the certificate script. Their proven ranges differ:
+the surrogate sweeps the entire open bridge $(0,1)$, while the exact
+optimizer is proved to sweep $[\tfrac12, 1]$ over the admissible range
+$0 \le e \le c$, and nothing is claimed about it beyond $e = c$.
 \end{corollary}
 
 \begin{remark}
@@ -1233,11 +1257,13 @@ endpoint. The same positivity gives the positive definiteness of the
 augmented blocks for every $\gamma$. Robustness: the certificate proves
 more than positivity at three points. Each denominator polynomial is
 strictly positive on all of $[0,1]$, so its minimum over $[0,1]$ is
-positive. The coefficients of these polynomials are themselves polynomial
-in the covariance entries and the noise amplitude, and the minimum of a
-polynomial over a compact interval is a continuous function of its
-coefficients, so every denominator stays uniformly positive on an open
-neighborhood of the stated parameters. On that neighborhood $F$ remains
+positive. The coefficients of these polynomials are rational functions of the
+covariance entries and the noise amplitude, with child-block determinants
+in the denominator, since \eqref{eq:aug} contains the child-block inverses.
+Those determinants are nonzero at the stated matrices, so the coefficients
+vary continuously near them. The minimum of a polynomial over a compact
+interval is a continuous function of its coefficients, so every denominator
+stays uniformly positive on an open neighborhood of the stated parameters. On that neighborhood $F$ remains
 continuous on all of $[0,1]$ and attains its minimum, the three values
 $F(0)$, $F(\tfrac{9}{10})$, $F(1)$ vary continuously, and both strict
 inequalities persist: every minimizer stays interior.
@@ -1254,7 +1280,14 @@ the noise: exact jet evaluation gives
   \qquad\text{exactly, at } \tau \in \{\tfrac{1}{10}, \tfrac{3}{20},
   \tfrac15\},
 \]
-in both models. In the notation of \eqref{eq:expansion}, $G'(0) = 0$ for
+in both models. Finitely many evaluations suffice because the quantity is
+affine in $\tau^2$: at $\gamma = 0$ the first $\gamma$-variation of each
+augmented block is quadratic in $\widehat B = B \pm \tau E$, by
+\eqref{eq:augexp}, the first variation of the weights is linear in the
+block variations, and symmetric averaging removes the term odd in $\tau$.
+Equality with $V_0'(0)$ at $\tau = 0$ and at any one listed $\tau$
+therefore forces the $\tau^2$ coefficient to vanish. In the notation of
+\eqref{eq:expansion}, $G'(0) = 0$ for
 these families; for the solved family this is also visible in
 \eqref{eq:closedforms}, where $G(\gamma) \propto \gamma^2(16\gamma+1)$
 vanishes quadratically. That is a cancellation particular to these
@@ -1290,9 +1323,10 @@ must repair or refuse.
 \section{Closing}
 
 Under cross-block estimation error the Schur coupling is a bias--variance
-dial, and the three layers say when to turn it. Small noise moves the
-optimum uniformly away from hierarchical risk parity whenever coupling has
-population value (Theorem~\ref{thm:nohrp}), at a cost of order
+dial, and the three layers say when to turn it. Whenever coupling has
+first-order population value, the optimum stays uniformly separated from
+hierarchical risk parity at all sufficiently small noise levels
+(Theorem~\ref{thm:nohrp}), and the noise prices coupling at order
 $\gamma\tau^2$ (Theorem~\ref{thm:noisecost}). At an exact minimum-variance
 endpoint, positive marginal noise sensitivity pushes the optimum inside by
 order $\tau^2$ (Theorem~\ref{thm:mvlocal}). And in the solved family the

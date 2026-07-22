@@ -228,6 +228,8 @@ def main():
     print()
     family_checks()
     print()
+    surrogate_expansion_check()
+    print()
     singularity_certificates()
 
     # optional: cross-check against the allocation package and certify SPD
@@ -447,6 +449,44 @@ def family_checks():
     assert okE
     print("family: exact objective (20) and closed form V0 (21) match the recursion")
     print("        (grids avoid the singular point gamma = a/(c+e); see below)")
+
+
+def surrogate_expansion_check():
+    """Corollary 1: the surrogate optimizer matches the exact optimizer's
+    small-noise expansion through order e^2. With V0, G the closed forms (21),
+    t = -V0'/G' has slope V0''(1)/G'(1) at gamma = 1, so the surrogate solves
+    t(gamma) = e^2 with 1 - gamma = (G'(1)/V0''(1)) e^2 + O(e^4); the exact
+    coefficient is (S+4c)/(c^2 K) (Theorem 4(iv)). Both equal 1025/153.
+    Also pins t(1/2) = 1323/2875, the corollary's mismatch point at e = c."""
+    den = [Fr(-25), Fr(8)]                                       # 8g - 25
+    V0n = [x * Fr(9, 5) for x in (Fr(275), Fr(-200), Fr(44))]
+    V0d = pmul(den, den)
+    Gn = pmul([Fr(0), Fr(0), Fr(1500)], [Fr(1), Fr(16)])
+    Gd = pmul(pmul(den, den), pmul(den, den))
+
+    def pder(p):
+        return [p[i] * i for i in range(1, len(p))]
+
+    def rat_der(n, dd):
+        return psub(pmul(pder(n), dd), pmul(n, pder(dd))), pmul(dd, dd)
+
+    V0p_n, V0p_d = rat_der(V0n, V0d)
+    V0pp_n, V0pp_d = rat_der(V0p_n, V0p_d)
+    Gp_n, Gp_d = rat_der(Gn, Gd)
+    V0pp1 = peval(V0pp_n, Fr(1)) / peval(V0pp_d, Fr(1))
+    Gp1 = peval(Gp_n, Fr(1)) / peval(Gp_d, Fr(1))
+    assert V0pp1 > 0 and Gp1 > 0
+    assert Gp1 / V0pp1 == Fr(1025, 153)
+    a, d, c = Fr(3, 4), Fr(3), Fr(3, 5)
+    Sv = a + d
+    assert (Sv + 4 * c) / (c * c * (Sv - 2 * c)) == Fr(1025, 153)
+    half = Fr(1, 2)
+    t_half = (-(peval(V0p_n, half) / peval(V0p_d, half))
+              / (peval(Gp_n, half) / peval(Gp_d, half)))
+    assert t_half == Fr(1323, 2875)
+    print("surrogate expansion: G'(1)/V0''(1) = (S+4c)/(c^2 K) = 1025/153 exactly,")
+    print("          so surrogate and exact optimizers share the e^2 coefficient")
+    print("          (Corollary 1); t(1/2) = 1323/2875")
 
 
 def singularity_certificates():
