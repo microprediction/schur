@@ -40,16 +40,16 @@ Schur-complementary allocation interpolates hierarchical risk parity
 ($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
 $\gamma$ that sets how much of the estimated cross-block covariance the
 recursion uses. We prove that under covariance estimation error neither
-endpoint is optimal: for all sufficiently small noise the expected
-out-of-sample variance strictly improves away from hierarchical risk parity,
-and above an explicit noise threshold it strictly deteriorates toward full
-coupling, so the minimizer is interior. A four-asset example verified in
-exact rational arithmetic makes this unconditional. Under natural shape
-conditions the optimal coupling is the unique root of
-$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and decreases monotonically in the noise
-level: every interior coupling is optimal at exactly one noise level,
-minimum variance only as the noise vanishes, hierarchical risk parity only
-as it diverges.
+endpoint is optimal. For all sufficiently small noise the expected
+out-of-sample variance strictly improves away from hierarchical risk parity.
+Above an explicit noise threshold it strictly deteriorates toward full
+coupling. The minimizer is therefore interior, and a four-asset example
+verified in exact rational arithmetic makes this unconditional. Under
+natural shape conditions the optimal coupling is the unique root of
+$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and it decreases monotonically in the
+noise. Every interior coupling is optimal at exactly one noise level.
+Minimum variance is optimal only as the noise vanishes, and hierarchical
+risk parity only as it diverges.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -60,13 +60,13 @@ Schur complement; estimation error; shrinkage; bias--variance trade-off.\\
 \label{sec:intro}
 
 Hierarchical risk parity \cite{lopezdeprado2016} allocates by recursive
-bisection without inverting a covariance matrix; minimum variance inverts it
-in full. That the two are ends of a single construction (augmenting each
-block with a $\gamma$-scaled Schur complement of its sibling yields a
-recursion that is exactly HRP at $\gamma = 0$ and recovers minimum variance
-as $\gamma \to 1$) is a unification that first appeared in a blog
+bisection without inverting a covariance matrix. Minimum variance inverts it
+in full. The two are ends of a single construction: augment each block with
+a $\gamma$-scaled Schur complement of its sibling and the recursion is
+exactly HRP at $\gamma = 0$, while recovering minimum variance as
+$\gamma \to 1$. This unification first appeared in a blog
 \cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
-a fuller development in \cite{cotton2024schur}; on the hierarchical graph
+a fuller development in \cite{cotton2024schur}. On the hierarchical graph
 structures of \cite{mograby2025} the $\gamma = 1$ recovery is exact. The
 endpoints have since been compared analytically: \cite{antonov2025} derive
 the weight noise of HRP and of Markowitz under covariance estimation error
@@ -82,9 +82,9 @@ is strictly suboptimal under all sufficiently small noise, of any support.
 (iii)~Because the estimated cross-block enters the recursion only with a
 $\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
 while it is order one at full coupling, so above an explicit threshold the
-minimizer is interior. An example in the minimal non-trivial configuration
-(four assets in two blocks, the smallest universe on which $\gamma$ acts at
-all) is verified in exact rational arithmetic. (iv)~Under shape
+minimizer is interior. An example is verified in exact rational arithmetic.
+It is the minimal non-trivial configuration: four assets in two blocks, the
+smallest universe on which $\gamma$ acts at all. (iv)~Under shape
 conditions verified in the example, the optimal coupling
 $\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
 monotonically in the noise, an optimal-shrinkage formula in the spirit of
@@ -150,21 +150,22 @@ block.
 collapsed matrix below satisfies $\widetilde A^{-1}\mathbf{1} =
 (A^c)^{-1}b_A$ at the vector level, but the naive fitness \eqref{eq:naive}
 and the symmetrization make $\gamma = 1$ \emph{approach} the minimum-variance
-portfolio rather than replicate it. The inter-group fitness must, however,
-be a quadratic form evaluated on the \emph{augmented} block, as above: a
-diagonal-only $\nu$, used in some HRP variants, never sees the augmentation,
-and then no value of $\gamma$ connects the scheme to minimum variance. None
-of the results below rely on exactness at $\gamma = 1$.
+portfolio rather than replicate it. One thing cannot be simplified away.
+The inter-group fitness must be a quadratic form evaluated on the
+\emph{augmented} block. A diagonal-only $\nu$, as used in some HRP variants,
+never sees the augmentation, and then no choice of $\gamma$ connects the
+scheme to minimum variance. None of the results below rely on exactness at
+$\gamma = 1$.
 
 \emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
 equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
 $\widetilde A$ with $\widetilde A^{-1}\mathbf{1} = A^c(\gamma)^{-1}
-b_A(\gamma)$. The reference implementations, \texttt{skfolio}'s
-\texttt{SchurComplementary} and the \texttt{allocation}
-package,\footnote{\texttt{github.com/skfolio/skfolio} and
-\texttt{github.com/microprediction/allocation}; the two use identical
-augmentation and fitness routines.} take this route, and it is the
-recursion we analyze: each child block is replaced by
+b_A(\gamma)$. The reference implementations take exactly this
+route.\footnote{\texttt{skfolio}'s \texttt{SchurComplementary} and the
+\texttt{allocation} package use identical augmentation and fitness routines;
+see \texttt{github.com/skfolio/skfolio} and
+\texttt{github.com/microprediction/allocation}.} It is the recursion we
+analyze. Each child block is replaced by
 \begin{equation}
   A_\gamma \;=\; \operatorname{sym}\!\Big[\big(I - \gamma B D^{-1}\big)^{-1}
   A^c(\gamma)\Big],
@@ -391,11 +392,11 @@ $\gamma$ is a shrinkage intensity toward the noise-immune end of the bridge,
 and Theorem~\ref{thm:frontier} is an optimal-shrinkage formula in the spirit
 of \cite{ledoitwolf2004}: the first-order condition balances the marginal
 population value of coupling against its marginal noise cost. The endpoints
-recover the prior results: as $\gamma \to 1$ the augmentation approaches the
-exact Schur complement and $G'$ inherits the inversion sensitivity of minimum
-variance (the instability quantified at the endpoint by
-\cite{antonov2025}), so full coupling is optimal only as the noise
-vanishes, exactness \cite{mograby2025} notwithstanding.
+recover the prior results. As $\gamma \to 1$ the augmentation approaches the
+exact Schur complement, and $G'$ inherits the inversion sensitivity of
+minimum variance. That is the instability quantified at the endpoint by
+\cite{antonov2025}. So full coupling is optimal only as the noise vanishes,
+exactness \cite{mograby2025} notwithstanding.
 \end{remark}
 
 \begin{remark}[Verification in the four-asset example]
@@ -424,12 +425,15 @@ Theorem~\ref{thm:frontier} requires.
 \section{Closing}
 
 Under covariance estimation error the Schur coupling is a bias--variance
-dial whose optimal setting is interior, decreasing in the noise, and
-characterized by $\tau^2 = -V_0'/G'$. Exact recovery of minimum variance at
-full coupling does not change this, and neither does the noise-robustness of
-HRP. A walk-forward bridge on Dow constituents, whose minimum near
-$\gamma \approx 0.55$ survives Ledoit--Wolf shrinkage of the inputs, is
-interactive at \texttt{schur.microprediction.org}.
+dial. Its optimal setting is interior, it decreases with the noise, and it
+solves $\tau^2 = -V_0'/G'$. Exact recovery of minimum variance at full
+coupling does not change this, and neither does the noise-robustness of HRP.
+A walk-forward bridge on Dow constituents is interactive at
+\texttt{schur.microprediction.org}; its minimum sits near
+$\gamma \approx 0.55$ and survives Ledoit--Wolf shrinkage of the inputs.
+In the vocabulary of \cite{cotton2024schur}: neither school dominates the
+other, and the border between their territories is drawn at
+$\tau^2 = -V_0'/G'$.
 
 \begin{thebibliography}{9}
 
