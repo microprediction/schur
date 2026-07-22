@@ -1,7 +1,10 @@
-% Neither End of the Bridge: terse theory paper for the Schur bridge.
-% Self-contained. Build: tectonic neither-end-of-the-bridge.tex
-% Certificate script: paper/neither_end_certificate.py (exact rational
-% arithmetic; stdlib only).
+% Betwixt Minimum Variance and Hierarchical Risk Parity.
+% Center of gravity: (1) general O(gamma tau^2) structure at the HRP end,
+% (2) local theorem at the minimum-variance end, (3) an exactly solved
+% exchangeable four-asset family with a unique interior optimizer decreasing
+% monotonically in the noise, (4) clipped surrogate frontier, (5) exact
+% one-entry example. Build: tectonic neither-end-of-the-bridge.tex
+% Certificates: paper/neither_end_certificate.py (exact rational arithmetic).
 \documentclass[11pt]{article}
 
 \usepackage[utf8]{inputenc}
@@ -16,6 +19,9 @@
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{example}{Example}
+\newtheorem{assumption}{Assumption}
 \theoremstyle{remark}
 \newtheorem{remark}{Remark}
 
@@ -26,10 +32,10 @@
 An Analytical Result for the Schur Bridge}
 \author{Peter Cotton\thanks{Microprediction.
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
-certificate for Proposition~\ref{prop:example} is
-\texttt{paper/neither\_end\_certificate.py} in
-\texttt{github.com/microprediction/schur}; implementations of the recursion are in
-the \texttt{allocation} and \texttt{precise} packages.}}
+certificates for the exact claims are in
+\texttt{paper/neither\_end\_certificate.py} at
+\texttt{github.com/microprediction/schur}; implementations of the recursion
+are in the \texttt{allocation} and \texttt{precise} packages.}}
 \date{}
 
 \begin{document}
@@ -39,17 +45,29 @@ the \texttt{allocation} and \texttt{precise} packages.}}
 Schur-complementary allocation interpolates hierarchical risk parity
 ($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
 $\gamma$ that sets how much of the estimated cross-block covariance the
-recursion uses. We prove that under covariance estimation error neither
-endpoint is optimal. For all sufficiently small noise the expected
-out-of-sample variance strictly improves away from hierarchical risk parity.
-Above an explicit noise threshold it strictly deteriorates toward full
-coupling. The minimizer is therefore interior, and a four-asset example
-verified in exact rational arithmetic makes this unconditional. Under
-natural shape conditions the optimal coupling is the unique root of
-$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and it decreases monotonically in the
-noise. Every interior coupling is optimal at exactly one noise level.
-Minimum variance is optimal only as the noise vanishes, and hierarchical
-risk parity only as it diverges.
+recursion uses. We study the expected out-of-sample variance
+$F(\gamma; \tau)$ when the estimate carries symmetric noise of size $\tau$ in
+the top-level cross-block. Three layers of results. First, a structural
+theorem: the $\gamma = 0$ recursion never reads that block, so
+$F - V_0 = \gamma\tau^2 H$ for a bounded $H$, and whenever coupling has
+first-order population value the minimizer is uniformly separated from
+hierarchical risk parity for all sufficiently small noise. The
+$\gamma\tau^2$ order is attained: in an exact example the boundary
+derivative is $-\tfrac{1}{700} + \tfrac{8}{189}\tau^2$, so hierarchical risk
+parity becomes a one-sided local minimum once $\tau^2 > \tfrac{27}{800}$.
+Second, at an exact minimum-variance endpoint, $V_0'(1) = 0$ automatically,
+and if $V_0''(1) > 0$ and the marginal noise sensitivity $G'(1)$ is
+positive, the optimizer moves into the interior by
+$1 - \gamma^*(\tau) \sim \tau^2\, G'(1)/V_0''(1)$. Third, an exchangeable
+four-asset family with common cross-block noise is solved exactly: the
+expected out-of-sample variance is strictly convex in $\gamma$, its unique
+minimizer is interior for every admissible noise amplitude, and it decreases
+monotonically from $1$ to $\tfrac12$ as the noise grows. A further exact
+example with noise in a single covariance entry shows interior optimality is
+not an artifact of common-noise symmetry: $F(\tfrac{9}{10}) < F(0)$ and
+$F(\tfrac{9}{10}) < F(1)$ hold in exact rational arithmetic. A clipped
+monotone frontier for the second-order surrogate organizes the general case;
+either endpoint can be optimal on a nontrivial interval of noise levels.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -68,29 +86,44 @@ $\gamma \to 1$. This unification first appeared in a blog
 \cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
 a fuller development in \cite{cotton2024schur}. It quickly found its way
 into practice: \texttt{skfolio}, a popular Python portfolio library, ships
-it as \texttt{SchurComplementary}. On the hierarchical graph
-structures of \cite{mograby2025} the $\gamma = 1$ recovery is exact. The
-endpoints have since been compared analytically: \cite{antonov2025} derive
-the weight noise of HRP and of Markowitz under covariance estimation error
-and prove HRP is the more robust.
+it as \texttt{SchurComplementary}. On the hierarchical graph structures of
+\cite{mograby2025} the $\gamma = 1$ recovery is exact. The endpoints have
+since been compared analytically: \cite{antonov2025} derive the weight noise
+of HRP and of Markowitz under covariance estimation error and prove HRP is
+the more robust.
 
-This paper proves the statistical claim implicit in the bridge itself: under
-estimation noise the optimal coupling is generically \emph{interior}, and its
-location is characterized by a bias--variance first-order condition. The
-contributions are four short results. (i)~A structural lemma: the
-$\gamma = 0$ recursion never reads the top-level cross-block, so cross-block
-noise cannot move it. (ii)~If coupling has first-order population value, HRP
-is strictly suboptimal under all sufficiently small noise, of any support.
-(iii)~Because the estimated cross-block enters the recursion only with a
-$\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
-while it is order one at full coupling, so above an explicit threshold the
-minimizer is interior. An example is verified in exact rational arithmetic.
-It is the minimal non-trivial configuration: four assets in two blocks, the
-smallest universe on which $\gamma$ acts at all. (iv)~Under shape
-conditions verified in the example, the optimal coupling
-$\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
-monotonically in the noise, an optimal-shrinkage formula in the spirit of
-\cite{ledoitwolf2004}.
+This paper asks where on the bridge one should sit when the covariance is
+estimated with error, and answers in three layers. (i)~\emph{The HRP end,
+in general.} Top-level cross-block noise is invisible at $\gamma = 0$, and
+its expected effect factors exactly as $F - V_0 = \gamma \tau^2 H$ with $H$
+bounded (Theorem~\ref{thm:noisecost}). Whenever coupling has first-order
+population value, the minimizer is uniformly separated from HRP for all
+sufficiently small noise (Theorem~\ref{thm:nohrp}). The order
+$\gamma\tau^2$ cannot be improved to $\gamma^2\tau^2$: an exact example has
+boundary derivative $-\tfrac{1}{700} + \tfrac{8}{189}\tau^2$, so HRP becomes
+a one-sided local minimum at the finite noise level
+$\tau^2 = \tfrac{27}{800}$ (Example~\ref{ex:boundary}).
+(ii)~\emph{The minimum-variance end, locally.} If the bridge reaches
+minimum variance exactly at $\gamma = 1$, then $V_0'(1) = 0$ automatically
+and $V_0''(1) \ge 0$ (Lemma~\ref{lem:mv}); if $V_0''(1) > 0$ and the
+marginal noise sensitivity $G'(1)$ is positive, every sufficiently small
+noise level pushes the optimizer into the interior, by
+$1 - \gamma^*(\tau) \sim \tau^2 G'(1)/V_0''(1)$
+(Theorem~\ref{thm:mvlocal}). The sign condition is essential.
+(iii)~\emph{An exactly solved family.} For an exchangeable four-asset
+family with common cross-block noise, the expected out-of-sample variance is
+computed in closed form; it is strictly convex on $[0,1]$, its unique
+minimizer $\gamma^*(e)$ is interior for every admissible noise amplitude
+$e \in (0, c]$, and it decreases monotonically from $\gamma^*(0) = 1$ to
+$\gamma^*(c) = \tfrac12$ (Theorem~\ref{thm:family}). This is a statement
+about the exact objective, not a surrogate. A companion exact example with
+noise in a single covariance entry (Example~\ref{ex:interior}) shows that
+interior optimality survives without the common-noise symmetry. A clipped
+monotone frontier for the second-order surrogate
+(Theorem~\ref{thm:frontier}) organizes the general case. We are explicit
+about what is not claimed: covariance error does not always force an
+interior optimum, the noise cost is not $O(\gamma^2\tau^2)$ in general, and
+either endpoint can be optimal on a nontrivial interval of noise levels.
 
 \section{The recursion}
 \label{sec:setup}
@@ -103,7 +136,7 @@ capital to its children $(L, R)$ in the ratio $1/\nu(\cdot_L) : 1/\nu(\cdot_R)$
 for an inverse-fitness functional $\nu$, and recurses. Writing a node's block
 of the covariance as
 $\left(\begin{smallmatrix} A & B \\ B^\top & D \end{smallmatrix}\right)$,
-hierarchical risk parity passes $A$ and $D$ to the children unchanged; the
+hierarchical risk parity passes $A$ and $D$ to the children unchanged. The
 Schur-complementary family instead passes \emph{augmented} blocks built from
 the $\gamma$-damped Schur complement and its companion vector,
 \begin{equation}
@@ -115,49 +148,62 @@ the $\gamma$-damped Schur complement and its companion vector,
 and symmetrically for $D^c(\gamma), b_D(\gamma)$. In the canonical
 presentation the intra-group matrix is $A^c(\gamma)$ with an elementwise
 division by $b_A b_A^\top$ and the inter-group fitness is evaluated on
-$\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$; at $\gamma = 0$ every
-member is HRP, and at $\gamma = 1$ the scheme replicates the minimum-variance
-portfolio exactly. For completeness we record the one-step form of that
-equivalence, following Appendix~A of \cite{cotton2024schur}.
+$\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$. At $\gamma = 0$ every
+member is HRP. At $\gamma = 1$ the scheme replicates the minimum-variance
+portfolio; the one-step form of that equivalence is
+Proposition~\ref{prop:minvar}, following Appendix~A of
+\cite{cotton2024schur}.
 
 \begin{proposition}[$\gamma = 1$ replicates minimum variance]
 \label{prop:minvar}
-For $b \ne 0$ let $w(Q, b) = \argminop_{w : b^\top w = 1} w^\top Q w
-= Q^{-1}b / (b^\top Q^{-1} b)$ with attained variance
-$\nu(Q, b) = 1/(b^\top Q^{-1} b)$. Then
-\[
+Let $\Sigma \succ 0$ have blocks $A, B, D$ as above and write
+$A^c = A - BD^{-1}B^\top$, $b_A = \mathbf{1} - BD^{-1}\mathbf{1}$, and
+symmetrically $D^c, b_D$. Then
+\begin{equation}
   \Sigma^{-1}\mathbf{1}
   \;=\;
-  \begin{pmatrix}
-    \nu\big(A^c, b_A\big)^{-1}\, w\big(A^c, b_A\big) \\[2pt]
-    \nu\big(D^c, b_D\big)^{-1}\, w\big(D^c, b_D\big)
-  \end{pmatrix},
-  \qquad A^c = A^c(1),\ b_A = b_A(1),\ \text{etc.},
-\]
-so the two-block scheme with these sub-portfolios and inter-group ratio
-$1/\nu(A^c, b_A) : 1/\nu(D^c, b_D)$ yields $w \propto \Sigma^{-1}\mathbf{1}$;
-recursive application to the sub-problems (each again of the form
-$Q^{-1}b$) extends this down the tree.
+  \begin{pmatrix} (A^c)^{-1} b_A \\ (D^c)^{-1} b_D \end{pmatrix}.
+  \label{eq:blockinv}
+\end{equation}
+For any SPD $Q$ and $b \ne 0$, the constrained problem
+$w(Q,b) = \argminop_{w :\, b^\top w = 1} w^\top Q w$ has solution and
+attained variance
+\begin{equation}
+  w(Q, b) \;=\; \frac{Q^{-1}b}{b^\top Q^{-1} b},
+  \qquad
+  \nu(Q, b) \;=\; w(Q,b)^\top Q\, w(Q,b) \;=\; \frac{1}{b^\top Q^{-1} b},
+  \label{eq:constrained}
+\end{equation}
+so that $Q^{-1}b = w(Q,b)/\nu(Q,b)$. Consequently the two-block scheme that
+allocates between blocks in the ratio $1/\nu(A^c,b_A) : 1/\nu(D^c,b_D)$ and
+within blocks by $w(A^c,b_A)$, $w(D^c,b_D)$ reproduces
+$w \propto \Sigma^{-1}\mathbf{1}$, and recursive application to the
+sub-problems (each again of the form $Q^{-1}b$) extends this down the tree.
+If a block has $b_A = 0$ then by \eqref{eq:blockinv} that block of
+$\Sigma^{-1}\mathbf{1}$ is exactly zero and the block receives nothing; the
+normalized $w(Q,b)$ is simply not formed. (For instance
+$\Sigma = \left(\begin{smallmatrix}2&1\\1&1\end{smallmatrix}\right)$ has
+$b_A = 0$ and $\Sigma^{-1}\mathbf{1} = (0, 1)^\top$.)
 \end{proposition}
 \begin{proof}
-The block inversion identity gives
-$\Sigma^{-1}\mathbf{1} = \big((A^c)^{-1} b_A;\; (D^c)^{-1} b_D\big)$ with
-$A^c = A - BD^{-1}B^\top$, $b_A = \mathbf{1} - BD^{-1}\mathbf{1}$. For any
-SPD $Q$, from the displayed solution of the constrained problem,
-$Q^{-1} b = w(Q,b)\,(b^\top Q^{-1} b) = w(Q,b)/\nu(Q,b)$. Apply this to each
-block.
+For \eqref{eq:blockinv}, multiply the block inversion identity
+\[
+  \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix}^{-1}
+  =
+  \begin{pmatrix} (A^c)^{-1} & 0 \\ 0 & (D^c)^{-1} \end{pmatrix}
+  \begin{pmatrix} I & -BD^{-1} \\ -B^\top A^{-1} & I \end{pmatrix}
+\]
+on the right by $\mathbf{1}$; the top block is
+$(A^c)^{-1}(\mathbf{1} - BD^{-1}\mathbf{1}) = (A^c)^{-1}b_A$ and the bottom
+block is analogous. For \eqref{eq:constrained}, the Lagrangian condition is
+$Qw = \lambda b$, so $w = \lambda Q^{-1}b$; the constraint $b^\top w = 1$
+forces $\lambda = 1/(b^\top Q^{-1}b)$, giving the stated $w(Q,b)$, and
+substituting back gives $\nu(Q,b) = \lambda$. Rearranging,
+$Q^{-1}b = w(Q,b)\,(b^\top Q^{-1}b) = w(Q,b)/\nu(Q,b)$. Apply this to each
+block of \eqref{eq:blockinv}: the unnormalized block solutions are the
+normalized sub-portfolios scaled by exactly the inverse fitness $1/\nu$,
+which is the stated two-block scheme.
 \end{proof}
-
-\noindent The implementations trade this exactness for simplicity: the
-collapsed matrix below satisfies $\widetilde A^{-1}\mathbf{1} =
-(A^c)^{-1}b_A$ at the vector level, but the naive fitness \eqref{eq:naive}
-and the symmetrization make $\gamma = 1$ \emph{approach} the minimum-variance
-portfolio rather than replicate it. One thing cannot be simplified away.
-The inter-group fitness must be a quadratic form evaluated on the
-\emph{augmented} block. A diagonal-only $\nu$, as used in some HRP variants,
-never sees the augmentation, and then no choice of $\gamma$ connects the
-scheme to minimum variance. None of the results below rely on exactness at
-$\gamma = 1$.
 
 \emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
 equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
@@ -176,10 +222,9 @@ analyze. Each child block is replaced by
   \label{eq:aug}
 \end{equation}
 where $\operatorname{sym}(X) = \tfrac12(X + X^\top)$; note
-$\big(I - \gamma BD^{-1}\big)\mathbf{1} = b_A(\gamma)$, so
-\eqref{eq:aug} is the collapse of \eqref{eq:family}, up to the
-symmetrization. The fitness is the \emph{naive portfolio
-variance}
+$\big(I - \gamma BD^{-1}\big)\mathbf{1} = b_A(\gamma)$, so \eqref{eq:aug} is
+the collapse of \eqref{eq:family}, up to the symmetrization. The fitness is
+the \emph{naive portfolio variance}
 \begin{equation}
   \nu(X) \;=\; \tilde w^\top X\, \tilde w,
   \qquad
@@ -187,25 +232,33 @@ variance}
   \label{eq:naive}
 \end{equation}
 so the left child receives the fraction
-$\nu(D_\gamma)/\big(\nu(A_\gamma) + \nu(D_\gamma)\big)$ of the node's capital,
-and the recursion continues inside each augmented block down to singletons
-(nodes whose children are singletons perform no augmentation, matching the
-implementations, so a two-asset node splits by the inverse of its already
-augmented diagonal entries). At $\gamma = 0$ the augmentation
-\eqref{eq:aug} is the identity and the recursion is exactly HRP over the
-fixed order. Implementations optionally cap $\gamma$ at an in-sample variance
-turning point (\texttt{keep\_monotonic}); we analyze the raw recursion.
+$\nu(D_\gamma)/\big(\nu(A_\gamma) + \nu(D_\gamma)\big)$ of the node's
+capital, and the recursion continues inside each augmented block down to
+singletons. Nodes with a singleton child perform no augmentation; the
+implementations skip the augmentation whenever \emph{either} child has one
+asset, so a two-asset node splits by the inverse of its already augmented
+diagonal entries. At $\gamma = 0$ the augmentation \eqref{eq:aug} is the
+identity and the recursion is exactly HRP over the fixed order.
+Implementations optionally cap $\gamma$ at an in-sample variance turning
+point (\texttt{keep\_monotonic}); we analyze the raw recursion. One thing
+cannot be simplified away. The inter-group fitness must be a quadratic form
+evaluated on the \emph{augmented} block. A diagonal-only $\nu$, as used in
+some HRP variants, never sees the augmentation, and then no choice of
+$\gamma$ connects the scheme to minimum variance.
 
-Two structural facts, used throughout, hold across the entire family and not
-just the variant \eqref{eq:aug}: by \eqref{eq:family} the cross-block $B$
-enters every member only through the products $\gamma B D^{-1}(\cdot)$, and at
-$\gamma = 0$ the augmentation is the identity with $b_A = \mathbf{1}$.
+Two structural facts hold across the entire family and not just the variant
+\eqref{eq:aug}: by \eqref{eq:family} the cross-block $B$ enters every member
+only through the products $\gamma B D^{-1}(\cdot)$, and at $\gamma = 0$ the
+augmentation is the identity with $b_A = \mathbf{1}$.
 
-Let $\Sigma \succ 0$ be the population covariance and
-$\widehat\Sigma_\tau = \Sigma + \tau N$ an estimate, with $N$ a bounded
-random symmetric perturbation on a set where every matrix in \eqref{eq:aug}
-remains invertible for $\gamma \in [0, \bar\gamma]$. The object of study is
-the expected out-of-sample variance and its population limit,
+\emph{The noise model.} Let $\Sigma \succ 0$ be the population covariance
+and let the estimate be
+\begin{equation}
+  \widehat\Sigma_\tau \;=\; \Sigma + \tau N,
+  \label{eq:noise}
+\end{equation}
+where $N$ is a random symmetric matrix. The objects of study are the
+expected out-of-sample variance and its population limit,
 \begin{equation}
   F(\gamma; \tau) \;=\; \E\big[\, w(\gamma; \widehat\Sigma_\tau)^\top \Sigma\,
   w(\gamma; \widehat\Sigma_\tau) \,\big],
@@ -214,225 +267,846 @@ the expected out-of-sample variance and its population limit,
   \label{eq:F}
 \end{equation}
 where $w(\gamma; M)$ denotes the allocation the recursion produces from an
-input matrix $M$. Every operation is rational in $(\gamma, M)$, so $w$, $F$,
-$V_0$ are rational functions where denominators do not vanish, and in
-particular $C^\infty$ there, which is all the regularity used below.
+input matrix $M$. The allocation $w$ and the realized variance
+$w^\top \Sigma w$ are rational functions of $(\gamma, M)$, hence $C^\infty$
+wherever their denominators do not vanish. When $N$ has finite support (as
+in all examples below) $F$ is itself a rational function of $\gamma$; for
+general $N$ it is merely smooth, under the assumptions we now state.
 
-\section{Neither endpoint}
+\begin{assumption}
+\label{ass:reg}
+There are $\bar\gamma \in (0,1]$, $\bar\tau > 0$, and a compact set
+$K = [0,\bar\gamma] \times \mathcal{M}$, with $\mathcal{M}$ a compact
+neighborhood of $\Sigma$ in the symmetric matrices, such that every
+denominator appearing in the recursion (the inverses in \eqref{eq:aug}, the
+diagonal entries in \eqref{eq:naive}, and the fitness sums) is bounded away
+from zero on $K$; and $N$ is bounded with
+$\Sigma + \tau N \in \mathcal{M}$ for all $|\tau| \le \bar\tau$.
+\end{assumption}
+
+\begin{assumption}
+\label{ass:noise}
+$N$ is supported on the top-level cross-block ($N_{LL} = 0$, $N_{RR} = 0$)
+and its law is symmetric: $N \overset{d}{=} -N$.
+\end{assumption}
+
+Under Assumption~\ref{ass:reg}, $(\gamma, \tau) \mapsto
+w(\gamma; \Sigma + \tau N)$ is $C^\infty$ on $[0,\bar\gamma] \times
+[-\bar\tau, \bar\tau]$ for every realization, with all derivatives bounded
+uniformly over realizations; $F$ is then $C^\infty$ by differentiation under
+the expectation (the derivatives are dominated by their uniform bounds).
+Assumption~\ref{ass:noise} makes $F$ even in $\tau$.
+
+\begin{remark}[Model scope]
+\label{rem:scope-model}
+The model \eqref{eq:noise}--\eqref{eq:F} with Assumption~\ref{ass:noise} is
+stylized on purpose: it isolates the cross-block channel, which is the only
+channel the coupling $\gamma$ touches. A natural generative alternative is
+partial information about $\Sigma$ itself, for instance $\widehat\Sigma$
+equal to the sample covariance of $T$ independent draws from
+$\mathcal{N}(0, \Sigma)$, which corresponds to $\tau \asymp T^{-1/2}$ with
+noise supported on \emph{every} block. Under whole-matrix noise the exact
+invariance of Lemma~\ref{lem:blind} applies only to the cross-block
+component of the noise: $F(0;\tau)$ is then itself noisy, and the endpoint
+comparison becomes a comparison of noise costs rather than a comparison
+against a noise-free anchor. The analysis of that model is not attempted
+here; the results below are exact for \eqref{eq:noise} under
+Assumptions~\ref{ass:reg}--\ref{ass:noise} and are offered as the
+cross-block part of the larger question.
+\end{remark}
+
+\section{The hierarchical end}
 \label{sec:endpoints}
 
 \begin{lemma}[The HRP end is blind to the cross-block]
 \label{lem:blind}
-$w(0; M)$ is a function of $(A, D)$ alone. Consequently, if the estimation
-error is supported on the top-level cross-block, then
+For a fixed tree, $w(0; M)$ is a function of the diagonal blocks $(A, D)$
+alone. Consequently, under Assumption~\ref{ass:noise},
 $w(0; \widehat\Sigma_\tau) = w(0; \Sigma)$ almost surely and
 $F(0; \tau) = V_0(0)$ exactly, for every $\tau$.
 \end{lemma}
 \begin{proof}
-At $\gamma = 0$ the augmentation \eqref{eq:aug} returns its first argument,
-so the top-level split uses $\nu(A)$ and $\nu(D)$, which read only
-within-block entries, and the recursion continues inside the unmodified
-blocks $A$ and $D$, never touching $B$. (Cross-blocks interior to $A$ or $D$
-\emph{are} read, through the naive variances of their parents; only the
-top-level $B$ is never read.)
+At $\gamma = 0$ the augmentation \eqref{eq:aug} returns its first argument.
+The top-level split therefore uses $\nu(A)$ and $\nu(D)$, and
+\eqref{eq:naive} reads only entries of $A$ and of $D$. The recursion then
+continues inside the unmodified blocks $A$ and $D$; every quantity computed
+below the top level is a function of entries of $A$ or entries of $D$. The
+top-level cross-block $B$ appears nowhere. (Cross-blocks interior to $A$ or
+$D$ \emph{are} read, through the naive variances of their parents; only the
+top-level $B$ is never read.) The second sentence follows because
+$\widehat\Sigma_\tau$ and $\Sigma$ share their diagonal blocks under
+Assumption~\ref{ass:noise}.
 \end{proof}
 
 \begin{remark}[Scope]
 \label{rem:scope}
-The lemma concerns a fixed tree and this particular variant: this recursion (naive variance over
-full child sub-blocks, as in \cite{lopezdeprado2016}) never reads the
-top-level cross-block; a split on diagonal variances alone would read nothing
-off-diagonal. When the tree itself is data-driven (a dendrogram, or Fiedler
-seriation \cite{cotton2024schur}), the ordering step does read the
-cross-block, but only through the discrete tree choice, which for a
-generic estimate is locally constant. The $\gamma = 0$ allocation is then
-locally constant in the cross-block entries, and the differential statements
-below are unaffected for noise small enough to leave the tree unchanged. (In
-the example of Proposition~\ref{prop:example} the seriation returns the same
-top partition on both noise branches, so fixing the order there is without
-loss.)
+The lemma concerns a fixed tree and this particular variant: the recursion
+reads the naive variance of full child sub-blocks, as in
+\cite{lopezdeprado2016}. A split on diagonal variances alone would read
+nothing off-diagonal. When the tree itself is data-driven (a dendrogram, or
+Fiedler seriation \cite{cotton2024schur}), the ordering step does read the
+cross-block, but only through the discrete tree choice, which for a generic
+estimate is locally constant; the differential statements below are
+unaffected for noise small enough to leave the tree unchanged. (In
+Example~\ref{ex:interior} the seriation returns the same top partition on
+both noise branches, so fixing the order there is without loss.)
 \end{remark}
 
-\begin{theorem}[HRP is strictly suboptimal under small noise]
+\begin{theorem}[Uniform separation from HRP under small noise]
 \label{thm:nohrp}
-If $V_0'(0) < 0$ (coupling has first-order population value), then there
-is $\tau_0 > 0$ such that for all $\tau < \tau_0$,
-$\partial_\gamma F(0; \tau) < 0$: every minimizer of $F(\cdot\,;\tau)$ on
-$[0, \bar\gamma]$ is bounded away from $0$. No support restriction on $N$ is
-needed.
+Suppose Assumption~\ref{ass:reg} holds, $N$ is bounded (no support or
+symmetry restriction needed), and $V_0'(0) < 0$, i.e.\ coupling has
+first-order population value. Then there exist $\varepsilon > 0$,
+$\tau_0 > 0$, and $c > 0$ such that
+\[
+  \partial_\gamma F(\gamma; \tau) \;\le\; -c
+  \qquad\text{for all } 0 \le \gamma \le \varepsilon,\ 0 \le \tau \le \tau_0.
+\]
+Consequently every minimizer of $F(\cdot\,;\tau)$ over $[0,\bar\gamma]$ lies
+in $[\varepsilon, \bar\gamma]$, for every $\tau \le \tau_0$.
 \end{theorem}
 \begin{proof}
-$\partial_\gamma F(0;\tau) = \E[\partial_\gamma V(0; \Sigma + \tau N)]$,
-where $V(\gamma; M) = w(\gamma; M)^\top \Sigma\, w(\gamma; M)$ is $C^1$ near
-$(0, \Sigma)$ with $\partial_\gamma V$ continuous and, for bounded $N$,
-dominated there. By dominated convergence
-$\partial_\gamma F(0;\tau) \to V_0'(0) < 0$ as $\tau \to 0$; continuity in
-$\tau$ gives $\tau_0$.
+Write $V(\gamma; M) = w(\gamma; M)^\top \Sigma\, w(\gamma; M)$. Under
+Assumption~\ref{ass:reg}, $\partial_\gamma V$ exists, is continuous, and is
+bounded on $K$, so
+$\partial_\gamma F(\gamma;\tau) = \E[\partial_\gamma V(\gamma; \Sigma +
+\tau N)]$ by differentiation under the expectation, and
+$(\gamma, \tau) \mapsto \partial_\gamma F(\gamma;\tau)$ is jointly
+continuous on $[0,\bar\gamma] \times [0,\bar\tau]$ by dominated convergence.
+Its value at $(0, 0)$ is $V_0'(0) < 0$. By continuity there is a relatively
+open neighborhood of $(0,0)$ on which
+$\partial_\gamma F \le \tfrac12 V_0'(0) =: -c < 0$; choose
+$\varepsilon, \tau_0$ so that
+$[0,\varepsilon] \times [0,\tau_0]$ sits inside it. For $\tau \le \tau_0$
+and any $\gamma \in [0, \varepsilon)$, integrating the derivative gives
+$F(\varepsilon;\tau) \le F(\gamma;\tau) - c(\varepsilon - \gamma) <
+F(\gamma;\tau)$, so no point of $[0, \varepsilon)$ can be a minimizer.
 \end{proof}
 
-\begin{theorem}[Full coupling is suboptimal above a noise threshold]
-\label{thm:nofull}
-Let the error be supported on the top-level cross-block and symmetric
-($N \overset{d}{=} -N$). Then:
-\begin{enumerate}
-\item[\textup{(i)}] there is $C < \infty$, uniform on a compact set of
-$\gamma$ and noise realizations keeping \eqref{eq:aug} invertible, with
-$\big| F(\gamma;\tau) - V_0(\gamma) \big| \le C \gamma^2 \tau^2$;
-\item[\textup{(ii)}] if for some $\hat\gamma \in (0,1)$ and $\tau^*$ the
-excess noise cost at full coupling satisfies
-$F(1;\tau^*) - V_0(1) > V_0(\hat\gamma) - V_0(1) + C\hat\gamma^2\tau^{*2}$,
-then $F(\hat\gamma;\tau^*) < F(1;\tau^*)$, and with
-Theorem~\ref{thm:nohrp} every minimizer of $F(\cdot\,;\tau^*)$ is interior.
-\end{enumerate}
+\subsection{The size of the noise cost}
+\label{sec:noisecost}
+
+How large is $F - V_0$ near the HRP end? The correct answer is order
+$\gamma\tau^2$, and it is worth displaying the mechanism, because a
+plausible shortcut gives the wrong exponent. Write the estimated cross-block
+as $\widehat B = B + \tau E$ for a realization $E$ of $N$'s cross-block.
+Expanding \eqref{eq:aug} at small $\gamma$,
+\begin{equation}
+  A_\gamma(\widehat B)
+  \;=\; A + \gamma\,\operatorname{sym}\!\big(\widehat B D^{-1} A
+        - \widehat B D^{-1} \widehat B^\top\big) + O(\gamma^2).
+  \label{eq:augexp}
+\end{equation}
+Averaging over the symmetric branches $\widehat B = B \pm \tau E$, the terms
+linear in $\tau$ cancel, but the term quadratic in $\widehat B$ does not:
+\begin{equation}
+  \tfrac12 \sum_{\pm} A_\gamma(B \pm \tau E) \;-\; A_\gamma(B)
+  \;=\; -\,\gamma\,\tau^2\, E D^{-1} E^\top \;+\; O(\gamma^2 \tau^2).
+  \label{eq:avgshift}
+\end{equation}
+The expected augmented block is displaced at order $\gamma\tau^2$, and the
+allocation inherits the displacement unless the weight functional happens to
+annihilate it. In terms of derivatives of the realized variance,
+\begin{equation}
+  \frac{\partial^2}{\partial \tau^2}\big(w^\top \Sigma w\big)
+  \;=\; 2\, w_\tau^\top \Sigma\, w_\tau \;+\; 2\, w_{\tau\tau}^\top \Sigma\, w,
+  \label{eq:secondder}
+\end{equation}
+and while $w_\tau = O(\gamma)$ (each appearance of $\widehat B$ in
+\eqref{eq:aug} carries a factor $\gamma$), the second derivative
+$w_{\tau\tau}$ is only $O(\gamma)$ as well, through the quadratic term
+visible in \eqref{eq:avgshift}. The first term of \eqref{eq:secondder} is
+$O(\gamma^2)$; the second is generically $O(\gamma)$. The shortcut
+``$w_\tau = O(\gamma)$, therefore $F - V_0 = O(\gamma^2\tau^2)$'' bounds
+only the first term and is false; Example~\ref{ex:boundary} makes the
+failure exact.
+
+\begin{theorem}[Noise cost near the HRP end]
+\label{thm:noisecost}
+Under Assumptions~\ref{ass:reg} and~\ref{ass:noise} there is a continuous
+bounded function $H$ on $[0,\bar\gamma] \times [0,\bar\tau]$ with
+\begin{equation}
+  F(\gamma;\tau) - V_0(\gamma) \;=\; \gamma\, \tau^2\, H(\gamma, \tau),
+  \qquad\text{hence}\qquad
+  \big|F(\gamma;\tau) - V_0(\gamma)\big| \;\le\; C\,\gamma\,\tau^2
+  \label{eq:gt2}
+\end{equation}
+with $C = \sup |H|$. The exponent of $\gamma$ cannot be improved: in
+Example~\ref{ex:boundary}, $H(0,0) = \tfrac{8}{189} \neq 0$.
 \end{theorem}
 \begin{proof}
-(i) In \eqref{eq:aug} the cross-block enters only through
-$\gamma \widehat B D^{-1}$ and $\gamma \widehat B D^{-1} \widehat B^\top$,
-so every occurrence of the perturbation $\tau N_B$ carries the prefactor
-$\gamma$, and the deeper levels operate on augmented blocks that retain it.
-Hence $\partial w/\partial\tau = \gamma\, h(\gamma,\tau)$ with $h$ bounded on
-the stated compact set, so $V(\gamma;\tau N) - V(\gamma;0)$ is Lipschitz in
-$\tau$ with constant $O(\gamma)$; by symmetry of $N$ the first-order term in
-$\tau$ cancels in expectation, and Taylor's theorem with the uniformly
-bounded second derivative gives (i). (ii) is arithmetic:
-$F(\hat\gamma;\tau^*) \le V_0(\hat\gamma) + C\hat\gamma^2\tau^{*2}
-< F(1;\tau^*)$.
+Let $\Phi(\gamma, \tau) = F(\gamma;\tau) - V_0(\gamma)$, which is $C^\infty$
+on the compact rectangle $R = [0,\bar\gamma] \times [-\bar\tau, \bar\tau]$
+by Assumption~\ref{ass:reg}. Three exact identities hold on $R$:
+$\Phi(0, \tau) = 0$ for all $\tau$ (Lemma~\ref{lem:blind});
+$\Phi(\gamma, 0) = 0$ for all $\gamma$ (no noise); and
+$\Phi(\gamma, -\tau) = \Phi(\gamma, \tau)$ (Assumption~\ref{ass:noise}).
+Fix $\gamma$ and Taylor-expand in $\tau$ with integral remainder: since
+$\Phi(\gamma, 0) = 0$ and, by evenness, $\partial_\tau \Phi(\gamma, 0) = 0$,
+\[
+  \Phi(\gamma, \tau)
+  \;=\; \tau^2 \int_0^1 (1-s)\, \partial^2_{\tau\tau}
+        \Phi(\gamma, s\tau)\, ds
+  \;=:\; \tau^2\, \Psi(\gamma, \tau).
+\]
+$\Psi$ is $C^1$ on $R$ (differentiation under the integral, with the third
+derivatives of $\Phi$ bounded on $R$). Differentiating the identity
+$\Phi(0,\tau) = 0$ twice in $\tau$ gives
+$\partial^2_{\tau\tau}\Phi(0, \tau) = 0$ for all $\tau$, hence
+$\Psi(0, \tau) = 0$. Taylor in $\gamma$ with integral remainder then gives
+\[
+  \Psi(\gamma, \tau) \;=\; \gamma \int_0^1
+  \partial_\gamma \Psi(u\gamma, \tau)\, du \;=:\; \gamma\, H(\gamma, \tau),
+\]
+with $H$ continuous and bounded on $R$ by the same uniform derivative
+bounds. Combining the two displays yields \eqref{eq:gt2}. The sharpness
+claim is Example~\ref{ex:boundary}, where
+$\partial_\gamma(F - V_0)(0; \tau) = \tfrac{8}{189}\tau^2$ exactly.
 \end{proof}
+
+With $C^4$ regularity in $\tau$ (available under Assumption~\ref{ass:reg}),
+the same identities give the uniform expansion
+\begin{equation}
+  F(\gamma;\tau) \;=\; V_0(\gamma) + \tau^2 G(\gamma) + O(\tau^4),
+  \qquad
+  G(\gamma) \;=\; \tfrac12\,\partial^2_{\tau\tau} F(\gamma; 0)
+  \;=\; \gamma\, h(\gamma),
+  \label{eq:expansion}
+\end{equation}
+with $h$ continuous, so $G(0) = 0$, but in general
+$G'(0) = h(0) \ne 0$: $G$ vanishes only linearly at the HRP end. The exact
+boundary derivative is
+\begin{equation}
+  \partial_\gamma F(0;\tau) \;=\; V_0'(0) + \tau^2\, H(0, \tau).
+  \label{eq:boundarycalc}
+\end{equation}
+
+\begin{remark}[When is the stronger $\gamma^2\tau^2$ bound valid?]
+\label{rem:gamma2}
+The bound $|F - V_0| \le C\gamma^2\tau^2$ is recoverable under one
+additional, substantive hypothesis: that the first coupling variation is
+unbiased under the noise, i.e.\
+$\partial_\gamma F(0;\tau) = V_0'(0)$ for all small $\tau$. Then both the
+value and the first $\gamma$-derivative of $F - V_0$ vanish at $\gamma = 0$
+and a third application of the Taylor argument yields
+$F - V_0 = \gamma^2\tau^2 \widetilde H$. The recursion does not satisfy this
+generically, because
+\[
+  \E\big[(B + \tau N_B)\, D^{-1} (B + \tau N_B)^\top\big]
+  \;=\; B D^{-1} B^\top + \tau^2\, \E\big[N_B D^{-1} N_B^\top\big],
+\]
+and that quadratic bias enters \eqref{eq:aug} multiplied by a single power
+of $\gamma$. Both exact examples in this paper happen to possess a further
+downstream cancellation (Remark~\ref{rem:cancel}), which is why numerical
+evidence from them alone can suggest, wrongly, that the quadratic bound is
+general.
+\end{remark}
+
+\begin{example}[HRP locally optimal at a finite noise level]
+\label{ex:boundary}
+Let $n = 4$ with
+\[
+  A = D = \begin{pmatrix} 1 & -\tfrac12 \\ -\tfrac12 & 2 \end{pmatrix},
+  \qquad
+  B = \tfrac{1}{10}\,\mathbf{1}\mathbf{1}^\top,
+  \qquad
+  E = e_1 e_1^\top,
+  \qquad
+  \widehat B = B \pm \tau E \ \ \text{w.p. } \tfrac12 \text{ each},
+\]
+and $\Sigma = \left(\begin{smallmatrix} A & B \\ B & A
+\end{smallmatrix}\right)$, which is SPD (both $A + B$ and $A - B$ are
+positive definite). Then, exactly and for every $\tau$,
+\begin{equation}
+  \partial_\gamma F(0; \tau) \;=\; -\frac{1}{700} + \frac{8}{189}\,\tau^2 .
+  \label{eq:boundaryderiv}
+\end{equation}
+In particular $V_0'(0) = -\tfrac{1}{700} < 0$, so the premise of
+Theorem~\ref{thm:nohrp} holds, yet $\partial_\gamma F(0;\tau) > 0$ as soon
+as $\tau^2 > \tfrac{27}{800}$, i.e.\ $\tau > \sqrt{27/800} \approx 0.1837$:
+the HRP endpoint is then a one-sided local minimum. Moreover
+$F(\gamma;\tau) - V_0(\gamma) = \tfrac{8}{189}\gamma\tau^2 + O(\gamma^2)$,
+so no bound of the form $C\gamma^2\tau^2$ can hold on any neighborhood of
+$\gamma = 0$.
+\end{example}
+\begin{proof}
+The computation is elementary and worth walking through. \emph{Step 1
+(symmetry).} Since $A = D$ and each realized $\widehat B$ is symmetric, the
+two augmented blocks in \eqref{eq:aug} coincide, so the top-level split is
+$\tfrac12 : \tfrac12$ for every $\gamma$, $\tau$, and branch, and
+$w = \tfrac12(u; u)$ where $u$ are the inverse-diagonal weights
+\eqref{eq:naive} of the common augmented block $A_\gamma(\widehat B)$.
+\emph{Step 2 (objective).} With the true $\Sigma$,
+\[
+  V \;=\; w^\top \Sigma w
+  \;=\; \tfrac14\big(u^\top A u + 2\,u^\top B u + u^\top A u\big)
+  \;=\; \tfrac12\, u^\top (A + B)\, u .
+\]
+\emph{Step 3 (first-order augmentation).} By \eqref{eq:augexp} with
+$D = A$ and $\widehat B$ symmetric,
+$A_\gamma(\widehat B) = A + \gamma H(\widehat B) + O(\gamma^2)$ with
+$H(\widehat B) = \widehat B - \widehat B A^{-1} \widehat B$; the
+symmetrization does not alter this since $H(\widehat B)$ is symmetric.
+\emph{Step 4 (weight derivative).} The weights \eqref{eq:naive} depend only
+on the diagonal. With $\operatorname{diag}(A) = (1, 2)$,
+$u(0) = (\tfrac23, \tfrac13)$, and differentiating
+$u(\gamma) = \big(A_{22} + \gamma H_{22},\, A_{11} + \gamma H_{11}\big) /
+\big(3 + \gamma(H_{11} + H_{22})\big)$ at $\gamma = 0$ gives
+\[
+  u'(0) \;=\; \frac{H_{22} - 2 H_{11}}{9} \begin{pmatrix} 1 \\ -1
+  \end{pmatrix}.
+\]
+\emph{Step 5 (variance derivative).} With $M = A + B$ one computes
+$M (1, -1)^\top = (\tfrac{3}{2}, -\tfrac{5}{2})^\top$ and
+$u(0)^\top M (1,-1)^\top = \tfrac{2}{3}\cdot\tfrac32 - \tfrac13\cdot\tfrac52
+= \tfrac16$, so
+\[
+  \partial_\gamma V\big|_{\gamma=0}
+  \;=\; u(0)^\top M\, u'(0)
+  \;=\; \frac{H_{22} - 2H_{11}}{54}.
+\]
+\emph{Step 6 (average over branches).} $H$ is quadratic in $\widehat B$, so
+averaging is exact:
+\[
+  \tfrac12\sum_{\pm} H(B \pm \tau E)
+  \;=\; B - B A^{-1} B - \tau^2\, E A^{-1} E .
+\]
+With $A^{-1} = \tfrac17\left(\begin{smallmatrix} 8 & 2 \\ 2 & 4
+\end{smallmatrix}\right)$ one gets
+$B A^{-1} B = \tfrac{4}{175}\,\mathbf{1}\mathbf{1}^\top$ and
+$E A^{-1} E = \tfrac{8}{7}\, e_1 e_1^\top$, so the averaged $H$ has
+$\bar H_{11} = \tfrac{1}{10} - \tfrac{4}{175} - \tfrac{8}{7}\tau^2$ and
+$\bar H_{22} = \tfrac{1}{10} - \tfrac{4}{175}$. Substituting into Step 5,
+\[
+  \partial_\gamma F(0;\tau)
+  \;=\; \frac{\bar H_{22} - 2 \bar H_{11}}{54}
+  \;=\; \frac{-\tfrac{27}{350} + \tfrac{16}{7}\tau^2}{54}
+  \;=\; -\frac{1}{700} + \frac{8}{189}\,\tau^2 .
+\]
+Since $F$ is smooth in $\gamma$ near $0$ (denominators reduce to those of
+$A$ at $\gamma = 0$), the exchange of expectation and derivative is
+justified by the finite support of the noise. The certificate script
+confirms \eqref{eq:boundaryderiv} in exact rational arithmetic, by
+dual-number (first-order jet) evaluation of the full recursion, at
+$\tau \in \{0, \tfrac{1}{10}, \tfrac{3}{20}, \tfrac15, \tfrac{3}{10}\}$:
+for instance $\partial_\gamma F(0; \tfrac{3}{20}) = -\tfrac{1}{2100}$ and
+$\partial_\gamma F(0; \tfrac15) = +\tfrac{1}{3780}$.
+\end{proof}
+
+\section{The minimum-variance end}
+\label{sec:mvend}
+
+Suppose the bridge under study reaches minimum variance exactly at
+$\gamma = 1$: writing
+$w_* = \Sigma^{-1}\mathbf{1}/(\mathbf{1}^\top\Sigma^{-1}\mathbf{1})$,
+suppose $w(1;\Sigma) = w_*$ while $\mathbf{1}^\top w(\gamma;\Sigma) = 1$ for
+all $\gamma$. This holds for the canonical member of the family
+(Proposition~\ref{prop:minvar}) and, in the solved family of
+Section~\ref{sec:family}, for the implemented variant as well; it is not
+automatic for the implemented variant in general.
+
+\begin{lemma}[Flatness at an exact minimum-variance endpoint]
+\label{lem:mv}
+Under the above, $V_0$ is differentiable at $\gamma = 1$ with
+\[
+  V_0'(1) \;=\; 0,
+  \qquad
+  V_0''(1) \;=\; 2\, w_\gamma(1)^\top \Sigma\, w_\gamma(1) \;\ge\; 0,
+\]
+where $w_\gamma(1) = \partial_\gamma w(\gamma;\Sigma)|_{\gamma=1}$; the
+second derivative is strictly positive whenever the bridge arrives with a
+nonzero tangent, $w_\gamma(1) \ne 0$.
+\end{lemma}
+\begin{proof}
+Since $\Sigma w_* = \lambda \mathbf{1}$ with
+$\lambda = 1/(\mathbf{1}^\top\Sigma^{-1}\mathbf{1})$, differentiating
+$V_0(\gamma) = w(\gamma)^\top\Sigma\,w(\gamma)$ at $\gamma = 1$ gives
+$V_0'(1) = 2\, w_\gamma(1)^\top \Sigma w_* = 2\lambda\,
+w_\gamma(1)^\top \mathbf{1} = 0$, because $\mathbf{1}^\top w(\gamma) \equiv 1$
+implies $\mathbf{1}^\top w_\gamma \equiv 0$. Differentiating once more,
+$V_0''(1) = 2 w_\gamma(1)^\top \Sigma w_\gamma(1) +
+2 w_{\gamma\gamma}(1)^\top \Sigma w_*$, and the second term vanishes for the
+same reason ($\mathbf{1}^\top w_{\gamma\gamma} \equiv 0$).
+\end{proof}
+
+\begin{theorem}[Small noise moves the optimum inside]
+\label{thm:mvlocal}
+Assume the setting of Lemma~\ref{lem:mv} with $V_0''(1) > 0$, the expansion
+\eqref{eq:expansion} valid in $C^2$ uniformly near $\gamma = 1$, and
+$G'(1) > 0$. Then there are $\tau_1 > 0$ and a $C^1$ curve
+$\gamma^*(\tau)$, defined for $0 \le \tau < \tau_1$, of local minimizers of
+$F(\cdot\,;\tau)$ with
+\begin{equation}
+  \gamma^*(\tau) \;=\; 1 - \frac{G'(1)}{V_0''(1)}\,\tau^2 + O(\tau^4)
+  \;<\; 1 \quad (\tau > 0).
+  \label{eq:mvshift}
+\end{equation}
+If moreover $V_0$ has an isolated global minimum at $\gamma = 1$, then for
+all sufficiently small $\tau$ the curve gives the unique global minimizer of
+$F(\cdot\,;\tau)$. The sign condition is essential: if $G'(1) < 0$, full
+coupling remains locally optimal for small noise.
+\end{theorem}
+\begin{proof}
+Let $g(\gamma, s) = \partial_\gamma F(\gamma; \sqrt{s})$ for $s = \tau^2 \ge
+0$; by \eqref{eq:expansion} in $C^2$, $g(\gamma, s) = V_0'(\gamma) +
+s\,G'(\gamma) + O(s^2)$ with the error uniform in $\gamma$ near $1$, and $g$
+is $C^1$ in $(\gamma, s)$ there. By Lemma~\ref{lem:mv}, $g(1, 0) =
+V_0'(1) = 0$ and $\partial_\gamma g(1,0) = V_0''(1) > 0$. The implicit
+function theorem gives a $C^1$ curve $\gamma^*(s)$ with
+$g(\gamma^*(s), s) = 0$, $\gamma^*(0) = 1$, and
+\[
+  \frac{d\gamma^*}{ds}\Big|_{s=0}
+  \;=\; -\,\frac{\partial_s g(1,0)}{\partial_\gamma g(1,0)}
+  \;=\; -\,\frac{G'(1)}{V_0''(1)} \;<\; 0,
+\]
+which is \eqref{eq:mvshift}. Since $\partial_\gamma g > 0$ near $(1,0)$,
+each $\gamma^*(s)$ is a strict local minimizer. For global optimality:
+$F(\cdot\,;\tau) \to V_0$ uniformly on $[0,\bar\gamma]$ as $\tau \to 0$
+(by \eqref{eq:gt2} or directly by uniform continuity), so if $V_0$'s global
+minimum at $1$ is isolated, minimizers of $F$ must enter any prescribed
+neighborhood of $1$ for small $\tau$, where strict convexity of $F$ in
+$\gamma$ (from $\partial_\gamma g > 0$) makes $\gamma^*(s)$ the only
+candidate. If $G'(1) < 0$ the same computation gives
+$d\gamma^*/ds > 0$: the unconstrained stationary point exits the interval
+at $\gamma = 1$ and full coupling is locally optimal.
+\end{proof}
+
+\section{An exactly solved family}
+\label{sec:family}
+
+Fix the four-asset covariance
+\begin{equation}
+  \Sigma \;=\;
+  \begin{pmatrix}
+    1 & \tfrac12 & \tfrac35 & \tfrac35 \\
+    \tfrac12 & 1 & \tfrac35 & \tfrac35 \\
+    \tfrac35 & \tfrac35 & 4 & 2 \\
+    \tfrac35 & \tfrac35 & 2 & 4
+  \end{pmatrix},
+  \label{eq:familycov}
+\end{equation}
+i.e.\ blocks $\{1,2\}$ and $\{3,4\}$ with unit and double volatilities,
+within-block correlation $\tfrac12$, and cross-block correlation
+$\rho_c = \tfrac{3}{10}$. Let the noise perturb the cross-block correlation
+\emph{in common}: all four cross entries move together,
+$\rho_c \to \rho_c \pm \tau$ with probability $\tfrac12$ each. At the level
+of the two blocks' equal-weight portfolios, the population variances and
+cross covariance are
+\[
+  a = \tfrac34, \qquad d = 3, \qquad c = \tfrac35,
+  \qquad S := a + d = \tfrac{15}{4}, \qquad K := S - 2c = \tfrac{51}{20},
+\]
+and the estimated group-level cross covariance is $Z = c \pm e$ with
+$e = 2\tau$ (the blocks have volatilities $1$ and $2$).
+
+\begin{lemma}[Exact reduction to a scalar bridge]
+\label{lem:reduce}
+For every $\gamma \in [0,1]$ and every realized $z = c \pm e$ with
+$ad - \gamma z^2 > 0$: the within-block weights of the implemented recursion
+\eqref{eq:aug}--\eqref{eq:naive} are exactly $(\tfrac12, \tfrac12)$ in each
+block; the augmented fitnesses are
+\begin{equation}
+  \nu_{A_\gamma}(z) \;=\; \frac{ad - \gamma z^2}{d - \gamma z},
+  \qquad
+  \nu_{D_\gamma}(z) \;=\; \frac{ad - \gamma z^2}{a - \gamma z};
+  \label{eq:nuscalar}
+\end{equation}
+and the left-block weight is
+\begin{equation}
+  x_\gamma(z) \;=\; \frac{d - \gamma z}{a + d - 2\gamma z}.
+  \label{eq:xgz}
+\end{equation}
+Consequently the realized out-of-sample variance is $Q(x_\gamma(z))$ with
+$Q(x) = a x^2 + d(1-x)^2 + 2c\,x(1-x)$.
+\end{lemma}
+\begin{proof}
+Write the asset-level blocks as $A_2 = \left(\begin{smallmatrix} 1 & \frac12
+\\ \frac12 & 1 \end{smallmatrix}\right)$, $D_2 = \left(\begin{smallmatrix}
+4 & 2 \\ 2 & 4\end{smallmatrix}\right)$, and $\widehat B = z\,
+\mathbf{1}\mathbf{1}^\top$ (each cross entry equals
+$1 \cdot 2 \cdot (\rho_c \pm \tau) = z$). All three matrices are
+exchangeable (invariant under swapping the two assets of a block), and the
+augmentation \eqref{eq:aug} preserves exchangeability, so each augmented
+block has equal diagonal entries and \eqref{eq:naive} gives
+$(\tfrac12,\tfrac12)$ within blocks. For \eqref{eq:nuscalar}: since $D_2$ is
+exchangeable with row sums $2d$, $D_2^{-1}\mathbf{1} = \mathbf{1}/(2d)$, so
+$\widehat B D_2^{-1} = \tfrac{z}{2d}\mathbf{1}\mathbf{1}^\top$ and
+$\widehat B D_2^{-1} \widehat B^\top = \tfrac{z^2}{d}
+\mathbf{1}\mathbf{1}^\top$ (using $\mathbf{1}\mathbf{1}^\top
+\mathbf{1}\mathbf{1}^\top = 2\,\mathbf{1}\mathbf{1}^\top$). The matrix
+$r = I - \gamma\tfrac{z}{2d}\mathbf{1}\mathbf{1}^\top$ satisfies
+$\mathbf{1}^\top r^{-1} = \big(1 - \gamma z/d\big)^{-1}\mathbf{1}^\top$
+(Sherman--Morrison), and $\operatorname{sym}$ does not change
+$\mathbf{1}^\top(\cdot)\mathbf{1}$. With within weights
+$(\tfrac12,\tfrac12)$, the fitness is
+$\nu_{A_\gamma} = \tfrac14 \mathbf{1}^\top A_\gamma \mathbf{1}
+= \tfrac14\,\dfrac{\mathbf{1}^\top A_2 \mathbf{1} - \gamma\tfrac{z^2}{d}
+\cdot 4}{1 - \gamma z/d}
+= \dfrac{a - \gamma z^2/d}{1 - \gamma z/d}
+= \dfrac{ad - \gamma z^2}{d - \gamma z}$,
+using $\mathbf{1}^\top A_2 \mathbf{1} = 4a$; the $D$-side is symmetric. For
+\eqref{eq:xgz}: the inter-group ratio is $1/\nu_{A_\gamma} :
+1/\nu_{D_\gamma}$, the common factor $ad - \gamma z^2$ cancels, and
+$x_\gamma(z) = (d - \gamma z)/\big((d-\gamma z) + (a - \gamma z)\big)$. The
+final sentence is the definition of $Q$ at the group level. Each identity
+is also verified exactly by the certificate script at a grid of rational
+$(\gamma, z)$.
+\end{proof}
+
+\begin{proposition}[Exact objective]
+\label{prop:exactobj}
+Let $x_* = x_1(c) = (d-c)/K$ be the population minimum-variance group
+weight. Then $Q(x) = Q(x_*) + K\,(x - x_*)^2$ (exact square completion),
+\begin{equation}
+  x_\gamma(z) - x_* \;=\; \frac{(d-a)\,(\gamma z - c)}{(S - 2\gamma z)\,K},
+  \label{eq:displacement}
+\end{equation}
+and therefore, with $r(u) = \big((u - c)/(S - 2u)\big)^2$,
+\begin{equation}
+  F(\gamma; e)
+  \;=\; Q(x_*) \;+\; \frac{(d-a)^2}{K}\cdot
+        \frac12 \sum_{\sigma = \pm 1} r\big(\gamma (c + \sigma e)\big).
+  \label{eq:exactF}
+\end{equation}
+This is the exact expected out-of-sample variance, not a surrogate. In
+particular
+\begin{equation}
+  V_0(\gamma) = \frac{9\,(44\gamma^2 - 200\gamma + 275)}
+  {5\,(8\gamma - 25)^2},
+  \qquad
+  G(\gamma) = \frac{1500\,\gamma^2\,(16\gamma + 1)}{(8\gamma - 25)^4},
+  \label{eq:closedforms}
+\end{equation}
+where $G$ is the coefficient of $e^2$ in the small-noise expansion of
+$F(\gamma; e)$.
+\end{proposition}
+\begin{proof}
+$Q$ is a quadratic in $x$ with leading coefficient $a + d - 2c = K$ and
+vertex at $x_*$ (set $Q'(x) = 2ax - 2d(1-x) + 2c(1-2x) = 2K x - 2(d-c)$),
+giving the square completion. For \eqref{eq:displacement}, put both terms of
+$x_\gamma(z) - x_*$ over the common denominator $(S - 2\gamma z)K$:
+the numerator is $(d - \gamma z)K - (d - c)(S - 2\gamma z)
+= (\gamma z - c)(2d - S) = (d - a)(\gamma z - c)$, expanding and using
+$K = S - 2c$. Then
+$Q(x_\gamma(z)) - Q(x_*) = K (x_\gamma(z) - x_*)^2 =
+\tfrac{(d-a)^2}{K}\, r(\gamma z)$, and averaging over
+$z = c \pm e$ gives \eqref{eq:exactF}. The closed forms
+\eqref{eq:closedforms} follow by substituting the family's numbers into
+\eqref{eq:exactF}; they are verified exactly, at a grid of rational
+$\gamma$, by the certificate script.
+\end{proof}
+
+\begin{theorem}[Exact interior optimum, monotone in the noise]
+\label{thm:family}
+Assume $a \ne d$, $0 < c < \sqrt{ad}$, and $S > 6c$ (all satisfied by
+\eqref{eq:familycov}: $S = \tfrac{15}{4} > \tfrac{18}{5} = 6c$). Then for
+every noise amplitude $0 < e \le c$:
+\begin{enumerate}
+\item[\textup{(i)}] $F(\cdot\,; e)$ is strictly convex on $[0, 1]$;
+\item[\textup{(ii)}] it has a unique minimizer $\gamma^*(e) \in
+  (\tfrac12, 1)$ for $0 < e < c$, with the boundary values
+  $\gamma^*(0) = 1$ and $\gamma^*(c) = \tfrac12$;
+\item[\textup{(iii)}] $\gamma^*$ is strictly decreasing in $e$;
+\item[\textup{(iv)}] the minimizer solves the exact first-order condition
+\begin{equation}
+  \sum_{\sigma = \pm 1}
+  \frac{(c + \sigma e)\,\big[\gamma(c + \sigma e) - c\big]}
+       {\big[S - 2\gamma(c + \sigma e)\big]^{3}} \;=\; 0,
+  \label{eq:foc}
+\end{equation}
+and for small $e$,
+\begin{equation}
+  \gamma^*(e) \;=\; 1 - \frac{S + 4c}{c^2\,(S - 2c)}\; e^2 + O(e^4)
+  \;=\; 1 - \frac{1025}{153}\, e^2 + O(e^4)
+  \label{eq:smalle}
+\end{equation}
+for the numbers of \eqref{eq:familycov}.
+\end{enumerate}
+Consequently every coupling in $[\tfrac12, 1]$ is optimal at exactly one
+noise amplitude $e \in [0, c]$. In the noise parametrization of the paper,
+$e = 2\tau$, so the theorem covers $0 < \tau \le \tfrac{3}{10}$.
+\end{theorem}
+\begin{proof}
+Throughout, drop the positive constant $(d-a)^2/K$ and study
+$\bar F(\gamma; e) = \tfrac12[r(\gamma(c+e)) + r(\gamma(c-e))]$ with
+$r(u) = (u-c)^2/(S-2u)^2$, defined for $u < S/2$; note
+$\gamma z \le 2c < S/2$ on the admissible range, since $z \le c + e \le 2c$
+and $S > 6c > 4c$.
+
+\emph{Derivatives of $r$.} Direct differentiation gives
+\[
+  r'(u) \;=\; \frac{2K\,(u - c)}{(S - 2u)^3},
+  \qquad
+  r''(u) \;=\; \frac{2K\,\big(S - 6c + 4u\big)}{(S - 2u)^4}.
+\]
+(For $r'$: the quotient rule gives numerator
+$2(u-c)(S-2u) + 4(u-c)^2 = 2(u-c)(S-2c)$; for $r''$, differentiate $r'$ and
+simplify the numerator to $2K[(S-2u) + 6(u-c)]$.)
+
+\emph{(i) Convexity.} $\partial^2_{\gamma\gamma}\bar F(\gamma;e) =
+\tfrac12\sum_\sigma z_\sigma^2\, r''(\gamma z_\sigma)$ with
+$z_\sigma = c + \sigma e \ge 0$. Since $S > 6c$ and $u = \gamma z_\sigma \ge
+0$, the numerator $S - 6c + 4u$ is strictly positive, and $(S-2u)^4 > 0$, so
+$r'' > 0$ wherever $z_\sigma > 0$; at $e = c$ the lower branch has
+$z_- = 0$ and contributes nothing, while the upper branch still gives strict
+positivity. Hence $\bar F$ is strictly convex in $\gamma$ on $[0,1]$.
+
+\emph{Endpoint signs.} At $\gamma = 0$:
+$\partial_\gamma \bar F(0; e) = \tfrac12 \sum_\sigma z_\sigma r'(0)
+= r'(0)\, c = -\,2Kc^2/S^3 < 0$, independently of $e$. At $\gamma = 1$:
+define $\psi(z) = z\, r'(z) = 2K z (z - c)/(S - 2z)^3$, so
+$\partial_\gamma \bar F(1; e) = \tfrac12[\psi(c+e) + \psi(c-e)]$. One
+computes
+\[
+  \psi''(z) \;=\; \frac{4K\,\big[\,S(S - 6c) + 4z\,(2S - 3c) + 4z^2\,\big]}
+  {(S - 2z)^5} \;>\; 0
+  \qquad (0 \le z \le 2c),
+\]
+since every bracketed term is positive under $S > 6c$ and $S - 2z \ge
+S - 4c > 0$. Thus $\psi$ is strictly convex on $[0, 2c]$, and since
+$\psi(c) = 0$, strict midpoint convexity gives
+$\tfrac12[\psi(c+e) + \psi(c-e)] > \psi(c) = 0$ for $0 < e \le c$. So the
+$\gamma$-derivative is strictly negative at $\gamma = 0$ and strictly
+positive at $\gamma = 1$.
+
+\emph{(ii) Unique interior minimizer.} Strict convexity plus the endpoint
+signs give a unique root $\gamma^*(e) \in (0,1)$ of
+$\partial_\gamma \bar F = 0$, which is the unique minimizer, and
+\eqref{eq:foc} is $\partial_\gamma \bar F = 0$ written out. At $e = c$ the
+lower branch has $z_- = 0$, so \eqref{eq:foc} reduces to
+$r'(2c\gamma) = 0$, whose unique solution is $2c\gamma = c$, i.e.\
+$\gamma^*(c) = \tfrac12$; and $\gamma^*(e) > \tfrac12$ for $e < c$ follows
+from (iii). At $e = 0$ both branches coincide, $\partial_\gamma \bar F
+\propto r'(\gamma c)\,c$, whose root is $\gamma = 1$; this is the
+noise-free optimum, consistent with $V_0'(1) = 0$ (Lemma~\ref{lem:mv}
+applies: the reduction reaches the group-level minimum variance at
+$\gamma = 1$ exactly).
+
+\emph{(iii) Monotonicity.} For fixed $\gamma > 0$,
+$\partial_e \partial_\gamma \bar F(\gamma; e) =
+\tfrac{\gamma}{2}\big[\psi_\gamma'(c+e) - \psi_\gamma'(c-e)\big]$ where
+$\psi_\gamma(z) = z r'(\gamma z)$; the same computation as above shows
+$\psi_\gamma$ is strictly convex on the admissible range (replace $z$ by
+$\gamma z$ in the display and multiply by positive factors), so
+$\psi_\gamma'(c+e) > \psi_\gamma'(c-e)$ and the mixed partial is strictly
+positive. By the implicit function theorem on \eqref{eq:foc},
+$d\gamma^*/de = -\,\partial_e\partial_\gamma \bar F \,/\,
+\partial^2_{\gamma\gamma}\bar F < 0$.
+
+\emph{(iv) Expansion.} Insert $\gamma = 1 - \delta$ into \eqref{eq:foc} and
+expand to first order in $\delta$ and $e^2$. The $e$-expansion of the sum at
+$\gamma = 1$ is
+$\tfrac{2 e^2 (S + 4c)}{K^4} + O(e^4)$ (expand each branch of
+\eqref{eq:foc} in $e$; odd terms cancel), while the $\delta$-derivative at
+$e = 0$ is $-\,2c^2/K^3 + O(\delta, e^2)$. Setting the sum of the two
+contributions to zero gives $\delta = e^2 (S + 4c)/(c^2 K) + O(e^4)$, which
+is \eqref{eq:smalle}; the coefficient evaluates to
+$\tfrac{1025}{153}$ for \eqref{eq:familycov}. The final sentence follows
+from (ii)--(iii): $\gamma^* : [0, c] \to [\tfrac12, 1]$ is a continuous
+strictly decreasing bijection.
+\end{proof}
+
+\begin{corollary}[The surrogate frontier is exact here]
+\label{cor:famsurr}
+For the family \eqref{eq:familycov}, the closed forms
+\eqref{eq:closedforms} satisfy $V_0' < 0$, $V_0'' > 0$, $G' > 0$, $G'' > 0$
+on $(0,1)$, and
+\[
+  t(\gamma) \;=\; -\frac{V_0'(\gamma)}{G'(\gamma)}
+  \;=\; \frac{9\,(1 - \gamma)\,(25 - 8\gamma)^2}
+        {25\,\gamma\,(64\gamma^2 + 608\gamma + 25)}
+\]
+decreases strictly from $+\infty$ (at $\gamma \downarrow 0$) to $0$ (at
+$\gamma \uparrow 1$). In the language of Theorem~\ref{thm:frontier} below,
+$t_0 = \infty$ and $t_1 = 0$: for this family, and only because of these
+endpoint limits, the surrogate optimizer sweeps the entire open bridge and
+neither endpoint is surrogate-optimal at any positive finite noise level.
+\end{corollary}
 
 \begin{remark}
-The sign of $F - V_0$ is not fixed: symmetric noise can reduce expected
-out-of-sample variance slightly at moderate $\gamma$ through the curvature of
-$V$ in the perturbation (observed in the example family). The theorems bound
-magnitudes; what they use is only that noise costs nothing at $\gamma = 0$
-and that its magnitude at $\gamma = 1$ can exceed the population gain of full
-coupling, and grows without bound as the perturbed recursion approaches the
-boundary of the positive-definite cone.
+Theorem~\ref{thm:family} reproduces, exactly, the numerical optimizer sweep
+previously obtained by brute force on this family: with $e = 2\tau$, the
+exact minimizers at $\tau = 0.10, 0.15, 0.20, 0.25, 0.30$ are
+$\gamma^* \approx 0.8308,\ 0.7237,\ 0.6339,\ 0.5603,\ 0.5000$, the last
+being exact. The value $\tau = 0.35$ falls outside the range $e \le c$
+covered by the theorem (one noise branch then has negative estimated
+cross covariance); it could be handled by direct polynomial certification
+but we do not pursue it.
 \end{remark}
 
-\begin{proposition}[An exact four-asset example]
-\label{prop:example}
-Let $n = 4$ with blocks $\{1,2\}, \{3,4\}$, volatilities $(1,1,2,2)$,
-within-block correlation $\tfrac12$, cross-block correlation $\tfrac{3}{10}$;
-let the estimate err in the $(1,3)$ covariance entry by
-$\pm \tfrac{3}{20}\cdot 2$ with probability $\tfrac12$ each. Then, in exact
-rational arithmetic,
+\section{The surrogate in general}
+\label{sec:frontier}
+
+Away from solvable families one can still organize the problem through the
+second-order surrogate $F_2 = V_0 + \tau^2 G$ of \eqref{eq:expansion}.
+
+\begin{theorem}[Clipped monotone frontier, for the surrogate]
+\label{thm:frontier}
+Suppose that on $(0, \bar\gamma)$: $V_0' < 0$; $G' > 0$; $V_0'' \ge 0$ and
+$G'' \ge 0$; and at every $\gamma$ at least one of $V_0''(\gamma) > 0$,
+$G''(\gamma) > 0$ holds. Define $t = -V_0'/G'$ on $(0,\bar\gamma)$ and its
+endpoint limits $t_0 = \lim_{\gamma \downarrow 0} t(\gamma) \in (0, \infty]$
+and $t_1 = \lim_{\gamma \uparrow \bar\gamma} t(\gamma) \in [0, \infty)$.
+Then $t$ is continuous and strictly decreasing, and for every
+$s = \tau^2 > 0$ the surrogate $F_2(\cdot\,; \tau)$ has the unique minimizer
+\begin{equation}
+  \gamma_2^*(s) \;=\;
+  \begin{cases}
+    \bar\gamma, & s \le t_1, \\
+    t^{-1}(s), & t_1 < s < t_0, \\
+    0, & s \ge t_0,
+  \end{cases}
+  \label{eq:clipped}
+\end{equation}
+which is nonincreasing in $s$. In particular the endpoints are optimal for
+the surrogate on nontrivial intervals of noise levels precisely when
+$t_1 > 0$, respectively $t_0 < \infty$; and
+$t_0 = -V_0'(0^+)/G'(0^+)$ is finite exactly when $G'(0^+) > 0$. In
+Example~\ref{ex:boundary}, $t_0 = \tfrac{27}{800}$; in the family of
+Section~\ref{sec:family}, $t_0 = \infty$ and $t_1 = 0$
+(Corollary~\ref{cor:famsurr}).
+\end{theorem}
+\begin{proof}
+Strict monotonicity of $t$: on $(0,\bar\gamma)$,
+\[
+  t' \;=\; \frac{-V_0''\, G' + V_0'\, G''}{(G')^2},
+\]
+where the first numerator term is $\le 0$ (since $V_0'' \ge 0$, $G' > 0$)
+and the second is $\le 0$ (since $V_0' < 0$, $G'' \ge 0$); at each $\gamma$
+at least one is strictly negative by hypothesis, so $t' < 0$ pointwise, and
+$t$ is a continuous strictly decreasing bijection from $(0,\bar\gamma)$ onto
+$(t_1, t_0)$. Sign analysis of $F_2' = V_0' + s\, G'$: since $G' > 0$,
+$F_2'(\gamma) < 0 \iff s < t(\gamma)$. If $t_1 < s < t_0$ then
+$F_2' < 0$ on $(0, t^{-1}(s))$ and $F_2' > 0$ on $(t^{-1}(s), \bar\gamma)$,
+so $t^{-1}(s)$ is the unique minimizer. If $s \le t_1$ then $s < t(\gamma)$
+for every interior $\gamma$, so $F_2' < 0$ throughout and the minimum sits
+at $\bar\gamma$; if $s \ge t_0$ then $F_2' > 0$ throughout and the minimum
+sits at $0$. Monotonicity of \eqref{eq:clipped} in $s$ follows from the
+monotonicity of $t^{-1}$ and the ordering of the three regimes.
+\end{proof}
+
+\begin{proposition}[Local transfer to the exact objective]
+\label{prop:transfer}
+Fix $\tau$ and let $I \subseteq [0, \bar\gamma]$ be an interval containing
+$\gamma_2^*(\tau^2)$ on which $F_2'' \ge c > 0$ and
+$|F - F_2| \le K\tau^4$. If $\gamma_F$ minimizes $F$ over $I$, then
+\[
+  |\gamma_F - \gamma_2^*| \;\le\; 2\sqrt{K/c}\;\tau^2 .
+\]
+No claim is made beyond $I$: uniqueness, global optimality, and the
+monotonicity of Theorem~\ref{thm:frontier} are statements about the
+surrogate.
+\end{proposition}
+\begin{proof}
+Strong convexity of $F_2$ on the interval $I$ gives, for the minimizer
+$\gamma_2^*$ of $F_2$,
+$\tfrac{c}{2}(\gamma_F - \gamma_2^*)^2 \le F_2(\gamma_F) -
+F_2(\gamma_2^*)$. Replace $F_2$ by $F$ twice, paying $K\tau^4$ each time:
+$F_2(\gamma_F) - F_2(\gamma_2^*) \le F(\gamma_F) - F(\gamma_2^*) +
+2K\tau^4$. Finally $F(\gamma_F) - F(\gamma_2^*) \le 0$ because $\gamma_F$
+minimizes $F$ over $I$ and $\gamma_2^* \in I$. Combine and solve for
+$|\gamma_F - \gamma_2^*|$.
+\end{proof}
+
+\section{A one-entry example}
+\label{sec:witness}
+
+The solved family relies on the exchangeability of common cross-block
+noise. The next example removes that symmetry: the noise sits in a single
+covariance entry, and the endpoint comparisons are certified exactly.
+
+\begin{example}[An interior minimizer, exactly, without common-noise
+symmetry]
+\label{ex:interior}
+Take the covariance \eqref{eq:familycov} and let the estimate err in the
+$(1,3)$ entry only, by $\pm \tfrac{3}{20}\cdot 2$ with probability
+$\tfrac12$ each. Then, in exact rational arithmetic,
 \[
   F(\tfrac{9}{10}) < F(0) \ \ \text{(margin } 4.879\times10^{-2}\text{)},
   \qquad
   F(\tfrac{9}{10}) < F(1) \ \ \text{(margin } 5.702\times10^{-4}\text{)},
 \]
-so every minimizer of $F$ on $[0,1]$ is strictly interior. All augmented
-blocks remain positive definite on both noise branches for every
-$\gamma \in [0,1]$: no repair or projection is involved. This is the minimal
-non-trivial configuration: with singleton-children nodes performing no
-augmentation, $n \le 3$ admits no $\gamma$-dependence at all, so $n = 4$ in
+so every minimizer of $F$ on $[0,1]$ is strictly interior. Because both
+inequalities are strict and $F$ depends continuously on the covariance and
+noise parameters at each fixed $\gamma$, the same conclusion holds on an
+open neighborhood of these parameters: the phenomenon is robust, not a
+knife-edge rational coincidence. This is also the minimal non-trivial
+configuration: because nodes with a singleton child perform no
+augmentation, $n \le 3$ admits no $\gamma$-dependence at all, and $n = 4$ in
 two blocks of two is the smallest universe on which the bridge exists.
-\end{proposition}
+\end{example}
 \begin{proof}
 $F(0)$, $F(\tfrac{9}{10})$, $F(1)$ are exact rational numbers, each a finite
 composition of field operations \eqref{eq:aug} on rational inputs, and the
 two inequalities are verified in exact fraction arithmetic by the
-accompanying certificate script (title footnote). Three values settle the
-whole interval as follows. Every denominator arising in the recursion is a
-polynomial in $\gamma$ with rational coefficients; the script certifies each
-strictly positive on $[0,1]$, on both noise branches, by exhibiting positive
-Bernstein coefficients (with exact subdivision where needed). Hence $F$ is
-continuous on $[0,1]$ and attains its minimum, and
+certificate script. Three values settle the whole interval as follows.
+Every denominator arising in the recursion is a polynomial in $\gamma$ with
+rational coefficients; the script certifies each strictly positive on
+$[0,1]$, on both noise branches, by exhibiting positive Bernstein
+coefficients (with exact subdivision where needed). Hence $F$ is continuous
+on $[0,1]$ and attains its minimum, and
 $\min F \le F(\tfrac{9}{10}) < \min\{F(0), F(1)\}$, so no minimizer is an
 endpoint. The same positivity gives the positive definiteness of the
-augmented blocks for every $\gamma$.
+augmented blocks for every $\gamma$. Robustness: at each of the three
+$\gamma$ values, $F$ is a continuous (rational) function of the covariance
+entries and the noise amplitude on a neighborhood where the certified
+denominators remain positive, so both strict inequalities persist under
+sufficiently small parameter perturbations.
 \end{proof}
 
-\section{The bridge as a bias--variance frontier}
-\label{sec:frontier}
-
-Smoothness gives the uniform second-order expansion
-\begin{equation}
-  F(\gamma;\tau) \;=\; V_0(\gamma) + \tau^2 G(\gamma) + O(\tau^4),
-  \qquad G(0) = G'(0) = 0,
-  \label{eq:expansion}
-\end{equation}
-the boundary behavior of the noise-cost profile $G$ coming from
-Lemma~\ref{lem:blind} and the $\gamma$-prefactor of
-Theorem~\ref{thm:nofull}(i). Write $F_2 = V_0 + \tau^2 G$.
-
-\begin{theorem}[The optimal coupling sweeps the bridge monotonically]
-\label{thm:frontier}
-Suppose on $(0,\bar\gamma)$ that $V_0' < 0$, $V_0'' \ge 0$ (decreasing convex
-population curve) and $G' > 0$, $G'' \ge 0$ (increasing convex noise cost),
-with at least one of $V_0'', G''$ strictly positive. Then
-$t(\gamma) = -V_0'(\gamma)/G'(\gamma)$ is a continuous, strictly decreasing
-bijection onto its range, and for every $\tau^2$ in that range the surrogate
-$F_2(\cdot\,;\tau)$ has the unique minimizer
-$\gamma^*(\tau^2) = t^{-1}(\tau^2)$, strictly decreasing in the noise level.
-Within the surrogate: $\gamma^* \to \bar\gamma$ only as the noise vanishes,
-$\gamma^* \to 0$ only as it diverges, and every interior coupling is optimal
-at exactly one noise level.
-\end{theorem}
-\begin{proof}
-$t' = (-V_0'' G' + V_0' G'')/G'^2 < 0$ on the stated domain, so $t$ is a
-strictly decreasing bijection; $F_2' = V_0' + \tau^2 G'$ is negative before
-$t^{-1}(\tau^2)$ and positive after. The comparative statics
-$d\gamma^*/d\tau^2 = -G'/F_2'' < 0$ follow from the implicit function
-theorem.
-\end{proof}
-
-\begin{proposition}[Transfer to the exact objective]
-\label{prop:transfer}
-Suppose in addition $F_2'' \ge c > 0$ on a neighborhood of
-$\gamma^*(\tau^2)$ and $|F - F_2| \le K\tau^4$ there. Then any minimizer of
-$F$ in that neighborhood satisfies
-$|\gamma_F - \gamma^*| \le 2\sqrt{K/c}\;\tau^2$.
-\end{proposition}
-\begin{proof}
-$\tfrac{c}{2}(\gamma_F - \gamma^*)^2 \le F_2(\gamma_F) - F_2(\gamma^*)
-\le \big[F(\gamma_F) - F(\gamma^*)\big] + 2K\tau^4 \le 2K\tau^4$.
-\end{proof}
-
-\begin{remark}[Interpretation]
-$\gamma$ is a shrinkage intensity toward the noise-immune end of the bridge,
-and Theorem~\ref{thm:frontier} is an optimal-shrinkage formula in the spirit
-of \cite{ledoitwolf2004}: the first-order condition balances the marginal
-population value of coupling against its marginal noise cost. The endpoints
-recover the prior results. As $\gamma \to 1$ the augmentation approaches the
-exact Schur complement, and $G'$ inherits the inversion sensitivity of
-minimum variance. That is the instability quantified at the endpoint by
-\cite{antonov2025}. So full coupling is optimal only as the noise vanishes,
-exactness \cite{mograby2025} notwithstanding.
+\begin{remark}[A structural cancellation, special to these families]
+\label{rem:cancel}
+In both noise models on the covariance \eqref{eq:familycov} --- the common
+cross-correlation noise of Section~\ref{sec:family} and the one-entry noise
+of Example~\ref{ex:interior} --- the boundary derivative does not move with
+the noise: exact jet evaluation gives
+\[
+  \partial_\gamma F(0;\tau) \;=\; V_0'(0) \;=\; -\tfrac{216}{3125}
+  \qquad\text{exactly, at } \tau \in \{\tfrac{1}{10}, \tfrac{3}{20},
+  \tfrac15\},
+\]
+in both models. In the notation of \eqref{eq:expansion}, $G'(0) = 0$ for
+these families; for the solved family this is also visible in
+\eqref{eq:closedforms}, where $G(\gamma) \propto \gamma^2(16\gamma+1)$
+vanishes quadratically. That is a cancellation particular to these
+families, not a general fact: Example~\ref{ex:boundary} has
+$G'(0) = \tfrac{8}{189} > 0$. It explains why numerical experiments on
+these families alone can suggest, wrongly, that the noise cost is
+$O(\gamma^2\tau^2)$ in general.
 \end{remark}
 
-\begin{remark}[Verification in the four-asset example]
-\label{rem:verify}
-With symmetric two-point noise on the cross-block correlation of the
-Proposition~\ref{prop:example} family, the hypotheses hold: $V_0$ is
-decreasing convex on $[0,1)$; $G$ is increasing convex, vanishing
-quadratically at $0$ ($G \approx 0.003, 0.032, 0.138, 0.448$ at
-$\gamma = 0.2, 0.4, 0.6, 0.8$), $\tau$-stable for $\tau \le 0.2$. The root
-of $V_0' + \tau^2 G' = 0$ tracks the exact minimizer of $F$:
-\begin{center}
-\begin{tabular}{lcccccc}
-\toprule
-$\tau$ & $0.10$ & $0.15$ & $0.20$ & $0.25$ & $0.30$ & $0.35$ \\
-\midrule
-exact $\argminop F$        & $0.85$ & $0.70$ & $0.65$ & $0.55$ & $0.50$ & $0.45$ \\
-root of $V_0' + \tau^2 G'$ & $0.83$ & $0.74$ & $0.66$ & $0.59$ & $0.53$ & $0.49$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-(grid resolution $0.05$); the optimal coupling falls monotonically as the
-noise grows, as Theorem~\ref{thm:frontier} requires.
+\begin{remark}[Boundedness]
+\label{rem:bounded}
+The sign of $F - V_0$ is not fixed: symmetric noise can reduce expected
+out-of-sample variance slightly at moderate $\gamma$. Nor does the noise
+cost blow up while the recursion remains defined: the weights are long-only
+and sum to one, so $w^\top \Sigma w \le \lambda_{\max}(\Sigma)$ always.
+What can happen at large noise is different: the perturbed recursion can
+exit the positive-definite cone, where the allocation \eqref{eq:aug} is
+simply undefined and implementations must repair or refuse.
 \end{remark}
 
 \section{Closing}
 
-Under covariance estimation error the Schur coupling is a bias--variance
-dial, its optimal setting interior and decreasing with the noise.
-A walk-forward bridge on Dow constituents is interactive at
-\texttt{schur.microprediction.org}; its minimum sits near
+Under cross-block estimation error the Schur coupling is a bias--variance
+dial, and the three layers say when to turn it. Small noise moves the
+optimum uniformly away from hierarchical risk parity whenever coupling has
+population value (Theorem~\ref{thm:nohrp}), at a cost of order
+$\gamma\tau^2$ (Theorem~\ref{thm:noisecost}). At an exact minimum-variance
+endpoint, positive marginal noise sensitivity pushes the optimum inside by
+order $\tau^2$ (Theorem~\ref{thm:mvlocal}). And in the solved family the
+exact optimizer is unique, interior, and slides monotonically from full
+coupling at zero noise to the middle of the bridge at the largest
+admissible noise (Theorem~\ref{thm:family}). The exact examples mark what
+cannot be claimed in general: hierarchical risk parity can become locally
+optimal at a finite noise level (Example~\ref{ex:boundary}), and the
+surrogate frontier is a clipped inverse, with each endpoint owning an
+interval of noise levels unless its limit condition holds
+(Theorem~\ref{thm:frontier}). A walk-forward bridge on Dow constituents is
+interactive at \texttt{schur.microprediction.org}; its minimum sits near
 $\gamma \approx 0.55$ and survives Ledoit--Wolf shrinkage of the inputs.
-In the vocabulary of \cite{cotton2024schur}: neither school dominates the
-other, and the border between their territories is drawn at
-$\tau^2 = -V_0'/G'$.
+Neither school dominates the other. Each may own an interval of noise
+levels, and between them the border is drawn at $\tau^2 = -V_0'/G'$.
 
 \begin{thebibliography}{9}
 

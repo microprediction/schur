@@ -223,6 +223,11 @@ def main():
     print("\nQED: every minimizer of F on [0,1] is strictly interior; "
           "F(0) is exactly noise-free.")
 
+    print()
+    jet_certificates()
+    print()
+    family_checks()
+
     # optional: cross-check against the allocation package and certify SPD
     try:
         import numpy as np
@@ -248,6 +253,197 @@ def main():
             assert _is_spd(schur_augmentation(D, B.T, A, float(g)))
     print("\ncross-check: matches allocation._schur.coupling.compute_weights (1e-10); "
           "all augmented blocks SPD on both branches.")
+
+
+
+
+
+# ---------------- exact boundary derivatives via dual-number jets (Example 1,
+# Remark on the structural cancellation). A dual number a + b*eps with
+# eps^2 = 0 propagates exact values and first derivatives in gamma through the
+# recursion; all arithmetic is over exact rationals.
+
+class Dual:
+    __slots__ = ('a', 'b')
+    def __init__(self, a, b=Fr(0)):
+        self.a, self.b = Fr(a), Fr(b)
+    @staticmethod
+    def of(x):
+        return x if isinstance(x, Dual) else Dual(x)
+    def __add__(s, o):
+        o = Dual.of(o); return Dual(s.a + o.a, s.b + o.b)
+    __radd__ = __add__
+    def __neg__(s): return Dual(-s.a, -s.b)
+    def __sub__(s, o):
+        o = Dual.of(o); return Dual(s.a - o.a, s.b - o.b)
+    def __rsub__(s, o): return Dual.of(o) - s
+    def __mul__(s, o):
+        o = Dual.of(o); return Dual(s.a * o.a, s.a * o.b + s.b * o.a)
+    __rmul__ = __mul__
+    def __truediv__(s, o):
+        o = Dual.of(o)
+        return Dual(s.a / o.a, (s.b * o.a - s.a * o.b) / (o.a * o.a))
+    def __rtruediv__(s, o): return Dual.of(o) / s
+
+
+def _jet_weights4(S):
+    """weights() with gamma = 0 + eps, entries lifted to Dual."""
+    GAMMA = Dual(Fr(0), Fr(1))
+    D_ = Dual.of
+    A = [[D_(S[i][j]) for j in range(2)] for i in range(2)]
+    D = [[D_(S[2 + i][2 + j]) for j in range(2)] for i in range(2)]
+    B = [[D_(S[i][2 + j]) for j in range(2)] for i in range(2)]
+    I2d = [[Dual(1), Dual(0)], [Dual(0), Dual(1)]]
+
+    def dmmul(X, Y):
+        return [[sum((X[i][k] * Y[k][j] for k in range(2)), Dual(0))
+                 for j in range(2)] for i in range(2)]
+
+    def dinv2(X):
+        (a, b), (c, d) = X
+        det = a * d - b * c
+        return [[d / det, Dual(0) - b / det], [Dual(0) - c / det, a / det]]
+
+    def daug(P, Bm, Q):
+        BQi = dmmul(Bm, dinv2(Q))
+        a0 = [[P[i][j] - GAMMA * dmmul(BQi, [list(r) for r in zip(*Bm)])[i][j]
+               for j in range(2)] for i in range(2)]
+        r = [[I2d[i][j] - GAMMA * BQi[i][j] for j in range(2)] for i in range(2)]
+        M = dmmul(dinv2(r), a0)
+        return [[(M[i][j] + M[j][i]) / Dual(2) for j in range(2)] for i in range(2)]
+
+    def dnaive(X):
+        w = [Dual(1) / X[0][0], Dual(1) / X[1][1]]
+        s = w[0] + w[1]
+        w = [wi / s for wi in w]
+        return sum((w[i] * X[i][j] * w[j] for i in range(2) for j in range(2)), Dual(0))
+
+    Aa = daug(A, B, D)
+    Da = daug(D, [list(r) for r in zip(*B)], A)
+    vL, vR = dnaive(Aa), dnaive(Da)
+    aL = vR / (vL + vR)
+    iA0, iA1 = Dual(1) / Aa[0][0], Dual(1) / Aa[1][1]
+    iD0, iD1 = Dual(1) / Da[0][0], Dual(1) / Da[1][1]
+    return [aL * iA0 / (iA0 + iA1), aL * iA1 / (iA0 + iA1),
+            (Dual(1) - aL) * iD0 / (iD0 + iD1), (Dual(1) - aL) * iD1 / (iD0 + iD1)]
+
+
+def boundary_derivative(SigTrue, SigPlus, SigMinus):
+    """Exact (F(0), F'(0)) for two-point noise, via jets."""
+    def Vjet(S):
+        w = _jet_weights4(S)
+        return sum((w[i] * Dual(SigTrue[i][j]) * w[j]
+                    for i in range(4) for j in range(4)), Dual(0))
+    Fj = (Vjet(SigPlus) + Vjet(SigMinus)) / Dual(2)
+    return Fj.a, Fj.b
+
+
+def jet_certificates():
+    # Example 1 (boundary): A = D = [[1,-1/2],[-1/2,2]], B = ones/10, E = e1 e1^T
+    A = [[Fr(1), Fr(-1, 2)], [Fr(-1, 2), Fr(2)]]
+    Bx = [[Fr(1, 10)] * 2, [Fr(1, 10)] * 2]
+
+    def SigB(tau, sign):
+        Bh = [[Bx[i][j] for j in range(2)] for i in range(2)]
+        Bh[0][0] += sign * tau
+        S = [[Fr(0)] * 4 for _ in range(4)]
+        for i in range(2):
+            for j in range(2):
+                S[i][j] = A[i][j]; S[2 + i][2 + j] = A[i][j]
+                S[i][2 + j] = Bh[i][j]; S[2 + i][j] = Bh[j][i]
+        return S
+
+    ST = SigB(Fr(0), 1)
+    print("Example 1: exact boundary derivatives dF/dgamma(0; tau)")
+    for tau in (Fr(0), Fr(1, 10), Fr(3, 20), Fr(1, 5), Fr(3, 10)):
+        _, d = boundary_derivative(ST, SigB(tau, +1), SigB(tau, -1))
+        pred = Fr(-1, 700) + Fr(8, 189) * tau * tau
+        assert d == pred, (tau, d, pred)
+        print(f"  tau = {str(tau):5}:  {str(d):>12}  ==  -1/700 + (8/189) tau^2")
+    print("  sign flip certified: negative at tau = 3/20, positive at tau = 1/5;"
+          " threshold tau^2 = 27/800.")
+
+    # Example 2 family: cancellation G'(0) = 0, both noise variants
+    def SigA_entry(eps):
+        return Sigma(eps)
+
+    def SigA_rho(eps):
+        v = [Fr(1), Fr(1), S_, S_]
+        C = [[Fr(1), RW, RC + eps, RC + eps], [RW, Fr(1), RC + eps, RC + eps],
+             [RC + eps, RC + eps, Fr(1), RW], [RC + eps, RC + eps, RW, Fr(1)]]
+        return [[v[i] * v[j] * C[i][j] for j in range(4)] for i in range(4)]
+
+    print("Example 2 family: structural cancellation at the HRP end")
+    for name, Sg in (("(1,3)-entry noise", SigA_entry), ("rho_c all-cross noise", SigA_rho)):
+        STa = Sg(Fr(0))
+        _, v0p = boundary_derivative(STa, STa, STa)
+        assert v0p == Fr(-216, 3125)
+        for tau in (Fr(1, 10), Fr(3, 20), Fr(1, 5)):
+            _, d = boundary_derivative(STa, Sg(tau), Sg(-tau))
+            assert d == v0p, (name, tau)
+        print(f"  {name}: dF/dgamma(0; tau) = V0'(0) = -216/3125 exactly "
+              f"at tau in {{1/10, 3/20, 1/5}}")
+
+
+def family_checks():
+    """Exact checks for the solved exchangeable family (Section 5 of the
+    paper): the scalar reduction, the exact objective, and the closed forms.
+    All equalities are exact rational identities at the sampled points."""
+    a, d, c = Fr(3, 4), Fr(3), Fr(3, 5)
+    Sv = a + d
+    K = Sv - 2 * c
+
+    def Sig_rho(eps):
+        v = [Fr(1), Fr(1), S_, S_]
+        C = [[Fr(1), RW, RC + eps, RC + eps], [RW, Fr(1), RC + eps, RC + eps],
+             [RC + eps, RC + eps, Fr(1), RW], [RC + eps, RC + eps, RW, Fr(1)]]
+        return [[v[i] * v[j] * C[i][j] for j in range(4)] for i in range(4)]
+
+    STf = Sig_rho(Fr(0))
+
+    def xgz(g, z):
+        return (d - g * z) / (Sv - 2 * g * z)
+
+    def Q(x):
+        return a * x * x + d * (1 - x) * (1 - x) + 2 * c * x * (1 - x)
+
+    xs = xgz(Fr(1), c)
+
+    def V0c(g):
+        return Fr(9) * (44 * g * g - 200 * g + 275) / (Fr(5) * (8 * g - 25) ** 2)
+
+    def Fc(g, e):
+        tot = Fr(0)
+        for sgn in (1, -1):
+            z = c + sgn * e
+            tot += ((g * z - c) / (Sv - 2 * g * z)) ** 2
+        return Q(xs) + ((d - a) ** 2 / K) * tot / 2
+
+    ok = True
+    for g in (Fr(0), Fr(1, 4), Fr(1, 2), Fr(3, 4), Fr(9, 10), Fr(1)):
+        for eps in (Fr(0), Fr(1, 10), Fr(-3, 20), Fr(1, 4)):
+            w = weights(Sig_rho(eps), g)
+            ok &= (w[0] == w[1]) and (w[2] == w[3])          # within = (1/2, 1/2)
+            x = w[0] + w[1]
+            ok &= x == xgz(g, c + 2 * eps)                    # x = x_gamma(z), e = 2 tau
+            V = sum(w[i] * STf[i][j] * w[j] for i in range(4) for j in range(4))
+            ok &= V == Q(x)                                   # realized variance
+    assert ok
+    print("family: reduction identities exact (within-weights 1/2, x = x_gamma(z), V = Q(x))")
+
+    okF = all(Fc(g, Fr(0)) == V0c(g) for g in (Fr(0), Fr(1, 3), Fr(1, 2), Fr(4, 5), Fr(1)))
+    assert okF
+    okE = True
+    for g in (Fr(0), Fr(2, 5), Fr(7, 10), Fr(1)):
+        for e in (Fr(0), Fr(1, 5), Fr(2, 5), Fr(3, 5)):
+            tau = e / 2
+            wP = weights(Sig_rho(tau), g)
+            wM = weights(Sig_rho(-tau), g)
+            VP = sum(wP[i] * STf[i][j] * wP[j] for i in range(4) for j in range(4))
+            VM = sum(wM[i] * STf[i][j] * wM[j] for i in range(4) for j in range(4))
+            okE &= (VP + VM) / 2 == Fc(g, e)
+    assert okE
+    print("family: exact objective (20) and closed form V0 (21) match the recursion")
 
 
 if __name__ == "__main__":

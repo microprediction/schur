@@ -59,15 +59,17 @@
         Cotton, P. (2026). <em>Betwixt Minimum Variance and Hierarchical Risk Parity:
         An Analytical Result for the Schur Bridge</em>.
         Working paper &mdash; <a href="./neither-end-of-the-bridge.pdf">PDF</a>.
-        <em>Proves that under covariance estimation error neither HRP (&gamma;=0) nor full
-        coupling (&gamma;=1) minimizes expected out-of-sample variance: HRP never reads the
-        top-level cross-block (so noise costs it nothing, but the population gain of coupling
-        is first-order), while the estimated cross-block enters the recursion only with a
-        &gamma; prefactor (so its noise cost vanishes quadratically at 0 and is order one at
-        1). Includes a four-asset witness verified in exact rational arithmetic and a
-        characterization: the optimal coupling is the root of
-        &tau;&sup2; = &minus;V&#8320;&prime;/G&prime; and sweeps the bridge monotonically in
-        the noise.</em>
+        <em>Where to sit on the bridge when the covariance is estimated with error, in three
+        layers: a structural theorem (top-level cross-block noise is invisible at HRP and its
+        expected cost factors as &gamma;&tau;&sup2;H, so small noise uniformly separates the
+        optimum from HRP whenever coupling has population value); a local theorem at an exact
+        minimum-variance endpoint (positive marginal noise sensitivity moves the optimum inside
+        by order &tau;&sup2;); and an exactly solved four-asset family whose unique optimizer is
+        interior and slides monotonically from 1 to &frac12; as the noise grows. Exact examples
+        bound the general claims: HRP can become locally optimal at a finite noise level
+        (boundary derivative &minus;1/700 + (8/189)&tau;&sup2;), and the surrogate frontier is a
+        clipped monotone inverse of &tau;&sup2; = &minus;V&#8320;&prime;/G&prime;. All exact
+        claims are machine-verified in rational arithmetic.</em>
       </li>
       <li>
         Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
