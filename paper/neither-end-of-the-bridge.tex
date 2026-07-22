@@ -1,0 +1,394 @@
+% Neither End of the Bridge: terse theory paper for the Schur bridge.
+% Self-contained. Build: tectonic neither-end-of-the-bridge.tex
+% Certificate script: paper/neither_end_certificate.py (exact rational
+% arithmetic; stdlib only).
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argminop}{arg\,min}
+
+\title{Neither End of the Bridge:\\ Estimation Noise Makes Interior Schur Coupling Optimal}
+\author{Peter Cotton\thanks{[Affiliation and postal address to be supplied.]
+Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
+certificate for Proposition~\ref{prop:witness} is
+\texttt{paper/neither\_end\_certificate.py} in
+\texttt{github.com/microprediction/schur}; implementations of the recursion are in
+the \texttt{allocation} and \texttt{precise} packages.}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Schur-complementary allocation interpolates hierarchical risk parity (HRP,
+$\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
+$\gamma$ that scales how much of the estimated cross-block covariance the
+recursion uses. Antonov, Lipton, and L\'opez de Prado prove that of the two
+endpoints, HRP is the less noisy; Mograby shows the $\gamma = 1$ endpoint is
+computable exactly on hierarchical structures. We prove that, generically,
+neither endpoint is optimal. The $\gamma = 0$ recursion never reads the
+top-level cross-block, so its expected out-of-sample variance $F(0)$ is exact
+while $F'(0)$ equals the strictly negative population slope: HRP is never the
+minimizer under small noise. Every appearance of the estimated cross-block
+carries a factor of $\gamma$, so the noise cost is $O(\gamma^2 \tau^2)$ near
+zero yet order one at $\gamma = 1$: above an explicit noise threshold, full
+coupling is never the minimizer either. A four-asset witness makes the
+conclusion unconditional --- $F(9/10) < F(0)$ and $F(9/10) < F(1)$ hold as
+exact rational inequalities, machine-verifiable because the recursion is
+rational arithmetic. Finally, under decreasing-convex population value and
+increasing-convex noise cost, the optimal coupling is the unique root of
+$\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and sweeps the bridge monotonically:
+every interior $\gamma$ is optimal at exactly one noise level, full coupling
+only as noise vanishes, HRP only as it diverges.
+\end{abstract}
+
+\noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
+Schur complement; estimation error; shrinkage; bias--variance trade-off.\\
+\textbf{JEL:} G11, C13, C58. \quad \textbf{MSC2020:} 91G10, 62H12.
+
+\section{Introduction}
+\label{sec:intro}
+
+Hierarchical risk parity \cite{lopezdeprado2016} allocates by recursive
+bisection without inverting a covariance matrix; minimum variance inverts it
+in full. That the two are ends of a single construction --- augmenting each
+block with a $\gamma$-scaled Schur complement of its sibling yields a
+recursion that is exactly HRP at $\gamma = 0$ and recovers minimum variance
+as $\gamma \to 1$ --- is a unification that first appeared in a blog
+\cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
+a fuller development in \cite{cotton2024schur}; on the hierarchical graph
+structures of \cite{mograby2025} the $\gamma = 1$ recovery is exact. The
+endpoints have since been compared analytically: \cite{antonov2025} derive
+the weight noise of HRP and of Markowitz under covariance estimation error
+and prove HRP is the more robust.
+
+This paper proves the statistical claim implicit in the bridge itself: under
+estimation noise the optimal coupling is generically \emph{interior}, and its
+location is characterized by a bias--variance first-order condition. The
+contributions are four short results. (i)~A structural lemma: the
+$\gamma = 0$ recursion never reads the top-level cross-block, so cross-block
+noise cannot move it. (ii)~If coupling has first-order population value, HRP
+is strictly suboptimal under all sufficiently small noise, of any support.
+(iii)~Because the estimated cross-block enters the recursion only with a
+$\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
+while it is order one at full coupling; above an explicit threshold the
+minimizer is interior --- and a four-asset witness, verified in exact
+rational arithmetic, makes the conclusion unconditional. (iv)~Under shape
+conditions verified in the witness family, the optimal coupling
+$\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
+monotonically in the noise, sweeping the entire bridge: an optimal-shrinkage
+formula in the spirit of \cite{ledoitwolf2004}, with HRP the infinite-noise
+limit and full coupling the zero-noise limit.
+
+\section{The recursion}
+\label{sec:setup}
+
+Fix an asset order and a balanced bisection tree over $n$ assets. Given
+$M \succ 0$ and $\gamma \in [0,1]$, the Schur-complementary allocation
+$w(\gamma; M)$ is defined recursively \cite{cotton2024schur}: at a node with
+children $(L, R)$ and blocks
+$M = \left(\begin{smallmatrix} A & B \\ B^\top & D \end{smallmatrix}\right)$,
+each child block is augmented with the $\gamma$-scaled Schur complement of
+the other,
+\begin{equation}
+  A_\gamma \;=\; \operatorname{sym}\!\Big[\big(I - \gamma B D^{-1}\big)^{-1}
+  \big(A - \gamma\, B D^{-1} B^\top\big)\Big],
+  \qquad
+  D_\gamma \;=\; \big(A \leftrightarrow D,\ B \to B^\top\big),
+  \label{eq:aug}
+\end{equation}
+the budget is split between children in inverse proportion to the naive
+portfolio variances $\nu(A_\gamma), \nu(D_\gamma)$ (inverse-diagonal
+weights), and the recursion continues inside each augmented block. At
+$\gamma = 0$ the augmentation is the identity and the recursion is HRP over
+the fixed order.
+
+Let $\Sigma \succ 0$ be the population covariance and
+$\widehat\Sigma_\tau = \Sigma + \tau N$ an estimate, with $N$ a bounded
+random symmetric perturbation on a set where every matrix in \eqref{eq:aug}
+remains invertible for $\gamma \in [0, \bar\gamma]$. The object of study is
+the expected out-of-sample variance and its population limit,
+\begin{equation}
+  F(\gamma; \tau) \;=\; \E\big[\, w(\gamma; \widehat\Sigma_\tau)^\top \Sigma\,
+  w(\gamma; \widehat\Sigma_\tau) \,\big],
+  \qquad
+  V_0(\gamma) \;=\; F(\gamma; 0).
+  \label{eq:F}
+\end{equation}
+Every operation in the recursion is rational in $(\gamma, M)$, so $w$, $F$,
+$V_0$ are rational functions where denominators do not vanish --- in
+particular $C^\infty$ there, which is all the regularity used below.
+
+\section{Neither endpoint}
+\label{sec:endpoints}
+
+\begin{lemma}[The HRP end is blind to the cross-block]
+\label{lem:blind}
+$w(0; M)$ is a function of $(A, D)$ alone. Consequently, if the estimation
+error is supported on the top-level cross-block, then
+$w(0; \widehat\Sigma_\tau) = w(0; \Sigma)$ almost surely and
+$F(0; \tau) = V_0(0)$ exactly, for every $\tau$.
+\end{lemma}
+\begin{proof}
+At $\gamma = 0$ the augmentation \eqref{eq:aug} returns its first argument,
+so the top-level split uses $\nu(A)$ and $\nu(D)$, which read only
+within-block entries, and the recursion continues inside the unmodified
+blocks $A$ and $D$, never touching $B$. (Cross-blocks interior to $A$ or $D$
+\emph{are} read, through the naive variances of their parents; only the
+top-level $B$ is never read.)
+\end{proof}
+
+\begin{remark}[Scope]
+\label{rem:scope}
+The lemma is per-tree and per-variant: this recursion (naive variance over
+full child sub-blocks, as in \cite{lopezdeprado2016}) never reads the
+top-level cross-block; a split on diagonal variances alone would read nothing
+off-diagonal. When the tree itself is data-driven (a dendrogram, or Fiedler
+seriation \cite{cotton2024schur}), the ordering step does read the
+cross-block --- but only through the discrete tree choice, which for a
+generic estimate is locally constant. The $\gamma = 0$ allocation is then
+locally constant in the cross-block entries, and the differential statements
+below are unaffected for noise small enough to leave the tree unchanged. (In
+the witness of Proposition~\ref{prop:witness} the seriation returns the same
+top partition on both noise branches, so fixing the order there is without
+loss.)
+\end{remark}
+
+\begin{theorem}[HRP is strictly suboptimal under small noise]
+\label{thm:nohrp}
+If $V_0'(0) < 0$ --- coupling has first-order population value --- then there
+is $\tau_0 > 0$ such that for all $\tau < \tau_0$,
+$\partial_\gamma F(0; \tau) < 0$: every minimizer of $F(\cdot\,;\tau)$ on
+$[0, \bar\gamma]$ is bounded away from $0$. No support restriction on $N$ is
+needed.
+\end{theorem}
+\begin{proof}
+$\partial_\gamma F(0;\tau) = \E[\partial_\gamma V(0; \Sigma + \tau N)]$,
+where $V(\gamma; M) = w(\gamma; M)^\top \Sigma\, w(\gamma; M)$ is $C^1$ near
+$(0, \Sigma)$ with $\partial_\gamma V$ continuous and, for bounded $N$,
+dominated there. By dominated convergence
+$\partial_\gamma F(0;\tau) \to V_0'(0) < 0$ as $\tau \to 0$; continuity in
+$\tau$ gives $\tau_0$.
+\end{proof}
+
+\begin{theorem}[Full coupling is suboptimal above a noise threshold]
+\label{thm:nofull}
+Let the error be supported on the top-level cross-block and symmetric
+($N \overset{d}{=} -N$). Then:
+\begin{enumerate}
+\item[\textup{(i)}] there is $C < \infty$, uniform on a compact set of
+$\gamma$ and noise realizations keeping \eqref{eq:aug} invertible, with
+$\big| F(\gamma;\tau) - V_0(\gamma) \big| \le C \gamma^2 \tau^2$;
+\item[\textup{(ii)}] if for some $\hat\gamma \in (0,1)$ and $\tau^*$ the
+excess noise cost at full coupling satisfies
+$F(1;\tau^*) - V_0(1) > V_0(\hat\gamma) - V_0(1) + C\hat\gamma^2\tau^{*2}$,
+then $F(\hat\gamma;\tau^*) < F(1;\tau^*)$, and with
+Theorem~\ref{thm:nohrp} every minimizer of $F(\cdot\,;\tau^*)$ is interior.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+(i) In \eqref{eq:aug} the cross-block enters only through
+$\gamma \widehat B D^{-1}$ and $\gamma \widehat B D^{-1} \widehat B^\top$,
+so every occurrence of the perturbation $\tau N_B$ carries the prefactor
+$\gamma$, and the deeper levels operate on augmented blocks that retain it.
+Hence $\partial w/\partial\tau = \gamma\, h(\gamma,\tau)$ with $h$ bounded on
+the stated compact set, so $V(\gamma;\tau N) - V(\gamma;0)$ is Lipschitz in
+$\tau$ with constant $O(\gamma)$; by symmetry of $N$ the first-order term in
+$\tau$ cancels in expectation, and Taylor's theorem with the uniformly
+bounded second derivative gives (i). (ii) is arithmetic:
+$F(\hat\gamma;\tau^*) \le V_0(\hat\gamma) + C\hat\gamma^2\tau^{*2}
+< F(1;\tau^*)$.
+\end{proof}
+
+\begin{remark}
+The sign of $F - V_0$ is not fixed: symmetric noise can reduce expected
+out-of-sample variance slightly at moderate $\gamma$ through the curvature of
+$V$ in the perturbation (observed in the witness family). The theorems bound
+magnitudes; what they use is only that noise costs nothing at $\gamma = 0$
+and that its magnitude at $\gamma = 1$ can exceed the population gain of full
+coupling --- which it does dramatically once the perturbed recursion
+approaches the boundary of the positive-definite cone, where the
+$\gamma = 1$ allocation is not defined at all.
+\end{remark}
+
+\begin{proposition}[Exact witness]
+\label{prop:witness}
+Let $n = 4$ with blocks $\{1,2\}, \{3,4\}$, volatilities $(1,1,2,2)$,
+within-block correlation $\tfrac12$, cross-block correlation $\tfrac{3}{10}$;
+let the estimate err in the $(1,3)$ covariance entry by
+$\pm \tfrac{3}{20}\cdot 2$ with probability $\tfrac12$ each. Then, in exact
+rational arithmetic,
+\[
+  F(\tfrac{9}{10}) < F(0) \ \ \text{(margin } 4.879\times10^{-2}\text{)},
+  \qquad
+  F(\tfrac{9}{10}) < F(1) \ \ \text{(margin } 5.702\times10^{-4}\text{)},
+\]
+so every minimizer of $F$ on $[0,1]$ is strictly interior. All augmented
+blocks remain positive definite on both noise branches for every
+$\gamma \in [0,1]$: no repair or projection is involved.
+\end{proposition}
+\begin{proof}
+$F$ at rational arguments is an exact rational number, being a finite
+composition of field operations \eqref{eq:aug} on rational inputs. The two
+inequalities are evaluated in exact fraction arithmetic by the accompanying
+certificate script (see the title footnote), which also certifies positive
+definiteness along the path.
+\end{proof}
+
+\section{The bridge as a bias--variance frontier}
+\label{sec:frontier}
+
+Smoothness gives the uniform second-order expansion
+\begin{equation}
+  F(\gamma;\tau) \;=\; V_0(\gamma) + \tau^2 G(\gamma) + O(\tau^4),
+  \qquad G(0) = G'(0) = 0,
+  \label{eq:expansion}
+\end{equation}
+the boundary behavior of the noise-cost profile $G$ coming from
+Lemma~\ref{lem:blind} and the $\gamma$-prefactor of
+Theorem~\ref{thm:nofull}(i). Write $F_2 = V_0 + \tau^2 G$.
+
+\begin{theorem}[The optimal coupling sweeps the bridge monotonically]
+\label{thm:frontier}
+Suppose on $(0,\bar\gamma)$ that $V_0' < 0$, $V_0'' \ge 0$ (decreasing convex
+population curve) and $G' > 0$, $G'' \ge 0$ (increasing convex noise cost),
+with at least one of $V_0'', G''$ strictly positive. Then
+$t(\gamma) = -V_0'(\gamma)/G'(\gamma)$ is a continuous, strictly decreasing
+bijection onto its range, and for every $\tau^2$ in that range the surrogate
+$F_2(\cdot\,;\tau)$ has the unique minimizer
+$\gamma^*(\tau^2) = t^{-1}(\tau^2)$, strictly decreasing in the noise level.
+Within the surrogate: $\gamma^* \to \bar\gamma$ only as the noise vanishes,
+$\gamma^* \to 0$ only as it diverges, and every interior coupling is optimal
+at exactly one noise level.
+\end{theorem}
+\begin{proof}
+$t' = (-V_0'' G' + V_0' G'')/G'^2 < 0$ on the stated domain, so $t$ is a
+strictly decreasing bijection; $F_2' = V_0' + \tau^2 G'$ is negative before
+$t^{-1}(\tau^2)$ and positive after. The comparative statics
+$d\gamma^*/d\tau^2 = -G'/F_2'' < 0$ follow from the implicit function
+theorem.
+\end{proof}
+
+\begin{proposition}[Transfer to the exact objective]
+\label{prop:transfer}
+Suppose in addition $F_2'' \ge c > 0$ on a neighborhood of
+$\gamma^*(\tau^2)$ and $|F - F_2| \le K\tau^4$ there. Then any minimizer of
+$F$ in that neighborhood satisfies
+$|\gamma_F - \gamma^*| \le 2\sqrt{K/c}\;\tau^2$.
+\end{proposition}
+\begin{proof}
+$\tfrac{c}{2}(\gamma_F - \gamma^*)^2 \le F_2(\gamma_F) - F_2(\gamma^*)
+\le \big[F(\gamma_F) - F(\gamma^*)\big] + 2K\tau^4 \le 2K\tau^4$.
+\end{proof}
+
+\begin{remark}[Interpretation]
+$\gamma$ is a shrinkage intensity toward the noise-immune end of the bridge,
+and Theorem~\ref{thm:frontier} is an optimal-shrinkage formula in the spirit
+of \cite{ledoitwolf2004}: the first-order condition
+$\tau^2 = -V_0'(\gamma^*)/G'(\gamma^*)$ balances the marginal population
+value of coupling against its marginal noise cost. The endpoint behaviors
+recover the prior results. As $\gamma \to 1$ the augmentation approaches the
+exact Schur complement and $G'$ inherits the inversion sensitivity of minimum
+variance --- the instability quantified at the endpoint by
+\cite{antonov2025} --- so full coupling is optimal only in the
+vanishing-noise limit, exactness \cite{mograby2025} notwithstanding. As
+$\gamma \to 0$, $G'$ vanishes while the population gain $-V_0'(0)$ does not,
+so HRP is optimal only in the infinite-noise limit.
+\end{remark}
+
+\begin{remark}[Verification in the witness family]
+\label{rem:verify}
+With symmetric two-point noise on the cross-block correlation of the
+Proposition~\ref{prop:witness} family, the measured profiles satisfy the
+hypotheses: $V_0$ is decreasing convex on $[0,1)$; $G$ is increasing convex
+with the predicted quadratic vanishing at $0$
+($G \approx 0.003, 0.032, 0.138, 0.448$ at $\gamma = 0.2, 0.4, 0.6, 0.8$),
+and is $\tau$-stable for $\tau \le 0.2$, confirming the $O(\tau^4)$ error.
+The root of $V_0' + \tau^2 G' = 0$ tracks the exact minimizer of $F$:
+\begin{center}
+\begin{tabular}{lcccccc}
+\toprule
+$\tau$ & $0.10$ & $0.15$ & $0.20$ & $0.25$ & $0.30$ & $0.35$ \\
+\midrule
+exact $\argminop F$        & $0.85$ & $0.70$ & $0.65$ & $0.55$ & $0.50$ & $0.45$ \\
+root of $V_0' + \tau^2 G'$ & $0.83$ & $0.74$ & $0.66$ & $0.59$ & $0.53$ & $0.49$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+(grid resolution $0.05$): the optimal coupling falls monotonically from near
+full coupling toward the middle of the bridge as the noise grows, as
+Theorem~\ref{thm:frontier} requires.
+\end{remark}
+
+\section{Closing}
+
+Exactness of full coupling does not confer statistical optimality, and the
+noise-robustness of HRP does not confer it either: under covariance
+estimation error the Schur coupling is a bias--variance dial whose optimal
+setting is interior, decreasing in the noise, and characterized by
+$\tau^2 = -V_0'/G'$. The empirical counterpart --- a walk-forward bridge on
+Dow constituents with one-year training windows, minimum near
+$\gamma \approx 0.55$ and robust to Ledoit--Wolf shrinkage of the inputs ---
+is at \texttt{allocation.microprediction.org}, alongside the interactive
+demonstrations.
+
+\begin{thebibliography}{9}
+
+\bibitem{lopezdeprado2016}
+M.~L\'opez de Prado,
+\emph{Building diversified portfolios that outperform out of sample},
+Journal of Portfolio Management \textbf{42}(4) (2016), 59--69.
+
+\bibitem{cotton2022blog}
+P.~Cotton,
+\emph{Schur complementary portfolios fix hierarchical risk parity},
+Geek Culture (Medium), 2022.
+\url{https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f}
+
+\bibitem{palomar2025}
+D.~P.~Palomar,
+\emph{Portfolio Optimization: Theory and Application},
+Cambridge University Press, 2025. doi:10.1017/9781009428095.
+
+\bibitem{cotton2024schur}
+P.~Cotton,
+\emph{Schur complementary allocation: a unification of hierarchical and
+optimization-based portfolio construction}, 2024.
+arXiv:2411.05807. \url{https://schur.microprediction.org}
+
+\bibitem{antonov2025}
+A.~Antonov, A.~Lipton, and M.~L\'opez de Prado,
+\emph{Overcoming Markowitz's instability with the help of the hierarchical
+risk parity (HRP): theoretical evidence},
+in Transactions of ADIA Lab, World Scientific, 2025, pp.~87--121.
+doi:10.1142/9789819813049\_0003.
+
+\bibitem{mograby2025}
+G.~Mograby,
+\emph{Hierarchical minimum variance portfolios: a theoretical and algorithmic
+approach}, 2025. arXiv:2503.12328.
+
+\bibitem{ledoitwolf2004}
+O.~Ledoit and M.~Wolf,
+\emph{A well-conditioned estimator for large-dimensional covariance
+matrices},
+Journal of Multivariate Analysis \textbf{88}(2) (2004), 365--411.
+
+\end{thebibliography}
+
+\end{document}
