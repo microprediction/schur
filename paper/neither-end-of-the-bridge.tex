@@ -26,7 +26,7 @@
 An Analytical Result for the Schur Bridge}
 \author{Peter Cotton\thanks{[Affiliation and postal address to be supplied.]
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
-certificate for Proposition~\ref{prop:witness} is
+certificate for Proposition~\ref{prop:example} is
 \texttt{paper/neither\_end\_certificate.py} in
 \texttt{github.com/microprediction/schur}; implementations of the recursion are in
 the \texttt{allocation} and \texttt{precise} packages.}}
@@ -82,10 +82,10 @@ is strictly suboptimal under all sufficiently small noise, of any support.
 (iii)~Because the estimated cross-block enters the recursion only with a
 $\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
 while it is order one at full coupling, so above an explicit threshold the
-minimizer is interior. A witness in the minimal non-trivial configuration
+minimizer is interior. An example in the minimal non-trivial configuration
 (four assets in two blocks, the smallest universe on which $\gamma$ acts at
 all) is verified in exact rational arithmetic. (iv)~Under shape
-conditions verified in the witness family, the optimal coupling
+conditions verified in the example, the optimal coupling
 $\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
 monotonically in the noise, an optimal-shrinkage formula in the spirit of
 \cite{ledoitwolf2004}.
@@ -245,7 +245,7 @@ cross-block, but only through the discrete tree choice, which for a
 generic estimate is locally constant. The $\gamma = 0$ allocation is then
 locally constant in the cross-block entries, and the differential statements
 below are unaffected for noise small enough to leave the tree unchanged. (In
-the witness of Proposition~\ref{prop:witness} the seriation returns the same
+the example of Proposition~\ref{prop:example} the seriation returns the same
 top partition on both noise branches, so fixing the order there is without
 loss.)
 \end{remark}
@@ -299,15 +299,15 @@ $F(\hat\gamma;\tau^*) \le V_0(\hat\gamma) + C\hat\gamma^2\tau^{*2}
 \begin{remark}
 The sign of $F - V_0$ is not fixed: symmetric noise can reduce expected
 out-of-sample variance slightly at moderate $\gamma$ through the curvature of
-$V$ in the perturbation (observed in the witness family). The theorems bound
+$V$ in the perturbation (observed in the example family). The theorems bound
 magnitudes; what they use is only that noise costs nothing at $\gamma = 0$
 and that its magnitude at $\gamma = 1$ can exceed the population gain of full
 coupling, and grows without bound as the perturbed recursion approaches the
 boundary of the positive-definite cone.
 \end{remark}
 
-\begin{proposition}[Exact witness]
-\label{prop:witness}
+\begin{proposition}[An exact four-asset example]
+\label{prop:example}
 Let $n = 4$ with blocks $\{1,2\}, \{3,4\}$, volatilities $(1,1,2,2)$,
 within-block correlation $\tfrac12$, cross-block correlation $\tfrac{3}{10}$;
 let the estimate err in the $(1,3)$ covariance entry by
@@ -326,11 +326,18 @@ augmentation, $n \le 3$ admits no $\gamma$-dependence at all, so $n = 4$ in
 two blocks of two is the smallest universe on which the bridge exists.
 \end{proposition}
 \begin{proof}
-$F$ at rational arguments is an exact rational number, being a finite
-composition of field operations \eqref{eq:aug} on rational inputs. The two
-inequalities are evaluated in exact fraction arithmetic by the accompanying
-certificate script (see the title footnote), which also certifies positive
-definiteness along the path.
+$F(0)$, $F(\tfrac{9}{10})$, $F(1)$ are exact rational numbers, each a finite
+composition of field operations \eqref{eq:aug} on rational inputs, and the
+two inequalities are verified in exact fraction arithmetic by the
+accompanying certificate script (title footnote). Three values settle the
+whole interval as follows. Every denominator arising in the recursion is a
+polynomial in $\gamma$ with rational coefficients; the script certifies each
+strictly positive on $[0,1]$, on both noise branches, by exhibiting positive
+Bernstein coefficients (with exact subdivision where needed). Hence $F$ is
+continuous on $[0,1]$ and attains its minimum, and
+$\min F \le F(\tfrac{9}{10}) < \min\{F(0), F(1)\}$, so no minimizer is an
+endpoint. The same positivity gives the positive definiteness of the
+augmented blocks for every $\gamma$.
 \end{proof}
 
 \section{The bridge as a bias--variance frontier}
@@ -391,10 +398,10 @@ variance (the instability quantified at the endpoint by
 vanishes, exactness \cite{mograby2025} notwithstanding.
 \end{remark}
 
-\begin{remark}[Verification in the witness family]
+\begin{remark}[Verification in the four-asset example]
 \label{rem:verify}
 With symmetric two-point noise on the cross-block correlation of the
-Proposition~\ref{prop:witness} family, the hypotheses hold: $V_0$ is
+Proposition~\ref{prop:example} family, the hypotheses hold: $V_0$ is
 decreasing convex on $[0,1)$; $G$ is increasing convex, vanishing
 quadratically at $0$ ($G \approx 0.003, 0.032, 0.138, 0.448$ at
 $\gamma = 0.2, 0.4, 0.6, 0.8$), $\tau$-stable for $\tau \le 0.2$. The root
