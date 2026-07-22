@@ -227,6 +227,8 @@ def main():
     jet_certificates()
     print()
     family_checks()
+    print()
+    singularity_certificates()
 
     # optional: cross-check against the allocation package and certify SPD
     try:
@@ -444,6 +446,97 @@ def family_checks():
             okE &= (VP + VM) / 2 == Fc(g, e)
     assert okE
     print("family: exact objective (20) and closed form V0 (21) match the recursion")
+    print("        (grids avoid the singular point gamma = a/(c+e); see below)")
+
+
+def singularity_certificates():
+    """Exact checks for Lemma 3 / Theorem 4(v) / Remark on shorting:
+    (1) the raw recursion is undefined exactly at gamma = a/(c+e) on the
+        upper noise branch (division by an exact zero), while x_gamma(z)
+        extends it continuously from both sides;
+    (2) at e = c the upper branch at gamma = 1 shorts: weights are exactly
+        (2/3, 2/3, -1/6, -1/6), with the estimated covariance still PD;
+    (3) the first-order condition at the singular point is positive for all
+        e in [3/20, 3/5]: clearing positive denominators gives P(e) with
+        nonnegative coefficients and positive constant term (also certified
+        by Bernstein expansion), hence gamma*(e) < a/(c+e)."""
+    a, d, c = Fr(3, 4), Fr(3), Fr(3, 5)
+    Sv, K = a + d, a + d - 2 * c
+
+    def Sig_rho(eps):
+        v = [Fr(1), Fr(1), S_, S_]
+        C = [[Fr(1), RW, RC + eps, RC + eps], [RW, Fr(1), RC + eps, RC + eps],
+             [RC + eps, RC + eps, Fr(1), RW], [RC + eps, RC + eps, RW, Fr(1)]]
+        return [[v[i] * v[j] * C[i][j] for j in range(4)] for i in range(4)]
+
+    def xgz(g, z):
+        return (d - g * z) / (Sv - 2 * g * z)
+
+    # (1) singularity at gamma = a/z, upper branch e = c (tau = 3/10, z = 6/5)
+    tau, z = Fr(3, 10), Fr(6, 5)
+    g_sing = a / z                               # = 5/8
+    try:
+        weights(Sig_rho(tau), g_sing)
+        raise AssertionError("recursion unexpectedly defined at the singular point")
+    except ZeroDivisionError:
+        pass
+    for h in (Fr(1, 100), Fr(-1, 100), Fr(1, 10**6), Fr(-1, 10**6)):
+        w = weights(Sig_rho(tau), g_sing + h)
+        assert w[0] + w[1] == xgz(g_sing + h, z)  # recursion == extension off the point
+    assert xgz(g_sing, z) == 1                    # extension gives the D block zero
+    print("singularity: recursion divides by an exact zero at gamma = 5/8, e = 3/5;")
+    print("             x_gamma(z) matches the recursion on both sides and equals 1 there")
+
+    # (2) shorting at gamma = 1, upper branch e = c
+    w = weights(Sig_rho(tau), Fr(1))
+    assert w == [Fr(2, 3), Fr(2, 3), Fr(-1, 6), Fr(-1, 6)], w
+    assert xgz(Fr(1), z) == Fr(4, 3)
+    Sg = Sig_rho(tau)                             # estimated covariance still PD
+    m1 = Sg[0][0]
+    m2 = Sg[0][0] * Sg[1][1] - Sg[0][1] ** 2
+    det3 = (Sg[0][0] * (Sg[1][1] * Sg[2][2] - Sg[1][2] ** 2)
+            - Sg[0][1] * (Sg[0][1] * Sg[2][2] - Sg[1][2] * Sg[0][2])
+            + Sg[0][2] * (Sg[0][1] * Sg[1][2] - Sg[1][1] * Sg[0][2]))
+    # 4x4 determinant by cofactor along the last row (exact)
+    def det4(M):
+        def det3x3(N):
+            return (N[0][0] * (N[1][1] * N[2][2] - N[1][2] * N[2][1])
+                    - N[0][1] * (N[1][0] * N[2][2] - N[1][2] * N[2][0])
+                    + N[0][2] * (N[1][0] * N[2][1] - N[1][1] * N[2][0]))
+        tot = Fr(0)
+        for j in range(4):
+            minor = [[M[i][k] for k in range(4) if k != j] for i in range(1, 4)]
+            tot += (-1) ** j * M[0][j] * det3x3(minor)
+        return tot
+    assert m1 > 0 and m2 > 0 and det3 > 0 and det4(Sg) > 0
+    print("shorting: at gamma = 1, e = 3/5 (upper branch) the exact weights are")
+    print("          (2/3, 2/3, -1/6, -1/6); the estimated covariance is PD")
+
+    # (3) P(e) = z+(a-c)(S z+ - 2a z-)^3 + z-(a z- - c z+) z+^2 (S-2a)^3 > 0
+    zp, zm = [c, Fr(1)], [c, Fr(-1)]              # polynomials in e
+    lin = padd([x * Sv for x in zp], [x * (-2 * a) for x in zm])   # S z+ - 2a z-
+    t1 = pmul([x * (a - c) for x in zp], pmul(pmul(lin, lin), lin))
+    inner = padd([x * a for x in zm], [x * (-c) for x in zp])      # a z- - c z+
+    t2 = [x * (Sv - 2 * a) ** 3 for x in pmul(pmul(zm, inner), pmul(zp, zp))]
+    P = padd(t1, t2)
+    assert P == [Fr(177147, 400000), Fr(0), Fr(6561, 800), Fr(1215, 32), Fr(23733, 640)], P
+    assert all(cf >= 0 for cf in P) and P[0] > 0   # positivity by inspection
+    assert bernstein_positive(P, Fr(3, 20), Fr(3, 5))
+    # sign agreement with the first-order condition, at exact rational e
+    def foc_at_sing(e):
+        def rp(u):
+            return 2 * K * (u - c) / (Sv - 2 * u) ** 3
+        g = a / (c + e)
+        return ((c + e) * rp(a) + (c - e) * rp(g * (c - e))) / 2
+    for k in range(1, 46):
+        e = Fr(3, 20) + Fr(k, 100)
+        if e > Fr(3, 5):
+            break
+        assert foc_at_sing(e) > 0
+    print("FOC at the singular point: P(e) = 177147/400000 + (6561/800)e^2 +")
+    print("          (1215/32)e^3 + (23733/640)e^4, all coefficients nonnegative;")
+    print("          Bernstein-certified positive on [3/20, 3/5]; direct FOC positive")
+    print("          at 45 exact points; hence gamma*(e) < a/(c+e)  (Theorem 4(v))")
 
 
 if __name__ == "__main__":

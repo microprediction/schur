@@ -114,7 +114,11 @@ computed in closed form; it is strictly convex on $[0,1]$, its unique
 minimizer $\gamma^*(e)$ is interior for every admissible noise amplitude
 $e \in (0, c]$, and it decreases monotonically from $\gamma^*(0) = 1$ to
 $\gamma^*(c) = \tfrac12$ (Theorem~\ref{thm:family}). This is a statement
-about the exact objective, not a surrogate. A companion exact example with
+about the exact objective, not a surrogate. One care is required: at large
+noise the raw recursion has a removable singularity at one interior
+coupling, so the objective is defined by continuous extension, and the
+minimizer is proved to sit strictly inside the region where the recursion
+is defined. A companion exact example with
 noise in a single covariance entry (Example~\ref{ex:interior}) shows that
 interior optimality survives without the common-noise symmetry. A clipped
 monotone frontier for the second-order surrogate
@@ -258,8 +262,8 @@ Implementations optionally cap $\gamma$ at an in-sample variance turning
 point (\texttt{keep\_monotonic}); we analyze the raw recursion. One thing
 cannot be simplified away. The inter-group fitness must be a quadratic form
 evaluated on the \emph{augmented} block. A diagonal-only $\nu$, as used in
-some HRP variants, never sees the augmentation, and then no choice of
-$\gamma$ connects the scheme to minimum variance.
+some HRP variants, generally does not preserve the Schur block-inversion
+identity \eqref{eq:blockinv} that exact minimum-variance recovery requires.
 
 Two structural facts hold across the entire family and not just the variant
 \eqref{eq:aug}: by \eqref{eq:family} the cross-block $B$ enters every member
@@ -656,9 +660,9 @@ $F(\cdot\,;\tau)$ with
   \;<\; 1 \quad (\tau > 0).
   \label{eq:mvshift}
 \end{equation}
-If moreover $V_0$ has an isolated global minimum at $\gamma = 1$, then for
-all sufficiently small $\tau$ the curve gives the unique global minimizer of
-$F(\cdot\,;\tau)$. The sign condition is essential: if $G'(1) < 0$, full
+If moreover $\gamma = 1$ is the unique global minimizer of $V_0$ on
+$[0,\bar\gamma]$, then for all sufficiently small $\tau$ the curve gives
+the unique global minimizer of $F(\cdot\,;\tau)$. The sign condition is essential: if $G'(1) < 0$, full
 coupling remains locally optimal for small noise.
 \end{theorem}
 \begin{proof}
@@ -677,9 +681,11 @@ $g(\gamma^*(s), s) = 0$, $\gamma^*(0) = 1$, and
 which is \eqref{eq:mvshift}. Since $\partial_\gamma g > 0$ near $(1,0)$,
 each $\gamma^*(s)$ is a strict local minimizer. For global optimality:
 $F(\cdot\,;\tau) \to V_0$ uniformly on $[0,\bar\gamma]$ as $\tau \to 0$
-(by \eqref{eq:gt2} or directly by uniform continuity), so if $V_0$'s global
-minimum at $1$ is isolated, minimizers of $F$ must enter any prescribed
-neighborhood of $1$ for small $\tau$, where strict convexity of $F$ in
+(by \eqref{eq:gt2} or directly by uniform continuity), so if $\gamma = 1$
+is the unique global minimizer of $V_0$, minimizers of $F$ must enter any
+prescribed neighborhood of $1$ for small $\tau$ (outside such a
+neighborhood $V_0$ exceeds $V_0(1)$ by a positive margin, by compactness),
+where strict convexity of $F$ in
 $\gamma$ (from $\partial_\gamma g > 0$) makes $\gamma^*(s)$ the only
 candidate. If $G'(1) < 0$ the same computation gives
 $d\gamma^*/ds > 0$: the unconstrained stationary point exits the interval
@@ -716,23 +722,39 @@ $e = 2\tau$ (the blocks have volatilities $1$ and $2$).
 
 \begin{lemma}[Exact reduction to a scalar bridge]
 \label{lem:reduce}
-For every $\gamma \in [0,1]$ and every realized $z = c \pm e$ with
-$ad - \gamma z^2 > 0$: the within-block weights of the implemented recursion
-\eqref{eq:aug}--\eqref{eq:naive} are exactly $(\tfrac12, \tfrac12)$ in each
-block; the augmented fitnesses are
+Assume $a < d$ and $4c^2 < ad$, as in \eqref{eq:familycov}, and fix
+$\gamma \in [0,1]$ and a realized $z = c \pm e$ with $0 \le z \le 2c$. The
+augmentation \eqref{eq:aug} of the $D$ block requires the factor
+$I - \gamma B^\top A^{-1}$ to be invertible, and that holds precisely when
+$\gamma z \ne a$; the $A$-side factor $I - \gamma B D^{-1}$ is invertible
+for every such $(\gamma, z)$, since $\gamma z \le 2c < d$. Wherever the
+recursion is defined, its within-block weights are exactly
+$(\tfrac12, \tfrac12)$ in each block, the augmented fitnesses are
 \begin{equation}
   \nu_{A_\gamma}(z) \;=\; \frac{ad - \gamma z^2}{d - \gamma z},
   \qquad
-  \nu_{D_\gamma}(z) \;=\; \frac{ad - \gamma z^2}{a - \gamma z};
+  \nu_{D_\gamma}(z) \;=\; \frac{ad - \gamma z^2}{a - \gamma z},
   \label{eq:nuscalar}
 \end{equation}
 and the left-block weight is
 \begin{equation}
-  x_\gamma(z) \;=\; \frac{d - \gamma z}{a + d - 2\gamma z}.
+  x_\gamma(z) \;=\; \frac{d - \gamma z}{a + d - 2\gamma z},
   \label{eq:xgz}
 \end{equation}
-Consequently the realized out-of-sample variance is $Q(x_\gamma(z))$ with
-$Q(x) = a x^2 + d(1-x)^2 + 2c\,x(1-x)$.
+with realized out-of-sample variance $Q(x_\gamma(z))$, where
+$Q(x) = a x^2 + d(1-x)^2 + 2c\,x(1-x)$. The formula \eqref{eq:xgz} is a
+rational function of $(\gamma, z)$ whose denominator obeys
+$S - 2\gamma z \ge S - 4c > 0$. It therefore extends the recursion's group
+weight continuously through the point $\gamma z = a$, where the extension
+gives the $D$ block the weight
+$1 - x_\gamma(z) = (a - \gamma z)/(S - 2\gamma z) = 0$. This is the analog
+of the $b = 0$ convention in Proposition~\ref{prop:minvar}: a block whose
+augmented fitness diverges receives nothing. We call the allocation defined
+by \eqref{eq:xgz} on all of $[0,1]$ the \emph{extended} allocation and
+write $F_{\mathrm{ext}}$ for its expected out-of-sample variance. The
+singular point exists in $[0,1]$ only on the upper noise branch and only
+when $z = c + e \ge a$, that is, when $e \ge a - c$; for
+\eqref{eq:familycov} that threshold is $a - c = \tfrac{3}{20}$.
 \end{lemma}
 \begin{proof}
 Write the asset-level blocks as $A_2 = \left(\begin{smallmatrix} 1 & \frac12
@@ -743,7 +765,17 @@ $1 \cdot 2 \cdot (\rho_c \pm \tau) = z$). All three matrices are
 exchangeable (invariant under swapping the two assets of a block), and the
 augmentation \eqref{eq:aug} preserves exchangeability, so each augmented
 block has equal diagonal entries and \eqref{eq:naive} gives
-$(\tfrac12,\tfrac12)$ within blocks. For \eqref{eq:nuscalar}: since $D_2$ is
+$(\tfrac12,\tfrac12)$ within blocks. Invertibility first. Since
+$A_2^{-1}\mathbf{1} = \mathbf{1}/(2a)$, the $D$-side factor is
+$I - \gamma B^\top A_2^{-1} = I - \gamma\tfrac{z}{2a}
+\mathbf{1}\mathbf{1}^\top$, whose eigenvalues are $1$ (on the difference
+vector) and $1 - \gamma z/a$ (on $\mathbf{1}$); it is singular precisely
+when $\gamma z = a$. The $A$-side factor
+$I - \gamma\tfrac{z}{2d}\mathbf{1}\mathbf{1}^\top$ has eigenvalue
+$1 - \gamma z/d > 0$, because $\gamma z \le 2c < d$; here $2c < d$ follows
+from $4c^2 < ad \le d^2$. The common numerator in \eqref{eq:nuscalar} also
+never vanishes: $ad - \gamma z^2 \ge ad - 4c^2 > 0$. For
+\eqref{eq:nuscalar}: since $D_2$ is
 exchangeable with row sums $2d$, $D_2^{-1}\mathbf{1} = \mathbf{1}/(2d)$, so
 $\widehat B D_2^{-1} = \tfrac{z}{2d}\mathbf{1}\mathbf{1}^\top$ and
 $\widehat B D_2^{-1} \widehat B^\top = \tfrac{z^2}{d}
@@ -765,7 +797,10 @@ using $\mathbf{1}^\top A_2 \mathbf{1} = 4a$; the $D$-side is symmetric. For
 $x_\gamma(z) = (d - \gamma z)/\big((d-\gamma z) + (a - \gamma z)\big)$. The
 final sentence is the definition of $Q$ at the group level. Each identity
 is also verified exactly by the certificate script at a grid of rational
-$(\gamma, z)$.
+$(\gamma, z)$ away from the singular point; at the singular point the
+script verifies that the recursion is undefined (a division by an exact
+zero) and that the recursion's weight approaches \eqref{eq:xgz} on both
+sides.
 \end{proof}
 
 \begin{proposition}[Exact objective]
@@ -778,12 +813,16 @@ weight. Then $Q(x) = Q(x_*) + K\,(x - x_*)^2$ (exact square completion),
 \end{equation}
 and therefore, with $r(u) = \big((u - c)/(S - 2u)\big)^2$,
 \begin{equation}
-  F(\gamma; e)
+  F_{\mathrm{ext}}(\gamma; e)
   \;=\; Q(x_*) \;+\; \frac{(d-a)^2}{K}\cdot
         \frac12 \sum_{\sigma = \pm 1} r\big(\gamma (c + \sigma e)\big).
   \label{eq:exactF}
 \end{equation}
-This is the exact expected out-of-sample variance, not a surrogate. In
+This is the exact expected out-of-sample variance of the extended
+allocation; no Taylor surrogate is involved. It agrees with the objective
+of the raw recursion at every $(\gamma, e)$ where the recursion is
+defined, which by Lemma~\ref{lem:reduce} is everywhere except the single
+point $\gamma = a/(c+e)$ when $e \ge a - c$. In
 particular
 \begin{equation}
   V_0(\gamma) = \frac{9\,(44\gamma^2 - 200\gamma + 275)}
@@ -793,7 +832,8 @@ particular
   \label{eq:closedforms}
 \end{equation}
 where $G$ is the coefficient of $e^2$ in the small-noise expansion of
-$F(\gamma; e)$.
+$F_{\mathrm{ext}}(\gamma; e)$; for $e < a - c$ there is no singular point
+and $F_{\mathrm{ext}}$ is the raw objective outright.
 \end{proposition}
 \begin{proof}
 $Q$ is a quadratic in $x$ with leading coefficient $a + d - 2c = K$ and
@@ -813,11 +853,14 @@ $\gamma$, by the certificate script.
 
 \begin{theorem}[Exact interior optimum, monotone in the noise]
 \label{thm:family}
-Assume $a \ne d$, $0 < c < \sqrt{ad}$, and $S > 6c$ (all satisfied by
-\eqref{eq:familycov}: $S = \tfrac{15}{4} > \tfrac{18}{5} = 6c$). Then for
-every noise amplitude $0 < e \le c$:
+Assume $a < d$, $c > 0$, $4c^2 < ad$, and $S > 6c$ (all satisfied by
+\eqref{eq:familycov}: $4c^2 = \tfrac{36}{25} < \tfrac94 = ad$ and
+$S = \tfrac{15}{4} > \tfrac{18}{5} = 6c$). Then for every noise amplitude
+$0 < e \le c$, with $F_{\mathrm{ext}}$ the extended objective of
+Lemma~\ref{lem:reduce}:
 \begin{enumerate}
-\item[\textup{(i)}] $F(\cdot\,; e)$ is strictly convex on $[0, 1]$;
+\item[\textup{(i)}] $F_{\mathrm{ext}}(\cdot\,; e)$ is strictly convex on
+  $[0, 1]$;
 \item[\textup{(ii)}] it has a unique minimizer $\gamma^*(e) \in
   (\tfrac12, 1)$ for $0 < e < c$, with the boundary values
   $\gamma^*(0) = 1$ and $\gamma^*(c) = \tfrac12$;
@@ -835,7 +878,18 @@ and for small $e$,
   \;=\; 1 - \frac{1025}{153}\, e^2 + O(e^4)
   \label{eq:smalle}
 \end{equation}
-for the numbers of \eqref{eq:familycov}.
+for the numbers of \eqref{eq:familycov};
+\item[\textup{(v)}] for the numbers of \eqref{eq:familycov} the minimizer
+  lies strictly inside the regular region: whenever the singular point
+  $\gamma_e = a/(c+e)$ of Lemma~\ref{lem:reduce} lies in $[0,1]$, that is
+  for $e \ge a - c = \tfrac{3}{20}$,
+\[
+  \gamma^*(e) \;<\; \frac{a}{c + e}.
+\]
+Consequently the raw recursion is defined on a neighborhood of
+$\gamma^*(e)$ and coincides there with $F_{\mathrm{ext}}$, so
+(i)--(iv) describe the optimizer of the implemented recursion and not only
+of the extension.
 \end{enumerate}
 Consequently every coupling in $[\tfrac12, 1]$ is optimal at exactly one
 noise amplitude $e \in [0, c]$. In the noise parametrization of the paper,
@@ -846,7 +900,10 @@ Throughout, drop the positive constant $(d-a)^2/K$ and study
 $\bar F(\gamma; e) = \tfrac12[r(\gamma(c+e)) + r(\gamma(c-e))]$ with
 $r(u) = (u-c)^2/(S-2u)^2$, defined for $u < S/2$; note
 $\gamma z \le 2c < S/2$ on the admissible range, since $z \le c + e \le 2c$
-and $S > 6c > 4c$.
+and $S > 6c > 4c$. By \eqref{eq:exactF}, $\bar F$ is $F_{\mathrm{ext}}$ up
+to a positive affine map, and it is smooth on all of $[0,1] \times [0,c]$;
+the point $\gamma z = a$, where the raw recursion is undefined, is
+unremarkable for $\bar F$.
 
 \emph{Derivatives of $r$.} Direct differentiation gives
 \[
@@ -897,13 +954,18 @@ noise-free optimum, consistent with $V_0'(1) = 0$ (Lemma~\ref{lem:mv}
 applies: the reduction reaches the group-level minimum variance at
 $\gamma = 1$ exactly).
 
-\emph{(iii) Monotonicity.} For fixed $\gamma > 0$,
-$\partial_e \partial_\gamma \bar F(\gamma; e) =
-\tfrac{\gamma}{2}\big[\psi_\gamma'(c+e) - \psi_\gamma'(c-e)\big]$ where
-$\psi_\gamma(z) = z r'(\gamma z)$; the same computation as above shows
-$\psi_\gamma$ is strictly convex on the admissible range (replace $z$ by
-$\gamma z$ in the display and multiply by positive factors), so
-$\psi_\gamma'(c+e) > \psi_\gamma'(c-e)$ and the mixed partial is strictly
+\emph{(iii) Monotonicity.} For fixed $\gamma > 0$ write
+$\psi_\gamma(z) = z\, r'(\gamma z)$, so that
+$\partial_\gamma \bar F(\gamma; e) =
+\tfrac12\big[\psi_\gamma(c+e) + \psi_\gamma(c-e)\big]$ and
+\[
+  \partial_e \partial_\gamma \bar F(\gamma; e) \;=\;
+  \tfrac{1}{2}\big[\psi_\gamma'(c+e) - \psi_\gamma'(c-e)\big].
+\]
+The identity $\psi_\gamma(z) = \psi(\gamma z)/\gamma$ gives
+$\psi_\gamma''(z) = \gamma\, \psi''(\gamma z) > 0$ on the admissible range,
+so $\psi_\gamma'$ is strictly increasing,
+$\psi_\gamma'(c+e) > \psi_\gamma'(c-e)$, and the mixed partial is strictly
 positive. By the implicit function theorem on \eqref{eq:foc},
 $d\gamma^*/de = -\,\partial_e\partial_\gamma \bar F \,/\,
 \partial^2_{\gamma\gamma}\bar F < 0$.
@@ -916,12 +978,48 @@ $\tfrac{2 e^2 (S + 4c)}{K^4} + O(e^4)$ (expand each branch of
 $e = 0$ is $-\,2c^2/K^3 + O(\delta, e^2)$. Setting the sum of the two
 contributions to zero gives $\delta = e^2 (S + 4c)/(c^2 K) + O(e^4)$, which
 is \eqref{eq:smalle}; the coefficient evaluates to
-$\tfrac{1025}{153}$ for \eqref{eq:familycov}. The final sentence follows
+$\tfrac{1025}{153}$ for \eqref{eq:familycov}.
+
+\emph{(v) The singular point lies uphill.} Let
+$\gamma_e = a/(c+e) \le 1$ and write $z_\pm = c \pm e$, so that
+$\gamma_e z_+ = a$ and $\gamma_e z_- = a z_-/z_+$. By strict convexity it
+suffices to show $\partial_\gamma \bar F(\gamma_e; e) > 0$. Substituting
+into $\partial_\gamma \bar F = \tfrac12\sum_\sigma z_\sigma\,
+r'(\gamma z_\sigma)$ and clearing the inner fractions,
+\[
+  \partial_\gamma \bar F(\gamma_e; e)
+  \;=\; K\left[\frac{z_+\,(a-c)}{(S-2a)^3}
+  \;+\; \frac{z_-\,(a z_- - c z_+)\, z_+^2}{(S z_+ - 2a z_-)^3}\right].
+\]
+Both denominators are positive: $S - 2a = \tfrac94$ for
+\eqref{eq:familycov}, and
+$S z_+ - 2a z_- \ge z_+ (S - 2a) > 0$ since $z_- \le z_+$. Multiplying by
+the positive quantity $(S-2a)^3 (S z_+ - 2a z_-)^3 / K$ preserves the sign
+and produces the polynomial
+\[
+  P(e) \;=\; z_+ (a-c)\,(S z_+ - 2a z_-)^3
+  \;+\; z_- (a z_- - c z_+)\, z_+^2\, (S - 2a)^3,
+\]
+which for the numbers of \eqref{eq:familycov} expands to
+\[
+  P(e) \;=\; \tfrac{177147}{400000} \;+\; \tfrac{6561}{800}\, e^2
+  \;+\; \tfrac{1215}{32}\, e^3 \;+\; \tfrac{23733}{640}\, e^4 .
+\]
+Every coefficient is nonnegative and the constant term is positive, so
+$P(e) > 0$ for every $e \ge 0$, and in particular on
+$[\tfrac{3}{20}, \tfrac35]$. Hence
+$\partial_\gamma \bar F(\gamma_e; e) > 0$, and by strict convexity
+$\gamma^*(e) < \gamma_e$. The expansion of $P$ and the sign agreement with
+the first-order condition are verified in exact rational arithmetic by the
+certificate script.
+
+The final sentence of the theorem follows
 from (ii)--(iii): $\gamma^* : [0, c] \to [\tfrac12, 1]$ is a continuous
 strictly decreasing bijection.
 \end{proof}
 
-\begin{corollary}[The surrogate frontier is exact here]
+\begin{corollary}[The surrogate frontier spans the whole bridge in this
+family]
 \label{cor:famsurr}
 For the family \eqref{eq:familycov}, the closed forms
 \eqref{eq:closedforms} satisfy $V_0' < 0$, $V_0'' > 0$, $G' > 0$, $G'' > 0$
@@ -936,6 +1034,12 @@ $\gamma \uparrow 1$). In the language of Theorem~\ref{thm:frontier} below,
 $t_0 = \infty$ and $t_1 = 0$: for this family, and only because of these
 endpoint limits, the surrogate optimizer sweeps the entire open bridge and
 neither endpoint is surrogate-optimal at any positive finite noise level.
+The surrogate optimizer is not the exact optimizer at finite noise. At
+$e = c$ the exact minimizer is $\tfrac12$ (Theorem~\ref{thm:family}), while
+$t(\tfrac12) = \tfrac{1323}{2875} \ne e^2 = \tfrac{9}{25}$ and the
+surrogate optimizer sits near $0.537$. The two agree to order $e^2$ as
+$e \to 0$ (Proposition~\ref{prop:transfer}); what they share exactly is the
+sweep of the whole open bridge.
 \end{corollary}
 
 \begin{remark}
@@ -957,7 +1061,8 @@ second-order surrogate $F_2 = V_0 + \tau^2 G$ of \eqref{eq:expansion}.
 
 \begin{theorem}[Clipped monotone frontier, for the surrogate]
 \label{thm:frontier}
-Suppose that on $(0, \bar\gamma)$: $V_0' < 0$; $G' > 0$; $V_0'' \ge 0$ and
+Suppose $V_0$ and $G$ are continuous on $[0, \bar\gamma]$ and $C^2$ on
+$(0, \bar\gamma)$, with: $V_0' < 0$; $G' > 0$; $V_0'' \ge 0$ and
 $G'' \ge 0$; and at every $\gamma$ at least one of $V_0''(\gamma) > 0$,
 $G''(\gamma) > 0$ holds. Define $t = -V_0'/G'$ on $(0,\bar\gamma)$ and its
 endpoint limits $t_0 = \lim_{\gamma \downarrow 0} t(\gamma) \in (0, \infty]$
@@ -975,8 +1080,13 @@ $s = \tau^2 > 0$ the surrogate $F_2(\cdot\,; \tau)$ has the unique minimizer
 \end{equation}
 which is nonincreasing in $s$. In particular the endpoints are optimal for
 the surrogate on nontrivial intervals of noise levels precisely when
-$t_1 > 0$, respectively $t_0 < \infty$; and
-$t_0 = -V_0'(0^+)/G'(0^+)$ is finite exactly when $G'(0^+) > 0$. In
+$t_1 > 0$, respectively $t_0 < \infty$. If moreover
+$V_0, G \in C^1([0,\bar\gamma])$ with $V_0'(0) < 0$, as holds under
+Assumption~\ref{ass:reg} via \eqref{eq:expansion}, then
+$t_0 = -V_0'(0)/G'(0)$, finite exactly when $G'(0) > 0$. Endpoint
+regularity is needed for that formula: $V_0(\gamma) = V_0(0) - \sqrt\gamma$
+near $0$, with smooth $G$, satisfies every open-interval hypothesis and
+forces $t_0 = \infty$ regardless of $G'(0)$. In
 Example~\ref{ex:boundary}, $t_0 = \tfrac{27}{800}$; in the family of
 Section~\ref{sec:family}, $t_0 = \infty$ and $t_1 = 0$
 (Corollary~\ref{cor:famsurr}).
@@ -1106,15 +1216,27 @@ these families alone can suggest, wrongly, that the noise cost is
 $O(\gamma^2\tau^2)$ in general.
 \end{remark}
 
-\begin{remark}[Boundedness]
+\begin{remark}[Sign, boundedness, and shorting]
 \label{rem:bounded}
 The sign of $F - V_0$ is not fixed: symmetric noise can reduce expected
 out-of-sample variance slightly at moderate $\gamma$. Nor does the noise
-cost blow up while the recursion remains defined: the weights are long-only
-and sum to one, so $w^\top \Sigma w \le \lambda_{\max}(\Sigma)$ always.
-What can happen at large noise is different: the perturbed recursion can
-exit the positive-definite cone, where the allocation \eqref{eq:aug} is
-simply undefined and implementations must repair or refuse.
+cost blow up while Assumption~\ref{ass:reg} holds: the weights are a
+continuous function on the compact set $K$, hence bounded, say
+$\|w\| \le L$, and $w^\top \Sigma w \le \lambda_{\max}(\Sigma) L^2$. A
+tempting sharper bound fails. The weights sum to one but are not always
+long-only, so $w^\top \Sigma w \le \lambda_{\max}(\Sigma)$ is not
+available. The solved family makes this exact: at $e = c$ on the upper
+noise branch, $\gamma = 1$ gives the group weight $x_1(2c) = \tfrac43$ and
+asset weights $(\tfrac23, \tfrac23, -\tfrac16, -\tfrac16)$. The estimated
+covariance there is still positive definite; shorting the volatile block is
+simply what minimum variance does once the estimated cross covariance
+exceeds the smaller block variance. What breaks at large noise is also
+worth stating precisely. The allocation is a rational function of its
+inputs and becomes undefined only where a denominator vanishes, as at the
+point $\gamma z = a$ of Lemma~\ref{lem:reduce}. Leaving the
+positive-definite cone does not by itself undefine the recursion; it
+removes the variance interpretation of the fitness, and implementations
+must repair or refuse.
 \end{remark}
 
 \section{Closing}
