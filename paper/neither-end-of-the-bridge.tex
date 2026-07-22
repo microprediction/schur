@@ -29,7 +29,7 @@
 \DeclareMathOperator*{\argminop}{arg\,min}
 
 \title{Betwixt Minimum Variance and Hierarchical Risk Parity\\
-An Analytical Result for the Schur Bridge}
+Analytical Results for the Schur Bridge}
 \author{Peter Cotton\thanks{Microprediction.
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
 certificates for the exact claims are in
@@ -80,6 +80,15 @@ it as \texttt{SchurComplementary}. On the hierarchical graph structures of
 since been compared analytically: \cite{antonov2025} derive the weight noise
 of HRP and of Markowitz under covariance estimation error and prove HRP is
 the more robust.
+
+The question behind the bridge is a form of the classical estimation-risk
+problem. \cite{jobson1980} quantified the sampling error of efficient
+portfolios; \cite{michaud1989} named the enigma; \cite{jagannathanma2003}
+showed that imposing the wrong constraints acts as shrinkage and helps;
+\cite{demiguel2009} documented how hard the $1/N$ portfolio is to beat; and
+\cite{ledoitwolf2004} made shrinkage of the input systematic. The Schur
+coupling gives that trade-off a single parameter, and the present paper
+gives the parameter provable structure.
 
 This paper asks where on the bridge one should sit when the covariance is
 estimated with error, and answers in three layers. (i)~\emph{The HRP end,
@@ -193,6 +202,23 @@ block of \eqref{eq:blockinv}: the unnormalized block solutions are the
 normalized sub-portfolios scaled by exactly the inverse fitness $1/\nu$,
 which is the stated two-block scheme.
 \end{proof}
+
+\begin{remark}[Minimum variance in disguise]
+\label{rem:disguise}
+The constrained problem \eqref{eq:constrained} was stated for general
+$b$, and that generality is not idle. Several portfolio problems that look
+different are solutions of $Q^{-1}b$ for some $(Q, b)$ and are therefore
+minimum variance in disguise: the tangency portfolio ($b = \mu$), maximum
+diversification ($b = \sigma$, the vector of volatilities), minimum
+tracking error against a benchmark (minimum variance in active weights),
+beta hedging ($b$ a vector of exposures), and the variance-optimal
+combination of forecasts, where $Q$ is the covariance of forecast errors
+and $b = \mathbf{1}$ \cite{bates1969}. The block identity
+\eqref{eq:blockinv} and the damped bridge apply to each with $\mathbf{1}$
+replaced by $b$ throughout. The noise calculus of this paper is developed
+for $b = \mathbf{1}$; we expect, but do not prove here, that the endpoint
+results carry over with the companion vectors $b_A(\gamma)$ built from $b$.
+\end{remark}
 
 \emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
 equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
@@ -997,6 +1023,22 @@ minimizes $F$ over $I$ and $\gamma_2^* \in I$. Combine and solve for
 $|\gamma_F - \gamma_2^*|$.
 \end{proof}
 
+\begin{remark}[The same dial in meteorology]
+\label{rem:weather}
+The trade-off studied here is not particular to finance. The damped Schur
+complement \eqref{eq:family} coincides, term for term, with the reliability
+shrinkage that keeps Gaussian (Vecchia) pseudo-likelihoods of
+high-dimensional weather fields estimable when stations outnumber
+observations \cite{cotton2026damping}. In that language $V_0$ is the loss
+of a spatial model that trusts its estimated conditional structure, $\tau$
+is the sampling depth, and the clipped frontier of
+Theorem~\ref{thm:frontier} says how much conditional structure to trust at
+a given depth. The spatial literature also fits the damping intensity from
+data, which supplies a practical estimate of the noise level $s = \tau^2$
+at which to read \eqref{eq:clipped}; the correspondence and a comparison of
+recipes are developed in \cite{cotton2026damping}.
+\end{remark}
+
 \section{A one-entry example}
 \label{sec:witness}
 
@@ -1094,10 +1136,13 @@ interval of noise levels unless its limit condition holds
 (Theorem~\ref{thm:frontier}). A walk-forward bridge on Dow constituents is
 interactive at \texttt{schur.microprediction.org}; its minimum sits near
 $\gamma \approx 0.55$ and survives Ledoit--Wolf shrinkage of the inputs.
+Every theorem in this paper has a live check at
+\texttt{schur.microprediction.org/theorems.html}, computed from the same
+recursion.
 Neither school dominates the other. Each may own an interval of noise
 levels, and between them the border is drawn at $\tau^2 = -V_0'/G'$.
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{lopezdeprado2016}
 M.~L\'opez de Prado,
@@ -1133,6 +1178,43 @@ doi:10.1142/9789819813049\_0003.
 G.~Mograby,
 \emph{Hierarchical minimum variance portfolios: a theoretical and algorithmic
 approach}, 2025. arXiv:2503.12328.
+
+\bibitem{bates1969}
+J.~M.~Bates and C.~W.~J.~Granger,
+\emph{The combination of forecasts},
+Journal of the Operational Research Society \textbf{20}(4) (1969),
+451--468. doi:10.1057/jors.1969.103.
+
+\bibitem{cotton2026damping}
+P.~Cotton,
+\emph{Two sides of Schur damping: high-dimensional pseudo-likelihoods and
+portfolio allocation}, 2026. arXiv:2606.14798.
+
+\bibitem{jobson1980}
+J.~D.~Jobson and B.~Korkie,
+\emph{Estimation for Markowitz efficient portfolios},
+Journal of the American Statistical Association \textbf{75}(371) (1980),
+544--554. doi:10.1080/01621459.1980.10477507.
+
+\bibitem{michaud1989}
+R.~O.~Michaud,
+\emph{The Markowitz optimization enigma: is `optimized' optimal?},
+Financial Analysts Journal \textbf{45}(1) (1989), 31--42.
+doi:10.2469/faj.v45.n1.31.
+
+\bibitem{jagannathanma2003}
+R.~Jagannathan and T.~Ma,
+\emph{Risk reduction in large portfolios: why imposing the wrong constraints
+helps},
+The Journal of Finance \textbf{58}(4) (2003), 1651--1683.
+doi:10.1111/1540-6261.00580.
+
+\bibitem{demiguel2009}
+V.~DeMiguel, L.~Garlappi, and R.~Uppal,
+\emph{Optimal versus naive diversification: how inefficient is the $1/N$
+portfolio strategy?},
+Review of Financial Studies \textbf{22}(5) (2009), 1915--1953.
+doi:10.1093/rfs/hhm075.
 
 \bibitem{ledoitwolf2004}
 O.~Ledoit and M.~Wolf,
