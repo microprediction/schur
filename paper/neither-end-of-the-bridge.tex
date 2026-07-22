@@ -30,7 +30,7 @@ certificate for Proposition~\ref{prop:witness} is
 \texttt{paper/neither\_end\_certificate.py} in
 \texttt{github.com/microprediction/schur}; implementations of the recursion are in
 the \texttt{allocation} and \texttt{precise} packages.}}
-\date{\today}
+\date{}
 
 \begin{document}
 \maketitle
@@ -89,8 +89,7 @@ conclusion unconditional. (iv)~Under shape
 conditions verified in the witness family, the optimal coupling
 $\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
 monotonically in the noise, sweeping the entire bridge: an optimal-shrinkage
-formula in the spirit of \cite{ledoitwolf2004}, with HRP the infinite-noise
-limit and full coupling the zero-noise limit.
+formula in the spirit of \cite{ledoitwolf2004}.
 
 \section{The recursion}
 \label{sec:setup}
@@ -189,9 +188,7 @@ implementations, so a two-asset node splits by the inverse of its --- already
 augmented --- diagonal entries). At $\gamma = 0$ the augmentation
 \eqref{eq:aug} is the identity and the recursion is exactly HRP over the
 fixed order. Implementations optionally cap $\gamma$ at an in-sample variance
-turning point (\texttt{keep\_monotonic}); we analyze the raw recursion, the
-cap being an in-sample device orthogonal to the out-of-sample question
-studied here.
+turning point (\texttt{keep\_monotonic}); we analyze the raw recursion.
 
 Two structural facts, used throughout, hold across the entire family and not
 just the variant \eqref{eq:aug}: by \eqref{eq:family} the cross-block $B$
@@ -302,9 +299,8 @@ out-of-sample variance slightly at moderate $\gamma$ through the curvature of
 $V$ in the perturbation (observed in the witness family). The theorems bound
 magnitudes; what they use is only that noise costs nothing at $\gamma = 0$
 and that its magnitude at $\gamma = 1$ can exceed the population gain of full
-coupling --- which it does dramatically once the perturbed recursion
-approaches the boundary of the positive-definite cone, where the
-$\gamma = 1$ allocation is not defined at all.
+coupling --- dramatically so once the perturbed recursion approaches the
+boundary of the positive-definite cone.
 \end{remark}
 
 \begin{proposition}[Exact witness]
@@ -383,27 +379,24 @@ $\tfrac{c}{2}(\gamma_F - \gamma^*)^2 \le F_2(\gamma_F) - F_2(\gamma^*)
 \begin{remark}[Interpretation]
 $\gamma$ is a shrinkage intensity toward the noise-immune end of the bridge,
 and Theorem~\ref{thm:frontier} is an optimal-shrinkage formula in the spirit
-of \cite{ledoitwolf2004}: the first-order condition
-$\tau^2 = -V_0'(\gamma^*)/G'(\gamma^*)$ balances the marginal population
-value of coupling against its marginal noise cost. The endpoint behaviors
-recover the prior results. As $\gamma \to 1$ the augmentation approaches the
+of \cite{ledoitwolf2004}: the first-order condition balances the marginal
+population value of coupling against its marginal noise cost. The endpoints
+recover the prior results: as $\gamma \to 1$ the augmentation approaches the
 exact Schur complement and $G'$ inherits the inversion sensitivity of minimum
 variance --- the instability quantified at the endpoint by
-\cite{antonov2025} --- so full coupling is optimal only in the
-vanishing-noise limit, exactness \cite{mograby2025} notwithstanding. As
-$\gamma \to 0$, $G'$ vanishes while the population gain $-V_0'(0)$ does not,
-so HRP is optimal only in the infinite-noise limit.
+\cite{antonov2025} --- so full coupling is optimal only as the noise
+vanishes, exactness \cite{mograby2025} notwithstanding; as $\gamma \to 0$,
+$G'$ vanishes while the population gain $-V_0'(0)$ does not.
 \end{remark}
 
 \begin{remark}[Verification in the witness family]
 \label{rem:verify}
 With symmetric two-point noise on the cross-block correlation of the
-Proposition~\ref{prop:witness} family, the measured profiles satisfy the
-hypotheses: $V_0$ is decreasing convex on $[0,1)$; $G$ is increasing convex
-with the predicted quadratic vanishing at $0$
-($G \approx 0.003, 0.032, 0.138, 0.448$ at $\gamma = 0.2, 0.4, 0.6, 0.8$),
-and is $\tau$-stable for $\tau \le 0.2$, confirming the $O(\tau^4)$ error.
-The root of $V_0' + \tau^2 G' = 0$ tracks the exact minimizer of $F$:
+Proposition~\ref{prop:witness} family, the hypotheses hold: $V_0$ is
+decreasing convex on $[0,1)$; $G$ is increasing convex, vanishing
+quadratically at $0$ ($G \approx 0.003, 0.032, 0.138, 0.448$ at
+$\gamma = 0.2, 0.4, 0.6, 0.8$), $\tau$-stable for $\tau \le 0.2$. The root
+of $V_0' + \tau^2 G' = 0$ tracks the exact minimizer of $F$:
 \begin{center}
 \begin{tabular}{lcccccc}
 \toprule
