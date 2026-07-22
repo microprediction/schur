@@ -43,13 +43,13 @@ recursion uses. We prove that under covariance estimation error neither
 endpoint is optimal: for all sufficiently small noise the expected
 out-of-sample variance strictly improves away from hierarchical risk parity,
 and above an explicit noise threshold it strictly deteriorates toward full
-coupling, so the minimizer is interior --- a conclusion made unconditional by
-a four-asset example verified in exact rational arithmetic. Under natural
-shape conditions the optimal coupling is the unique root of
+coupling, so the minimizer is interior. A four-asset example verified in
+exact rational arithmetic makes this unconditional. Under natural shape
+conditions the optimal coupling is the unique root of
 $\tau^2 = -V_0'(\gamma)/G'(\gamma)$ and decreases monotonically in the noise
-level, sweeping the entire bridge: every interior coupling is optimal at
-exactly one noise level, minimum variance only as the noise vanishes,
-hierarchical risk parity only as it diverges.
+level: every interior coupling is optimal at exactly one noise level,
+minimum variance only as the noise vanishes, hierarchical risk parity only
+as it diverges.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -61,10 +61,10 @@ Schur complement; estimation error; shrinkage; bias--variance trade-off.\\
 
 Hierarchical risk parity \cite{lopezdeprado2016} allocates by recursive
 bisection without inverting a covariance matrix; minimum variance inverts it
-in full. That the two are ends of a single construction --- augmenting each
+in full. That the two are ends of a single construction (augmenting each
 block with a $\gamma$-scaled Schur complement of its sibling yields a
 recursion that is exactly HRP at $\gamma = 0$ and recovers minimum variance
-as $\gamma \to 1$ --- is a unification that first appeared in a blog
+as $\gamma \to 1$) is a unification that first appeared in a blog
 \cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
 a fuller development in \cite{cotton2024schur}; on the hierarchical graph
 structures of \cite{mograby2025} the $\gamma = 1$ recovery is exact. The
@@ -81,15 +81,14 @@ noise cannot move it. (ii)~If coupling has first-order population value, HRP
 is strictly suboptimal under all sufficiently small noise, of any support.
 (iii)~Because the estimated cross-block enters the recursion only with a
 $\gamma$ prefactor, the noise cost vanishes quadratically at the HRP end
-while it is order one at full coupling; above an explicit threshold the
-minimizer is interior --- and a witness in the minimal non-trivial
-configuration (four assets in two blocks, the smallest universe on which
-$\gamma$ acts at all), verified in exact rational arithmetic, makes the
-conclusion unconditional. (iv)~Under shape
+while it is order one at full coupling, so above an explicit threshold the
+minimizer is interior. A witness in the minimal non-trivial configuration
+(four assets in two blocks, the smallest universe on which $\gamma$ acts at
+all) is verified in exact rational arithmetic. (iv)~Under shape
 conditions verified in the witness family, the optimal coupling
 $\gamma^*(\tau^2)$ is the unique root of $\tau^2 = -V_0'/G'$ and decreases
-monotonically in the noise, sweeping the entire bridge: an optimal-shrinkage
-formula in the spirit of \cite{ledoitwolf2004}.
+monotonically in the noise, an optimal-shrinkage formula in the spirit of
+\cite{ledoitwolf2004}.
 
 \section{The recursion}
 \label{sec:setup}
@@ -151,20 +150,20 @@ block.
 collapsed matrix below satisfies $\widetilde A^{-1}\mathbf{1} =
 (A^c)^{-1}b_A$ at the vector level, but the naive fitness \eqref{eq:naive}
 and the symmetrization make $\gamma = 1$ \emph{approach} the minimum-variance
-portfolio rather than replicate it. One requirement is not negotiable: the
-inter-group fitness must be a genuine quadratic form on the \emph{augmented}
-block, as above --- a diagonal-only $\nu$, used in some HRP variants, never
-sees the augmentation and severs the bridge at any $\gamma$. None of the
-results below rely on exactness at $\gamma = 1$.
+portfolio rather than replicate it. The inter-group fitness must, however,
+be a quadratic form evaluated on the \emph{augmented} block, as above: a
+diagonal-only $\nu$, used in some HRP variants, never sees the augmentation,
+and then no value of $\gamma$ connects the scheme to minimum variance. None
+of the results below rely on exactness at $\gamma = 1$.
 
 \emph{The variant analyzed.} Appendix~A of \cite{cotton2024schur} licenses an
 equivalent ``collapse'' of the pair $(A^c, b_A)$ into a single matrix
 $\widetilde A$ with $\widetilde A^{-1}\mathbf{1} = A^c(\gamma)^{-1}
-b_A(\gamma)$. The reference implementations --- \texttt{skfolio}'s
+b_A(\gamma)$. The reference implementations, \texttt{skfolio}'s
 \texttt{SchurComplementary} and the \texttt{allocation}
-package\footnote{\texttt{github.com/skfolio/skfolio} and
+package,\footnote{\texttt{github.com/skfolio/skfolio} and
 \texttt{github.com/microprediction/allocation}; the two use identical
-augmentation and fitness routines.} --- take exactly this route, and it is the
+augmentation and fitness routines.} take this route, and it is the
 recursion we analyze: each child block is replaced by
 \begin{equation}
   A_\gamma \;=\; \operatorname{sym}\!\Big[\big(I - \gamma B D^{-1}\big)^{-1}
@@ -188,8 +187,8 @@ so the left child receives the fraction
 $\nu(D_\gamma)/\big(\nu(A_\gamma) + \nu(D_\gamma)\big)$ of the node's capital,
 and the recursion continues inside each augmented block down to singletons
 (nodes whose children are singletons perform no augmentation, matching the
-implementations, so a two-asset node splits by the inverse of its --- already
-augmented --- diagonal entries). At $\gamma = 0$ the augmentation
+implementations, so a two-asset node splits by the inverse of its already
+augmented diagonal entries). At $\gamma = 0$ the augmentation
 \eqref{eq:aug} is the identity and the recursion is exactly HRP over the
 fixed order. Implementations optionally cap $\gamma$ at an in-sample variance
 turning point (\texttt{keep\_monotonic}); we analyze the raw recursion.
@@ -213,7 +212,7 @@ the expected out-of-sample variance and its population limit,
 \end{equation}
 where $w(\gamma; M)$ denotes the allocation the recursion produces from an
 input matrix $M$. Every operation is rational in $(\gamma, M)$, so $w$, $F$,
-$V_0$ are rational functions where denominators do not vanish --- in
+$V_0$ are rational functions where denominators do not vanish, and in
 particular $C^\infty$ there, which is all the regularity used below.
 
 \section{Neither endpoint}
@@ -237,12 +236,12 @@ top-level $B$ is never read.)
 
 \begin{remark}[Scope]
 \label{rem:scope}
-The lemma is per-tree and per-variant: this recursion (naive variance over
+The lemma concerns a fixed tree and this particular variant: this recursion (naive variance over
 full child sub-blocks, as in \cite{lopezdeprado2016}) never reads the
 top-level cross-block; a split on diagonal variances alone would read nothing
 off-diagonal. When the tree itself is data-driven (a dendrogram, or Fiedler
 seriation \cite{cotton2024schur}), the ordering step does read the
-cross-block --- but only through the discrete tree choice, which for a
+cross-block, but only through the discrete tree choice, which for a
 generic estimate is locally constant. The $\gamma = 0$ allocation is then
 locally constant in the cross-block entries, and the differential statements
 below are unaffected for noise small enough to leave the tree unchanged. (In
@@ -253,7 +252,7 @@ loss.)
 
 \begin{theorem}[HRP is strictly suboptimal under small noise]
 \label{thm:nohrp}
-If $V_0'(0) < 0$ --- coupling has first-order population value --- then there
+If $V_0'(0) < 0$ (coupling has first-order population value), then there
 is $\tau_0 > 0$ such that for all $\tau < \tau_0$,
 $\partial_\gamma F(0; \tau) < 0$: every minimizer of $F(\cdot\,;\tau)$ on
 $[0, \bar\gamma]$ is bounded away from $0$. No support restriction on $N$ is
@@ -303,7 +302,7 @@ out-of-sample variance slightly at moderate $\gamma$ through the curvature of
 $V$ in the perturbation (observed in the witness family). The theorems bound
 magnitudes; what they use is only that noise costs nothing at $\gamma = 0$
 and that its magnitude at $\gamma = 1$ can exceed the population gain of full
-coupling --- dramatically so once the perturbed recursion approaches the
+coupling, and grows without bound as the perturbed recursion approaches the
 boundary of the positive-definite cone.
 \end{remark}
 
@@ -387,8 +386,8 @@ of \cite{ledoitwolf2004}: the first-order condition balances the marginal
 population value of coupling against its marginal noise cost. The endpoints
 recover the prior results: as $\gamma \to 1$ the augmentation approaches the
 exact Schur complement and $G'$ inherits the inversion sensitivity of minimum
-variance --- the instability quantified at the endpoint by
-\cite{antonov2025} --- so full coupling is optimal only as the noise
+variance (the instability quantified at the endpoint by
+\cite{antonov2025}), so full coupling is optimal only as the noise
 vanishes, exactness \cite{mograby2025} notwithstanding.
 \end{remark}
 
@@ -417,13 +416,13 @@ Theorem~\ref{thm:frontier} requires.
 
 \section{Closing}
 
-Exactness of full coupling does not confer statistical optimality, and the
-noise-robustness of HRP does not confer it either: under covariance
-estimation error the Schur coupling is a bias--variance dial whose optimal
-setting is interior, decreasing in the noise, and characterized by
-$\tau^2 = -V_0'/G'$. The empirical counterpart --- a walk-forward bridge on
-Dow constituents, minimum near $\gamma \approx 0.55$, robust to Ledoit--Wolf
-shrinkage --- is interactive at \texttt{schur.microprediction.org}.
+Under covariance estimation error the Schur coupling is a bias--variance
+dial whose optimal setting is interior, decreasing in the noise, and
+characterized by $\tau^2 = -V_0'/G'$. Exact recovery of minimum variance at
+full coupling does not change this, and neither does the noise-robustness of
+HRP. A walk-forward bridge on Dow constituents, whose minimum near
+$\gamma \approx 0.55$ survives Ledoit--Wolf shrinkage of the inputs, is
+interactive at \texttt{schur.microprediction.org}.
 
 \begin{thebibliography}{9}
 
