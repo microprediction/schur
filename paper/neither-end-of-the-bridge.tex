@@ -45,29 +45,18 @@ are in the \texttt{allocation} and \texttt{precise} packages.}}
 Schur-complementary allocation interpolates hierarchical risk parity
 ($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a coupling
 $\gamma$ that sets how much of the estimated cross-block covariance the
-recursion uses. We study the expected out-of-sample variance
-$F(\gamma; \tau)$ when the estimate carries symmetric noise of size $\tau$ in
-the top-level cross-block. Three layers of results. First, a structural
-theorem: the $\gamma = 0$ recursion never reads that block, so
-$F - V_0 = \gamma\tau^2 H$ for a bounded $H$, and whenever coupling has
-first-order population value the minimizer is uniformly separated from
-hierarchical risk parity for all sufficiently small noise. The
-$\gamma\tau^2$ order is attained: in an exact example the boundary
-derivative is $-\tfrac{1}{700} + \tfrac{8}{189}\tau^2$, so hierarchical risk
-parity becomes a one-sided local minimum once $\tau^2 > \tfrac{27}{800}$.
-Second, at an exact minimum-variance endpoint, $V_0'(1) = 0$ automatically,
-and if $V_0''(1) > 0$ and the marginal noise sensitivity $G'(1)$ is
-positive, the optimizer moves into the interior by
-$1 - \gamma^*(\tau) \sim \tau^2\, G'(1)/V_0''(1)$. Third, an exchangeable
-four-asset family with common cross-block noise is solved exactly: the
-expected out-of-sample variance is strictly convex in $\gamma$, its unique
-minimizer is interior for every admissible noise amplitude, and it decreases
-monotonically from $1$ to $\tfrac12$ as the noise grows. A further exact
-example with noise in a single covariance entry shows interior optimality is
-not an artifact of common-noise symmetry: $F(\tfrac{9}{10}) < F(0)$ and
-$F(\tfrac{9}{10}) < F(1)$ hold in exact rational arithmetic. A clipped
-monotone frontier for the second-order surrogate organizes the general case;
-either endpoint can be optimal on a nontrivial interval of noise levels.
+recursion uses. We ask where on the bridge to sit when the covariance is
+estimated with error, and answer in three layers. A structural theorem
+shows that top-level cross-block noise is invisible at the hierarchical end
+and prices coupling at order $\gamma\tau^2$, so small noise moves the
+optimum uniformly away from hierarchical risk parity whenever coupling has
+population value. A local theorem at an exact minimum-variance endpoint
+shows that positive marginal noise sensitivity pushes the optimum into the
+interior. An exchangeable four-asset family is then solved exactly: its
+unique optimizer is interior at every admissible noise level and decreases
+monotonically from full coupling to the middle of the bridge. Exact
+examples mark the boundaries of what holds in general, and every exact
+claim is verified in rational arithmetic.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
