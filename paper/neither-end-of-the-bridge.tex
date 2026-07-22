@@ -66,7 +66,9 @@ a $\gamma$-scaled Schur complement of its sibling and the recursion is
 exactly HRP at $\gamma = 0$, while recovering minimum variance as
 $\gamma \to 1$. This unification first appeared in a blog
 \cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
-a fuller development in \cite{cotton2024schur}. On the hierarchical graph
+a fuller development in \cite{cotton2024schur}. It quickly found its way
+into practice: \texttt{skfolio}, a popular Python portfolio library, ships
+it as \texttt{SchurComplementary}. On the hierarchical graph
 structures of \cite{mograby2025} the $\gamma = 1$ recovery is exact. The
 endpoints have since been compared analytically: \cite{antonov2025} derive
 the weight noise of HRP and of Markowitz under covariance estimation error
@@ -417,17 +419,14 @@ root of $V_0' + \tau^2 G'$ & $0.83$ & $0.74$ & $0.66$ & $0.59$ & $0.53$ & $0.49$
 \bottomrule
 \end{tabular}
 \end{center}
-(grid resolution $0.05$): the optimal coupling falls monotonically from near
-full coupling toward the middle of the bridge as the noise grows, as
-Theorem~\ref{thm:frontier} requires.
+(grid resolution $0.05$); the optimal coupling falls monotonically as the
+noise grows, as Theorem~\ref{thm:frontier} requires.
 \end{remark}
 
 \section{Closing}
 
 Under covariance estimation error the Schur coupling is a bias--variance
-dial. Its optimal setting is interior, it decreases with the noise, and it
-solves $\tau^2 = -V_0'/G'$. Exact recovery of minimum variance at full
-coupling does not change this, and neither does the noise-robustness of HRP.
+dial, its optimal setting interior and decreasing with the noise.
 A walk-forward bridge on Dow constituents is interactive at
 \texttt{schur.microprediction.org}; its minimum sits near
 $\gamma \approx 0.55$ and survives Ledoit--Wolf shrinkage of the inputs.
