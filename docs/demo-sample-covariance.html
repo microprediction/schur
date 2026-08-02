@@ -34,12 +34,16 @@
   L&oacute;pez de Prado prove HRP more robust than Markowitz. The browser runs a
   seeded Monte Carlo (4,000 replications, common draws across the &gamma; grid;
   the paper's table uses 200,000).</p>
-  <p>One honest wrinkle, and it is a finding of the paper rather than a bug: the
-  <em>mean</em> of the raw recursion's out-of-sample variance diverges at small
-  T. Rare draws put the recursion's singular coupling inside the bridge, the
-  pole is non-integrable, and a sample mean never settles: its spikes move when
-  the seed changes. The plot therefore shows the <em>median</em> curve, which is
-  stable at any sample count, with the tail frequency reported separately.</p>
+  <p>Two honest wrinkles, both findings of the paper rather than bugs. First, on
+  a sample covariance the implemented recursion at &gamma; = 1 is <em>not</em>
+  the sample minimum-variance portfolio (symmetrization and the naive splits
+  break the exact recovery once exchangeability is gone), so the right end of
+  the chart is <em>full coupling</em>, and the paper carries sample Markowitz
+  as a separate benchmark. Second, the <em>mean</em> of the raw recursion's
+  loss diverges at small T: rare draws drive the fitness sum through zero, the
+  pole is non-integrable, and a sample mean never settles. The plot therefore
+  shows the <em>median</em> curve, which is stable at any sample count, with
+  the tail frequency reported separately.</p>
   <div class="widget">
     <div class="controls">
       <label>sample size T</label>
@@ -53,8 +57,8 @@
     <div class="readout" id="wisRead">computing&hellip;</div>
   </div>
   <div class="lookfor">What to look for: at T = 15 the median minimum sits near
-  &gamma; &asymp; 0.6 and roughly 2% of draws at &gamma; = 1 blow past ten
-  times the population variance; by T = 250 the minimum has slid to
+  &gamma; &asymp; 0.6 and roughly 2% of draws at full coupling blow past ten
+  times the population minimum variance; by T = 250 the minimum has slid to
   &gamma; &asymp; 0.96 and the tail is gone. The readout collects
   &gamma;*(T) as you click through the sample sizes.</div>
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
