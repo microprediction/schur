@@ -2,89 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Check the theorems — Schur Complementary Portfolios</title>
+  <meta http-equiv="refresh" content="0; url=./min-var-demos.html" />
+  <title>Redirecting — Schur Complementary Portfolios</title>
   <link rel="stylesheet" href="./style.css" />
-  <link rel="stylesheet" href="./demos.css" />
 </head>
 <body>
-<header class="site-header">
-  <div class="nav-inner">
-    <a class="brand" href="./index.html">schur</a>
-    <nav>
-      <a href="./intro.html">Introduction</a>
-      <a href="./papers.html">Papers</a>
-      <a href="./demos.html">Demos</a>
-      <a href="./theorems.html">Theorems</a>
-      <a href="./implementations.html">Implementations</a>
-      <a href="./index.html#bibliography">Bibliography</a>
-      <a href="./map.html">Literature map</a>
-      <a href="./timeline.html">Timeline</a>
-      <a href="https://github.com/microprediction/schur">GitHub</a>
-    </nav>
-  </div>
-</header>
-
 <main>
-  <h1>Check the theorems</h1>
-  <p class="subtitle">Every result in
-  <a href="./neither-end-of-the-bridge.pdf"><em>The Minimum Out-of-Sample Variance Portfolio Lies
-  Strictly Between Hierarchical Risk Parity and Minimum Variance</em></a>, checked two ways.</p>
-
-  <p class="lead">Each theorem has a live demonstration, a page where your browser runs
-  the paper's recursion at the paper's covariances, and an exact certificate, a
-  rational-arithmetic verification in
-  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py"><code>paper/neither_end_certificate.py</code></a>.
-  The demonstrations are one per page and live under <a href="./min-var-demos.html">Demos</a>.</p>
-
-  <ul class="demo-list">
-    <li><b>Lemma 1</b> — the HRP end is blind to the cross-block.
-      <div class="claim">At &gamma; = 0 the recursion reads only the diagonal blocks, so
-      F(0;&tau;) is exactly noise-free under cross-block noise.
-      <a href="./demo-blindness.html">demo &rarr;</a></div></li>
-    <li><b>Theorem 1</b> — uniform separation from HRP under small noise.
-      <div class="claim">Whenever coupling has first-order population value, every
-      minimizer stays away from &gamma; = 0 for all sufficiently small noise, with no
-      restriction on the noise support.
-      <a href="./demo-noise-cost.html">demo &rarr;</a></div></li>
-    <li><b>Theorem 2</b> — the noise cost is &gamma;&tau;&sup2;.
-      <div class="claim">F &minus; V&#8320; = &gamma;&tau;&sup2;H with H bounded, and the
-      exponent on &gamma; cannot be improved.
-      <a href="./demo-noise-cost.html">demo &rarr;</a></div></li>
-    <li><b>Example 1</b> — HRP becomes locally optimal at finite noise.
-      <div class="claim">Boundary derivative &minus;1/700 + (8/189)&tau;&sup2;, sign flip
-      at &tau;* = &radic;(27/800).
-      <a href="./demo-hrp-endpoint.html">demo &rarr;</a></div></li>
-    <li><b>Lemma 2 and Theorem 3</b> — small noise moves the optimum off the
-      minimum-variance end.
-      <div class="claim">V&#8320;&prime;(1) = 0 automatically, and positive marginal noise
-      sensitivity pushes the optimizer inside by order &tau;&sup2;.
-      <a href="./demo-mv-endpoint.html">demo &rarr;</a></div></li>
-    <li><b>Lemma 3, Proposition 2, and Theorem 4</b> — the solved family.
-      <div class="claim">Exact objective in closed form, strictly convex, unique interior
-      minimizer at every admissible noise level, monotone from 1 to &frac12;.
-      <a href="./demo-family.html">demo &rarr;</a></div></li>
-    <li><b>Lemma 4 and Theorem 5</b> — whole-matrix noise.
-      <div class="claim">Every entry noisy; interiority decided by the sign of an explicit
-      second-moment functional &Xi;, and the condition is sharp.
-      <a href="./demo-whole-matrix.html">demo &rarr;</a>
-      <a href="./demo-entrywise.html">entrywise &rarr;</a>
-      <a href="./demo-sample-covariance.html">sample covariance &rarr;</a></div></li>
-    <li><b>Theorem 6</b> — the clipped frontier for the surrogate.
-      <div class="claim">The surrogate optimizer is the clipped inverse of
-      t = &minus;V&#8320;&prime;/G&prime;; each endpoint owns an interval of noise levels
-      unless its limit condition holds.
-      <a href="./demo-frontier.html">demo &rarr;</a></div></li>
-    <li><b>Example 2</b> — one-entry noise, interior without symmetry.
-      <div class="claim">A single perturbed covariance entry, and the interior optimum
-      survives: F(9/10) &lt; min(F(0), F(1)) exactly at &tau; = 0.15.
-      <a href="./demo-one-entry.html">demo &rarr;</a></div></li>
-  </ul>
-
-  <p class="muted">All demonstrations run the recursion of the paper's equation (4) with
-  the naive fitness (5), ported directly from the reference implementations. The
-  certificate script needs only the Python standard library and verifies every exact
-  claim in rational arithmetic.</p>
+  <p>The theorem checks now live with the demonstrations:
+  <a href="./min-var-demos.html">min-var-demos.html</a>.</p>
 </main>
 </body>
 </html>
