@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Entrywise noise: enumerate every sign state — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./theorems.html">Theorems</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Entrywise noise — enumerate every sign state</h1>
+
+  <p>Exchangeability is broken entirely: each correlation moves by &plusmn;&tau;
+  and each variance by a factor (1 &plusmn; &tau;), independently. The browser
+  enumerates all 2&#8310; = 64 (off-diagonals) or 2&sup1;&#8304; = 1024 (all ten
+  entries) sign states through the recursion and averages them, which is the same
+  computation the exact certificates do in rational arithmetic. HRP's anchor is
+  gone (F(0) rises with &tau;), and the minimizer stays interior.</p>
+  <div class="widget">
+    <div class="controls">
+      <label>noised entries</label>
+      <button id="entOff" class="on">six off-diagonal</button>
+      <button id="entAll">all ten</button>
+      <label for="entTau">&tau;</label>
+      <input type="range" id="entTau" min="0.01" max="0.2" step="0.005" value="0.1" />
+      <span class="val" id="entTauVal">0.100</span>
+    </div>
+    <canvas id="entChart" width="820" height="280"></canvas>
+    <div class="readout" id="entRead"></div>
+  </div>
+  <div class="lookfor">What to look for: F(0) is no longer flat in &tau; (compare
+  Lemma 1: the diagonal channels charge HRP too), yet the minimum stays strictly
+  inside. Push &tau; toward 0.15 with all ten entries: the &gamma; = 1 end blows
+  up by orders of magnitude as branches go near-singular, exactly as in the
+  paper.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+let entAllMode=false;
+document.getElementById('entOff').addEventListener('click',()=>{entAllMode=false;
+  document.getElementById('entOff').classList.add('on');
+  document.getElementById('entAll').classList.remove('on');draw();});
+document.getElementById('entAll').addEventListener('click',()=>{entAllMode=true;
+  document.getElementById('entAll').classList.add('on');
+  document.getElementById('entOff').classList.remove('on');draw();});
+const entTau=document.getElementById('entTau'),entTauVal=document.getElementById('entTauVal');
+entTau.addEventListener('input',draw);
+function draw(){
+  const tau=+entTau.value;entTauVal.textContent=tau.toFixed(3);
+  const {cx,W,H}=S.setup('entChart',280);cx.clearRect(0,0,W,H);
+  const padL=64,padB=28;
+  const gs=[];for(let g=0;g<=1.0001;g+=0.02)gs.push(g);
+  const res=gs.map(g=>S.Fent(g,tau,entAllMode));
+  const F=res.map(r=>r.mean);
+  const F0=F[0],F1=F[F.length-1];
+  let k=0;F.forEach((v,i)=>{if(v<F[k])k=i;});
+  const gstar=gs[k];
+  let ymin=Math.min(...F);
+  let ymax=Math.min(Math.max(...F.filter(isFinite)),F0*1.3);
+  const pad=(ymax-ymin)*0.08||0.005;
+  const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(Math.min(v,ymax)-ymin+pad)/(ymax-ymin+2*pad)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,`F(γ), average over ${res[0].nStates} sign states — ${entAllMode?'all ten entries':'six off-diagonals'}, τ = ${tau.toFixed(3)} (y clipped)`);
+  cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
+  [0,0.25,0.5,0.75,1].forEach(g=>cx.fillText(g,X(g),H-12));
+  cx.strokeStyle='#4a3aff';cx.lineWidth=2;cx.beginPath();
+  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(F[i])):cx.moveTo(X(g),Y(F[i]));});cx.stroke();
+  cx.fillStyle='#1a1a1a';cx.beginPath();cx.arc(X(gstar),Y(F[k]),4,0,7);cx.fill();
+  cx.fillStyle='#666';cx.font='11px sans-serif';cx.textAlign='center';
+  cx.fillText('γ* ≈ '+gstar.toFixed(2),X(gstar),Y(F[k])-10);
+  const sing=res[res.length-1].nBig;
+  document.getElementById('entRead').innerHTML=
+    `F(0) = <b>${F0.toFixed(4)}</b>, F(γ*) = <b>${F[k].toFixed(4)}</b>, F(1) = <b>${F1<100?F1.toFixed(4):F1.toExponential(2)}</b>`+
+    (sing?` (${sing} near-singular states excluded at γ = 1, as in the exact computation)`:``)+
+    `. Interior: <b>${(F0>F[k]&&F1>F[k])?'yes':'no'}</b>.`;
+}
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

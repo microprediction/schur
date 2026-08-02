@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Lemma 1: HRP never sees the cross-block — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./theorems.html">Theorems</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Lemma 1 — HRP never sees the cross-block</h1>
+
+  <p>At &gamma; = 0 the recursion is hierarchical risk parity: it splits by the
+  naive variances of the two diagonal blocks and never touches the cross-block. So
+  noise in the cross-block cannot move the HRP weights at all, while any
+  &gamma; &gt; 0 reads the noisy block and moves. The covariance is the paper's
+  Family A: volatilities (1,1,2,2), within-block correlation &frac12;, cross-block
+  correlation 0.3, and the noise moves the cross-block correlation by
+  &plusmn;&tau;.</p>
+  <div class="widget">
+    <div class="controls">
+      <label for="l1tau">cross-block noise &tau;</label>
+      <input type="range" id="l1tau" min="0" max="0.25" step="0.005" value="0.1" />
+      <span class="val" id="l1tauVal">0.10</span>
+    </div>
+    <canvas id="l1chart" width="820" height="240"></canvas>
+    <div class="readout" id="l1read"></div>
+  </div>
+  <div class="lookfor">What to look for: drag &tau;. The &gamma; = 0 bars never
+  move (clean and perturbed weights are identical to machine precision); the
+  &gamma; = 0.6 bars drift with the noise.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+const l1tau=document.getElementById('l1tau'),l1val=document.getElementById('l1tauVal');
+function draw(){
+  const tau=+l1tau.value;l1val.textContent=tau.toFixed(2);
+  const {cx,W,H}=S.setup('l1chart',240);
+  cx.clearRect(0,0,W,H);
+  const clean=S.famA(0,'rho'),noisy=S.famA(tau,'rho');
+  const groups=[['γ = 0',S.weights4(clean,0),S.weights4(noisy,0)],
+                ['γ = 0.6',S.weights4(clean,0.6),S.weights4(noisy,0.6)]];
+  const names=['1','2','3','4'];
+  const gw=(W-60)/2;
+  let maxDiff0=0,maxDiff6=0;
+  groups.forEach(([title,w0,w1],gi)=>{
+    const x0=30+gi*(gw+20),bw=gw/4;
+    cx.fillStyle='#666';cx.font='12px sans-serif';cx.textAlign='left';cx.fillText(title,x0,16);
+    for(let i=0;i<4;i++){
+      const x=x0+i*bw+bw/2,base=H-30,sc=(H-70)/0.6;
+      cx.fillStyle='#9aa0b0';cx.fillRect(x-bw*0.32,base,bw*0.28,-w0[i]*sc);
+      cx.fillStyle='#4a3aff';cx.fillRect(x+bw*0.04,base,bw*0.28,-w1[i]*sc);
+      cx.fillStyle='#555';cx.font='10px sans-serif';cx.textAlign='center';cx.fillText(names[i],x,H-16);
+      const d=Math.abs(w1[i]-w0[i]);
+      if(gi===0)maxDiff0=Math.max(maxDiff0,d);else maxDiff6=Math.max(maxDiff6,d);
+    }
+  });
+  cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='left';
+  cx.fillText('grey = clean covariance, blue = perturbed',30,H-2);
+  document.getElementById('l1read').innerHTML=
+    `Max weight change from the noise: <b>${maxDiff0.toExponential(1)}</b> at γ = 0 (zero to machine precision) vs <b>${maxDiff6.toFixed(4)}</b> at γ = 0.6.`;
+}
+l1tau.addEventListener('input',draw);
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

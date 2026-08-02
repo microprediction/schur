@@ -1,5 +1,5 @@
-% The Optimal Portfolio Lies Strictly Between Hierarchical Risk Parity and
-% Minimum Variance.
+% The Minimum Out-of-Sample Variance Portfolio Lies Strictly Between
+% Hierarchical Risk Parity and Minimum Variance.
 % Center of gravity: (1) general O(gamma tau^2) structure at the HRP end,
 % (2) local theorem at the minimum-variance end, (3) an exactly solved
 % exchangeable four-asset family with a unique interior optimizer decreasing
@@ -31,8 +31,8 @@
 \newcommand{\E}{\mathbb{E}}
 \DeclareMathOperator*{\argminop}{arg\,min}
 
-\title{The Optimal Portfolio Lies Strictly Between\\
-Hierarchical Risk Parity and Minimum Variance}
+\title{The Minimum Out-of-Sample Variance Portfolio Lies Strictly\\
+Between Hierarchical Risk Parity and Minimum Variance}
 \author{Peter Cotton\thanks{Microprediction.
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
 certificates for the exact claims are in
@@ -45,9 +45,10 @@ are in the \texttt{allocation} and \texttt{precise} packages.}}
 \maketitle
 
 \begin{abstract}
-We give the first analytical proof that the optimal portfolio sits
-strictly inside the Schur bridge, the one-parameter family we introduced
-to unify hierarchical risk parity with minimum variance. Under cross-block
+We give the first analytical proof that the minimum out-of-sample
+variance portfolio sits strictly inside the Schur bridge, the
+one-parameter family we introduced to unify hierarchical risk parity with
+minimum variance. Under cross-block
 estimation error the optimum separates from both ends, and an exchangeable
 four-asset family is solved exactly, with the optimizer decreasing from
 full coupling to the middle of the bridge. Dropping the cross-block
@@ -1309,7 +1310,7 @@ certificate script. For positivity in (iv), note
 $2d - a - c > d - c > 0$ and $a > c$.
 \end{proof}
 
-\begin{remark}[What whole-matrix noise changes, and what it does not]
+\begin{remark}[The numerical family under whole-matrix noise]
 \label{rem:wholefam}
 For the numbers of \eqref{eq:familycov}, \eqref{eq:Xiind} reads
 \[

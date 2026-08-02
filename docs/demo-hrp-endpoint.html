@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Example 1: HRP becomes locally optimal at finite noise — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./theorems.html">Theorems</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Example 1 — HRP becomes locally optimal at finite noise</h1>
+
+  <p>For Family B (blocks A&nbsp;=&nbsp;D&nbsp;=&nbsp;[[1,&minus;&frac12;],
+  [&minus;&frac12;,2]], cross entries 0.1, noise &plusmn;&tau; in one cross entry)
+  the paper computes the boundary derivative exactly:
+  &part;<sub>&gamma;</sub>F(0;&tau;) = &minus;1/700 + (8/189)&tau;&sup2;. The dots
+  are measured from the recursion; the line is the formula. The sign flips at
+  &tau;* = &radic;(27/800) &asymp; 0.1837: beyond it, moving off HRP
+  <em>hurts</em>, so the HRP endpoint is a one-sided local minimum despite
+  coupling having population value.</p>
+  <div class="widget">
+    <canvas id="e1chart" width="820" height="280"></canvas>
+    <div class="readout" id="e1read"></div>
+  </div>
+  <div class="lookfor">What to look for: measured dots sit exactly on the
+  parabola; the zero crossing is at &tau;* &asymp; 0.1837.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+function draw(){
+  const {cx,W,H}=S.setup('e1chart',280);cx.clearRect(0,0,W,H);
+  const padL=54,padB=28;
+  const taus=[];for(let t=0;t<=0.3001;t+=0.02)taus.push(t);
+  const meas=taus.map(t=>S.dF0('B',null,t));
+  const pred=t=>-1/700+8/189*t*t;
+  let ymin=Math.min(...meas),ymax=Math.max(...meas);
+  const X=t=>padL+t/0.3*(W-padL-14),Y=v=>H-padB-(v-ymin)/(ymax-ymin)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,'boundary derivative ∂γF(0;τ) — family B; line = −1/700 + (8/189)τ²');
+  cx.strokeStyle='#bbb';cx.setLineDash([3,3]);
+  cx.beginPath();cx.moveTo(padL,Y(0));cx.lineTo(W-14,Y(0));cx.stroke();
+  const tstar=Math.sqrt(27/800);
+  cx.beginPath();cx.moveTo(X(tstar),12);cx.lineTo(X(tstar),H-padB);cx.stroke();cx.setLineDash([]);
+  cx.fillStyle='#c0392b';cx.font='10px sans-serif';cx.textAlign='left';
+  cx.fillText('τ* = √(27/800) ≈ 0.184',X(tstar)+4,22);
+  cx.strokeStyle='#ef6c00';cx.lineWidth=1.6;cx.beginPath();
+  taus.forEach((t,i)=>{i?cx.lineTo(X(t),Y(pred(t))):cx.moveTo(X(t),Y(pred(t)));});cx.stroke();
+  cx.fillStyle='#4a3aff';
+  taus.forEach((t,i)=>{cx.beginPath();cx.arc(X(t),Y(meas[i]),3,0,7);cx.fill();});
+  cx.fillStyle='#888';cx.textAlign='center';cx.font='10px sans-serif';
+  [0,0.1,0.2,0.3].forEach(t=>cx.fillText(t.toFixed(1),X(t),H-12));
+  const err=Math.max(...taus.map((t,i)=>Math.abs(meas[i]-pred(t))));
+  document.getElementById('e1read').innerHTML=
+    `Max |measured − formula| over the grid: <b>${err.toExponential(1)}</b> (finite-difference error only). `+
+    `At τ = 0.15 the derivative is negative (${S.dF0('B',null,0.15).toExponential(2)}); at τ = 0.25 it is positive (+${S.dF0('B',null,0.25).toExponential(2)}): HRP has become a one-sided local minimum.`;
+}
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

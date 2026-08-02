@@ -2,8 +2,8 @@
 
 ## Paper
 
-*The Optimal Portfolio Lies Strictly Between Hierarchical Risk Parity and
-Minimum Variance* — `neither-end-of-the-bridge.tex` (self-contained,
+*The Minimum Out-of-Sample Variance Portfolio Lies Strictly Between
+Hierarchical Risk Parity and Minimum Variance* — `neither-end-of-the-bridge.tex` (self-contained,
 builds with `tectonic` or any standard pdflatex; no custom class).
 Certificates: `neither_end_certificate.py` (Python stdlib only; prints exact
 rational verifications of every exact claim). Interactive theorem checks:
@@ -38,8 +38,8 @@ https://schur.microprediction.org/theorems.html
 
 Dear Professor Cont,
 
-Please consider the enclosed manuscript, "The Optimal Portfolio Lies Strictly
-Between Hierarchical Risk Parity and Minimum Variance," for
+Please consider the enclosed manuscript, "The Minimum Out-of-Sample Variance Portfolio
+Lies Strictly Between Hierarchical Risk Parity and Minimum Variance," for
 publication in Mathematical Finance.
 
 Schur-complementary allocation interpolates hierarchical risk parity and
