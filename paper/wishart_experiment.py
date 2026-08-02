@@ -59,8 +59,12 @@ def main():
     N = 200_000
     L = np.linalg.cholesky(SIGMA)
     gammas = np.round(np.arange(0, 1.0001, 0.02), 4)
-    print(f"{'T':>4}  {'gamma*':>6}  {'F(0)':>8}  {'F(g*)':>8}  {'F(1)':>10}"
-          f"  {'(F(0)-F(g*))/se':>15}")
+    # The mean of the raw recursion's out-of-sample variance is infinite on
+    # part of the bridge at small T (near-singular couplings land inside with
+    # positive density and the pole is non-integrable), so the paper's table
+    # reports medians, which are stable, with the tail frequency separately.
+    print(f"{'T':>4}  {'gamma*':>6}  {'medF(0)':>8}  {'medF(g*)':>8}"
+          f"  {'medF(1)':>8}  {'P[V(g*)<V(0)]':>13}  {'P[V(1)>10]':>10}")
     for T in (15, 25, 50, 100, 250):
         X = rng.standard_normal((N, T, 4)) @ L.T
         S_hat = np.einsum('nti,ntj->nij', X, X) / T
@@ -68,12 +72,12 @@ def main():
         for g in gammas:
             w = batch_weights(S_hat, g)
             V[g] = np.einsum('ni,ij,nj->n', w, SIGMA, w)
-        F = {g: V[g].mean() for g in gammas}
-        gstar = min(gammas, key=lambda g: F[g])
-        d0 = V[0.0] - V[gstar]
-        se0 = d0.std() / np.sqrt(N)
-        print(f"{T:>4}  {gstar:>6.2f}  {F[0.0]:>8.4f}  {F[gstar]:>8.4f}"
-              f"  {F[1.0]:>10.4g}  {d0.mean() / se0:>15.0f}")
+        med = {g: np.median(V[g]) for g in gammas}
+        gstar = min(gammas, key=lambda g: med[g])
+        winrate = (V[gstar] < V[0.0]).mean()
+        tail = (V[1.0] > 10).mean()
+        print(f"{T:>4}  {gstar:>6.2f}  {med[0.0]:>8.4f}  {med[gstar]:>8.4f}"
+              f"  {med[1.0]:>8.4f}  {winrate:>13.4f}  {tail:>10.4f}")
 
 
 if __name__ == "__main__":

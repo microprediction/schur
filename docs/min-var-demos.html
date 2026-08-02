@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Min-var bridge demos — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./theorems.html">Theorems</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>Demonstrations: the minimum out-of-sample variance bridge</h1>
+  <p class="subtitle">Every claim, computed live in your browser from the same
+  recursion the paper analyzes.</p>
+
+  <p class="lead">Four assets is small enough that a browser can run the exact
+  Schur-complementary recursion thousands of times per frame. Each page below
+  demonstrates one result of
+  <a href="./neither-end-of-the-bridge.pdf"><em>The Minimum Out-of-Sample Variance Portfolio Lies Strictly
+  Between Hierarchical Risk Parity and Minimum Variance</em></a>, with
+  sliders where a noise level or amplitude can be varied. Exact rational
+  certificates for the same claims are in
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py"><code>paper/neither_end_certificate.py</code></a>.</p>
+
+  <h2>The bridge on market data</h2>
+  <ul class="demo-list">
+    <li><a href="./bridge-demo.html">Walk-forward bridge on Dow constituents</a>
+      <div class="claim">The out-of-sample variance of the bridge portfolio as a
+      function of the coupling &gamma;, on real returns. Its minimum sits near
+      &gamma; &asymp; 0.55 and survives Ledoit&ndash;Wolf shrinkage of the
+      inputs.</div></li>
+  </ul>
+
+  <h2>The endpoints</h2>
+  <ul class="demo-list">
+    <li><a href="./demo-blindness.html">Lemma 1 — HRP never sees the
+      cross-block</a>
+      <div class="claim">At &gamma; = 0 the recursion reads only the diagonal
+      blocks, so cross-block noise cannot move the weights at all.</div></li>
+    <li><a href="./demo-noise-cost.html">Theorems 1 and 2 — the noise cost is
+      &gamma;&tau;&sup2;</a>
+      <div class="claim">The expected excess cost factors as
+      &gamma;&tau;&sup2;H, and the tempting &gamma;&sup2;&tau;&sup2; bound fails
+      for a generic family.</div></li>
+    <li><a href="./demo-hrp-endpoint.html">Example 1 — HRP becomes locally
+      optimal at finite noise</a>
+      <div class="claim">The boundary derivative is exactly
+      &minus;1/700 + (8/189)&tau;&sup2; and flips sign at
+      &tau;* = &radic;(27/800).</div></li>
+    <li><a href="./demo-mv-endpoint.html">Theorem 3 — small noise moves the
+      optimum off the minimum-variance end</a>
+      <div class="claim">1 &minus; &gamma;*(&tau;) grows like
+      (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;, with the coefficient 1025/153
+      for the solved family.</div></li>
+  </ul>
+
+  <h2>The solved family</h2>
+  <ul class="demo-list">
+    <li><a href="./demo-family.html">Theorem 4 — unique interior optimum,
+      monotone in the noise</a>
+      <div class="claim">The exact objective in closed form: strictly convex,
+      minimizer interior at every admissible noise level, sliding from 1 to
+      &frac12;.</div></li>
+    <li><a href="./demo-one-entry.html">Example 2 — one-entry noise, interior
+      without symmetry</a>
+      <div class="claim">Noise in a single covariance entry, no common-noise
+      symmetry, and the interior optimum survives.</div></li>
+  </ul>
+
+  <h2>Whole-matrix noise</h2>
+  <ul class="demo-list">
+    <li><a href="./demo-whole-matrix.html">Theorem 5 — the sign of &Xi;
+      decides</a>
+      <div class="claim">Every entry of the covariance noisy. Interiority is
+      decided by an explicit second-moment functional, and D-block-only noise
+      realizes the &Xi; &lt; 0 branch where full coupling stays optimal.</div></li>
+    <li><a href="./demo-entrywise.html">Entrywise noise — enumerate every sign
+      state</a>
+      <div class="claim">All 64 or 1024 sign states averaged through the
+      recursion, exchangeability broken, minimizer still interior.</div></li>
+    <li><a href="./demo-sample-covariance.html">The sample covariance —
+      &gamma;* sweeps the bridge with T</a>
+      <div class="claim">Seeded Monte Carlo in the Antonov&ndash;Lipton&ndash;L&oacute;pez
+      de Prado setting: the median-optimal &gamma;* runs from 0.62 at T = 15
+      to 0.96 at T = 250.</div></li>
+  </ul>
+
+  <h2>The surrogate</h2>
+  <ul class="demo-list">
+    <li><a href="./demo-frontier.html">Theorem 6 — the clipped frontier</a>
+      <div class="claim">The surrogate optimizer is the clipped inverse of
+      t(&gamma;) = &minus;V&#8320;&prime;/G&prime;; one family sweeps the whole
+      bridge, the other clips to HRP at s = 27/800.</div></li>
+  </ul>
+</main>
+</body>
+</html>

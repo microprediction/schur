@@ -26,17 +26,21 @@
 </header>
 
 <main>
-  <p class="demo-nav"><a href="./demos.html">&larr; All demos</a>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
   <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
   <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
   <h1>The sample covariance — &gamma;* sweeps the bridge with T</h1>
-
   <p>The estimation model taken literally: &Sigma;&#770; is the sample covariance
   of T draws from N(0,&Sigma;), the setting in which Antonov, Lipton, and
   L&oacute;pez de Prado prove HRP more robust than Markowitz. The browser runs a
   seeded Monte Carlo (4,000 replications, common draws across the &gamma; grid;
-  the paper's table uses 200,000). Neither endpoint is ever optimal, and
-  &gamma;* slides toward full coupling as T grows.</p>
+  the paper's table uses 200,000).</p>
+  <p>One honest wrinkle, and it is a finding of the paper rather than a bug: the
+  <em>mean</em> of the raw recursion's out-of-sample variance diverges at small
+  T. Rare draws put the recursion's singular coupling inside the bridge, the
+  pole is non-integrable, and a sample mean never settles: its spikes move when
+  the seed changes. The plot therefore shows the <em>median</em> curve, which is
+  stable at any sample count, with the tail frequency reported separately.</p>
   <div class="widget">
     <div class="controls">
       <label>sample size T</label>
@@ -49,12 +53,11 @@
     <canvas id="wisChart" width="820" height="280"></canvas>
     <div class="readout" id="wisRead">computing&hellip;</div>
   </div>
-  <div class="lookfor">What to look for: at T = 15 the minimum sits near
-  &gamma; &asymp; 0.35 and the right end is off the chart (rare near-singular
-  draws wreck minimum variance); by T = 250 the minimum has slid to
-  &gamma; &asymp; 0.96 and the &gamma; = 1 end is merely slightly worse. The
-  readout collects &gamma;*(T) as you click through the sample sizes.</div>
-
+  <div class="lookfor">What to look for: at T = 15 the median minimum sits near
+  &gamma; &asymp; 0.6 and roughly 2% of draws at &gamma; = 1 blow past ten
+  times the population variance; by T = 250 the minimum has slid to
+  &gamma; &asymp; 0.96 and the tail is gone. The readout collects
+  &gamma;*(T) as you click through the sample sizes.</div>
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
   the naive fitness (5), ported directly from the reference implementations, live
   in your browser. Nothing is pre-baked.</p>
@@ -64,13 +67,21 @@
 <script>
 (function(){
 const S=window.SCHUR;
-
 const cache={};let curT=25;
 const gs=[];for(let g=0;g<=1.0001;g+=0.02)gs.push(g);
+function median(a){const b=Array.from(a).sort((x,y)=>x-y);const m=b.length>>1;
+  return b.length%2?b[m]:(b[m-1]+b[m])/2;}
 function compute(T){
   if(!cache[T]){
     const Sh=S.wisSample(T,4000,20260802+T);
-    cache[T]={F:gs.map(g=>S.wisF(Sh,g))};
+    const med=[];
+    let tail1=0;
+    gs.forEach((g,i)=>{
+      const V=S.wisV(Sh,g);
+      med.push(median(V));
+      if(i===gs.length-1)tail1=V.filter(v=>v>10).length/V.length;
+    });
+    cache[T]={med,tail1};
   }
   return cache[T];
 }
@@ -78,31 +89,30 @@ function sweepText(){
   const done=Object.keys(cache).map(Number).sort((a,b)=>a-b);
   if(done.length<2)return '';
   return ' Collected sweep: '+done.map(T=>{
-    const F=cache[T].F;let k=0;F.forEach((v,i)=>{if(v<F[k])k=i;});
+    const F=cache[T].med;let k=0;F.forEach((v,i)=>{if(v<F[k])k=i;});
     return `γ*(${T}) ≈ ${gs[k].toFixed(2)}`;}).join(', ')+'.';
 }
 function draw(){
-  const {F}=compute(curT);
+  const {med,tail1}=compute(curT);
   const {cx,W,H}=S.setup('wisChart',280);cx.clearRect(0,0,W,H);
   const padL=64,padB=28;
-  let k=0;F.forEach((v,i)=>{if(v<F[k])k=i;});
+  let k=0;med.forEach((v,i)=>{if(v<med[k])k=i;});
   const gstar=gs[k];
-  const F0=F[0],F1=F[F.length-1];
-  let ymin=Math.min(...F);
-  let ymax=Math.min(Math.max(...F.filter(isFinite)),F0*1.25);
-  const pad=(ymax-ymin)*0.08||0.005;
-  const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(Math.min(v,ymax)-ymin+pad)/(ymax-ymin+2*pad)*(H-padB-24);
-  S.axes(cx,W,H,padL,padB,`Monte Carlo F(γ), T = ${curT}, 4,000 sample covariances (y clipped)`);
+  let ymin=Math.min(...med),ymax=Math.max(...med);
+  const pad=(ymax-ymin)*0.08||0.005;ymin-=pad;ymax+=pad;
+  const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(v-ymin)/(ymax-ymin)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,`median out-of-sample variance, T = ${curT}, 4,000 sample covariances`);
   cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
   [0,0.25,0.5,0.75,1].forEach(g=>cx.fillText(g,X(g),H-12));
   cx.strokeStyle='#4a3aff';cx.lineWidth=2;cx.beginPath();
-  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(F[i])):cx.moveTo(X(g),Y(F[i]));});cx.stroke();
-  cx.fillStyle='#1a1a1a';cx.beginPath();cx.arc(X(gstar),Y(F[k]),4,0,7);cx.fill();
+  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(med[i])):cx.moveTo(X(g),Y(med[i]));});cx.stroke();
+  cx.fillStyle='#1a1a1a';cx.beginPath();cx.arc(X(gstar),Y(med[k]),4,0,7);cx.fill();
   cx.fillStyle='#666';cx.font='11px sans-serif';cx.textAlign='center';
-  cx.fillText('γ* ≈ '+gstar.toFixed(2),X(gstar),Y(F[k])-10);
+  cx.fillText('γ* ≈ '+gstar.toFixed(2),Math.min(X(gstar),W-60),Y(med[k])-10);
   document.getElementById('wisRead').innerHTML=
-    `T = <b>${curT}</b>: F(0) = <b>${F0.toFixed(4)}</b>, F(γ*) = <b>${F[k].toFixed(4)}</b>, F(1) = <b>${F1<100?F1.toFixed(4):F1.toExponential(2)}</b>.`+
-    ` Small-sample Monte Carlo: the paper's table uses 200,000 replications.`+sweepText();
+    `T = <b>${curT}</b>: med F(0) = <b>${med[0].toFixed(4)}</b>, med F(γ*) = <b>${med[k].toFixed(4)}</b>, `+
+    `med F(1) = <b>${med[med.length-1].toFixed(4)}</b>; at γ = 1, `+
+    `<b>${(100*tail1).toFixed(1)}%</b> of draws exceed ten times the population variance.`+sweepText();
 }
 document.querySelectorAll('.wisT').forEach(b=>b.addEventListener('click',()=>{
   curT=+b.dataset.t;
@@ -112,7 +122,6 @@ document.querySelectorAll('.wisT').forEach(b=>b.addEventListener('click',()=>{
 }));
 window.addEventListener('resize',()=>{if(cache[curT])draw();});
 setTimeout(draw,20);
-
 })();
 </script>
 </body>

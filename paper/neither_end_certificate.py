@@ -233,6 +233,8 @@ def main():
     singularity_certificates()
     print()
     whole_matrix_checks()
+    print()
+    lw_checks()
 
     # optional: cross-check against the allocation package and certify SPD
     try:
@@ -758,6 +760,65 @@ def whole_matrix_checks():
           f"{s1}/1024 states are singular and the defined mean is "
           f"{float(F1):.1f}:\n          the minimum-variance end degrades by "
           f"orders of magnitude")
+
+
+def lw_checks():
+    """Exact checks for the Ledoit-Wolf remark:
+    (1) shrinkage bias at the minimum-variance end: at zero noise and
+        shrinkage intensity rho, F is strictly decreasing into gamma = 1
+        (the flatness of Lemma 2 is destroyed, slope ~ -(243/(32 K^3)) rho);
+    (2) LW-consistent shrinkage below threshold: with rho = kappa_LW tau^2,
+        kappa_LW = 1600/1019, the minimizer is still interior;
+    (3) over-shrinkage: at fixed rho = 1/20 and tau = 1/50, full coupling on
+        the shrunk input beats every grid point (the endpoint wins)."""
+    def Sig_noise(tau):
+        v = [Fr(1), Fr(1), S_, S_]
+        C = [[Fr(1), RW, RC + tau, RC + tau], [RW, Fr(1), RC + tau, RC + tau],
+             [RC + tau, RC + tau, Fr(1), RW], [RC + tau, RC + tau, RW, Fr(1)]]
+        return [[v[i] * v[j] * C[i][j] for j in range(4)] for i in range(4)]
+
+    STl = Sig_noise(Fr(0))
+
+    def shrink(Sg, rho):
+        mu = sum(Sg[i][i] for i in range(4)) / 4
+        out = [[(1 - rho) * Sg[i][j] for j in range(4)] for i in range(4)]
+        for i in range(4):
+            out[i][i] += rho * mu
+        return out
+
+    def Flw(g, tau, rho):
+        tot = Fr(0)
+        for s in (1, -1):
+            w = weights(shrink(Sig_noise(s * tau), rho), g)
+            tot += sum(w[i] * STl[i][j] * w[j] for i in range(4) for j in range(4))
+        return tot / 2
+
+    # (1) bias slope: F(1) < F(1 - h) at zero noise for shrunk input
+    rho = Fr(1, 100)
+    for h in (Fr(1, 100), Fr(1, 1000)):
+        assert Flw(Fr(1), Fr(0), rho) < Flw(1 - h, Fr(0), rho)
+    print("LW bias: at zero noise, shrinkage makes F strictly decreasing into "
+          "gamma = 1\n          (flatness of Lemma 2 destroyed; slope "
+          "-(243/(32 K^3)) rho)")
+
+    # (2) LW-consistent shrinkage: interior survives
+    tau = Fr(1, 25)
+    rho = Fr(1600, 1019) * tau * tau
+    ghat = Fr(24, 25)
+    Fh = Flw(ghat, tau, rho)
+    assert Fh < Flw(Fr(0), tau, rho) and Fh < Flw(Fr(1), tau, rho)
+    print(f"LW survives: tau = 1/25, rho = (1600/1019) tau^2: "
+          f"F(24/25) < min(F(0), F(1)) exactly\n          (kappa_LW = 1600/1019 "
+          f"< kappa* = 656/51: optimal shrinkage is an order of\n          "
+          f"magnitude below the threshold at which the endpoint takes over)")
+
+    # (3) over-shrinkage: fixed rho, endpoint wins on the grid
+    tau, rho = Fr(1, 50), Fr(1, 20)
+    F1 = Flw(Fr(1), tau, rho)
+    assert all(Flw(Fr(k, 50), tau, rho) > F1 for k in range(15, 50))
+    print("LW over-shrinkage: fixed rho = 1/20, tau = 1/50: F(1) < F(k/50) for "
+          "k = 15..49\n          (bias slope dominates; full coupling on the "
+          "shrunk input is optimal)")
 
 
 if __name__ == "__main__":

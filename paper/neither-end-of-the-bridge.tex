@@ -54,8 +54,8 @@ four-asset family is solved exactly, with the optimizer decreasing from
 full coupling to the middle of the bridge. Dropping the cross-block
 restriction changes nothing essential: whole-matrix noise admits a sharp
 interiority condition, and under sample-covariance noise the optimum
-sweeps the bridge with sample size. Every exact claim is verified in
-rational arithmetic.
+sweeps the bridge with sample size. Exact claims about the example
+covariances are verified in rational arithmetic.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -90,50 +90,25 @@ coupling gives that trade-off a single parameter, and the present paper
 gives the parameter provable structure.
 
 This paper asks where on the bridge one should sit when the covariance is
-estimated with error, and answers in four layers. (i)~\emph{The HRP end,
-in general.} Top-level cross-block noise is invisible at $\gamma = 0$, and
-its expected effect factors exactly as $F - V_0 = \gamma \tau^2 H$ with $H$
-bounded (Theorem~\ref{thm:noisecost}). Whenever coupling has first-order
-population value, the minimizer is uniformly separated from HRP for all
-sufficiently small noise (Theorem~\ref{thm:nohrp}). The order
-$\gamma\tau^2$ cannot be improved to $\gamma^2\tau^2$: an exact example has
-boundary derivative $-\tfrac{1}{700} + \tfrac{8}{189}\tau^2$, so HRP becomes
-a one-sided local minimum at the finite noise level
-$\tau^2 = \tfrac{27}{800}$ (Example~\ref{ex:boundary}).
-(ii)~\emph{The minimum-variance end, locally.} If the bridge reaches
-minimum variance exactly at $\gamma = 1$, then $V_0'(1) = 0$ automatically
-and $V_0''(1) \ge 0$ (Lemma~\ref{lem:mv}); if $V_0''(1) > 0$ and the
-marginal noise sensitivity $G'(1)$ is positive, every sufficiently small
-noise level pushes the optimizer into the interior, by
-$1 - \gamma^*(\tau) \sim \tau^2 G'(1)/V_0''(1)$
-(Theorem~\ref{thm:mvlocal}). The sign condition is essential.
-(iii)~\emph{An exactly solved family.} For an exchangeable four-asset
-family with common cross-block noise, the expected out-of-sample variance is
-computed in closed form; it is strictly convex on $[0,1]$, its unique
-minimizer $\gamma^*(e)$ is interior for every admissible noise amplitude
-$e \in (0, c]$, and it decreases monotonically from $\gamma^*(0) = 1$ to
-$\gamma^*(c) = \tfrac12$ (Theorem~\ref{thm:family}). This is a statement
-about the exact objective, not a surrogate. One care is required: at large
-noise the raw recursion has a removable singularity at one interior
-coupling, so the objective is defined by continuous extension, and the
-minimizer is proved to sit strictly inside the region where the recursion
-is defined. A companion exact example with
-noise in a single covariance entry (Example~\ref{ex:interior}) shows that
-interior optimality survives without the common-noise symmetry.
-(iv)~\emph{Whole-matrix noise.} We then drop
-Assumption~\ref{ass:noise} entirely for the same family. An explicit
-second-moment functional $\Xi$ decides interiority under exchangeable
-whole-matrix noise, and its sign can go either way
-(Theorem~\ref{thm:whole}). Exact enumeration certifies interior optima
-when all ten entries of the covariance are noised independently. Under
-the sample covariance of $T$ Gaussian draws, the model in which
-\cite{antonov2025} prove HRP more robust than Markowitz, the optimizer
-sweeps the bridge monotonically with $T$ (Section~\ref{sec:whole}).
-A clipped monotone frontier for the second-order surrogate
-(Theorem~\ref{thm:frontier}) organizes the general case. We are explicit
-about what is not claimed: covariance error does not always force an
-interior optimum, the noise cost is not $O(\gamma^2\tau^2)$ in general, and
-either endpoint can be optimal on a nontrivial interval of noise levels.
+estimated with error. The two ends turn out to be special in different
+ways. The hierarchical end never reads the cross-block, so cross-block
+noise cannot hurt it, and the question at that end is whether coupling has
+enough population value to pay its noise cost. The minimum-variance end is
+flat in the population, so any positive marginal noise sensitivity moves
+the optimum inside. Between the two observations sits an exchangeable
+four-asset family whose expected out-of-sample variance can be computed
+exactly, and there the optimum is unique, interior, and slides from full
+coupling toward the middle of the bridge as the noise grows.
+
+The restriction to cross-block noise is then dropped. With noise in every
+entry of the covariance the same family still prefers the interior, under
+an explicit and sharp condition on the noise's second moments, and under
+the sample covariance of $T$ Gaussian draws the optimal coupling slides
+along the bridge as $T$ grows: sample size selects the seat. We are
+explicit about what is not claimed. Covariance error does not always force
+an interior optimum, and either endpoint can be optimal on a nontrivial
+interval of noise levels. Exact examples mark those boundaries, and every
+exact claim about them is verified in rational arithmetic.
 
 \section{The recursion}
 \label{sec:setup}
@@ -1304,10 +1279,11 @@ restriction, Theorem~\ref{thm:nohrp} applies and keeps every minimizer
 uniformly separated from $\gamma = 0$, so the global minimizer in case
 (i) is interior. For (iii) and (iv), substitute
 $u = (d-a)\zeta + (a-c)\delta - (d-c)\alpha$ into \eqref{eq:Xi} and drop
-the vanishing cross moments. The coefficient calculations, and the
-identity \eqref{eq:wholeF} itself, are verified exactly by the
-certificate script. For positivity in (iv), note
-$2d - a - c > d - c > 0$ and $a > c$.
+the vanishing cross moments. The identity \eqref{eq:wholeF} is checked
+exactly at a grid of rational points by the certificate script, which
+also certifies $F(\hat\gamma) < \min(F(0), F(1))$ at the coupling
+$\hat\gamma$ that \eqref{eq:wholeshift} predicts. For positivity in (iv),
+note $2d - a - c > d - c > 0$ and $a > c$.
 \end{proof}
 
 \begin{remark}[The numerical family under whole-matrix noise]
@@ -1397,33 +1373,100 @@ $\widehat\Sigma = \tfrac{1}{T}\sum_{t=1}^{T} x_t x_t^\top$ with
 $x_t \sim \mathcal{N}(0, \Sigma)$ i.i.d. This puts Wishart noise in every
 entry, and it is the estimation model in which \cite{antonov2025} derive
 the weight noise of HRP and of Markowitz and prove HRP the more robust.
-Exactness is unavailable here. The following is Monte Carlo with
-$2 \times 10^5$ replications per sample size, the same draws shared
-across the coupling grid (step $0.02$), for the family
-\eqref{eq:familycov} (script \texttt{paper/wishart\_experiment.py}):
+
+One structural fact must be faced before any table. Under continuous
+noise at small $T$, the sample covariance places the recursion's singular
+coupling (the analog of $\gamma z = a$ in Lemma~\ref{lem:reduce}) inside
+$[0,1]$ with positive probability, and the realized variance has a
+non-integrable pole there, so the \emph{expected} out-of-sample variance
+of the raw recursion is infinite on part of the bridge. Monte Carlo
+confirms the divergence directly: at $T = 25$ and $\gamma = 1$ the sample
+mean over $4 \times 10^3$, $4 \times 10^4$, and $4 \times 10^5$
+replications is $5.0$, $2.7 \times 10^5$, and $2.8 \times 10^4$, wandering
+with the largest draw, while the sample median is $0.7725$, $0.7727$, and
+$0.7726$. We therefore summarize by medians, which are stable, and report
+the tails separately. (Implementations guard against the poles by forcing
+the augmented blocks positive definite, which truncates them.)
+
+The following is Monte Carlo with $2 \times 10^5$ replications per sample
+size, the same draws shared across the coupling grid (step $0.02$), for
+the family \eqref{eq:familycov}
+(script \texttt{paper/wishart\_experiment.py}). Here $\gamma^*$ minimizes
+the median curve, and the last column is the probability that the interior
+coupling beats HRP draw by draw:
 \begin{center}
 \begin{tabular}{rccccc}
 \toprule
-$T$ & $\gamma^*$ & $F(0)$ & $F(\gamma^*)$ & $F(1)$ \\
+$T$ & $\gamma^*$ & $\mathrm{med}\,F(0)$ & $\mathrm{med}\,F(\gamma^*)$ &
+$\mathrm{med}\,F(1)$ & $\Pr[V(\gamma^*) < V(0)]$ \\
 \midrule
- 15 & $0.34$ & $0.830$ & $0.813$ & $\approx 5.6 \times 10^{2}$ \\
- 25 & $0.50$ & $0.813$ & $0.786$ & $\approx 4.7 \times 10^{3}$ \\
- 50 & $0.74$ & $0.802$ & $0.763$ & $\approx 2.2 \times 10^{1}$ \\
-100 & $0.88$ & $0.797$ & $0.751$ & $0.762$ \\
-250 & $0.96$ & $0.794$ & $0.745$ & $0.7451$ \\
+ 15 & $0.62$ & $0.804$ & $0.777$ & $0.800$ & $0.75$ \\
+ 25 & $0.72$ & $0.798$ & $0.764$ & $0.773$ & $0.87$ \\
+ 50 & $0.84$ & $0.795$ & $0.753$ & $0.755$ & $0.96$ \\
+100 & $0.92$ & $0.794$ & $0.747$ & $0.747$ & $0.99$ \\
+250 & $0.96$ & $0.793$ & $0.744$ & $0.744$ & $1.00$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-The comparison against HRP is sharp: $F(0) - F(\gamma^*)$ is positive at
-$148$ or more paired standard errors at every $T$. The $\gamma = 1$
-column at small $T$ is dominated by rare near-singular draws. Its mean is
-orders of magnitude worse but carries a large standard error, so we
-report it as evidence of fragility and lean on the HRP comparisons for
-precision. At no sample size is either endpoint optimal, and the
-optimizer sweeps the bridge monotonically with the information available:
-$\gamma^* \approx 0.34,\ 0.50,\ 0.74,\ 0.88,\ 0.96$ at
-$T = 15,\ 25,\ 50,\ 100,\ 250$. Sample size selects the seat on the
+The interior coupling beats HRP at every sample size, on three quarters
+of draws at $T = 15$ and on essentially all draws at $T = 250$. The
+minimum-variance end loses twice over at small $T$: its median is worse,
+and it owns the divergent tail ($1.8\%$ of draws at $T = 15$ exceed ten
+times the population variance at $\gamma = 1$, and the frequency decays
+to zero by $T = 250$). As $T$ grows the median optimizer slides toward
+full coupling, $\gamma^* \approx 0.62,\ 0.72,\ 0.84,\ 0.92,\ 0.96$, and
+the interior margin at the minimum-variance end closes, exactly as the
+small-noise theory says it should. Sample size selects the seat on the
 bridge.
+
+\begin{remark}[Ledoit--Wolf shrinkage of the input]
+\label{rem:lw}
+A practitioner would shrink $\widehat\Sigma$ before allocating, so it is
+fair to ask whether the interior optimum is an artifact of feeding the
+recursion a raw estimate. For the family the question can be answered
+exactly. Shrinking toward $\mu I$ with $\mu = \operatorname{tr}
+\widehat\Sigma/4$ preserves block exchangeability, so
+Lemma~\ref{lem:wholeobj} applies with
+$\tilde a = (1-\rho)\hat a + \rho\mu/2$,
+$\tilde d = (1-\rho)\hat d + \rho\mu/2$, and
+$\tilde z = (1-\rho)\hat z$. Shrinkage moves the $\gamma = 1$ endpoint
+off the population minimum-variance portfolio, and the flatness of
+Lemma~\ref{lem:mv} is destroyed: at zero noise the displacement numerator
+at $\gamma = 1$ is $-\big[(d-a)c + \tfrac74(a-c) + \tfrac12(d-c)\big]\rho
+= -\tfrac{45}{16}\rho$ for \eqref{eq:familycov}, giving the strictly
+negative bias slope
+\[
+  \partial_\gamma F(1; 0, \rho) \;=\; -\frac{243}{32\,K^3}\,\rho
+  \;+\; O(\rho^2).
+\]
+The noise push and the shrinkage pull therefore compete at the same order
+when $\rho = \kappa\tau^2$, which is the Ledoit--Wolf-consistent scaling,
+and the stationarity condition near $\gamma = 1$ gives
+\[
+  1 - \gamma^*(\tau)
+  \;=\; \frac{G'(1) - \tfrac{243}{32 K^3}\,\kappa}{V_0''(1)}\;\tau^2
+  \;+\; O(\tau^4):
+\]
+the interior optimum survives precisely when
+$\kappa < \kappa^* := \tfrac{32 K^3}{243}\, G'(1)$. For the common
+cross-block noise of Section~\ref{sec:family}, $\kappa^* =
+\tfrac{656}{51} \approx 12.9$, while the small-noise Ledoit--Wolf
+intensity for the same noise is $\kappa_{\mathrm{LW}} =
+\|N\|_F^2 / \|\Sigma - \mu I\|_F^2 = \tfrac{1600}{1019} \approx 1.57$.
+Optimal shrinkage sits an order of magnitude below the threshold, so
+interiority survives, with the shift coefficient scaled by
+$1 - \kappa_{\mathrm{LW}}/\kappa^* \approx 0.88$: Ledoit--Wolf absorbs
+about a tenth of the damping the bridge wants, and the coupling supplies
+the rest. The recursion confirms the arithmetic: at $\tau = 0.04$ the
+measured shifts $1 - \gamma^*$ are $0.0387$ unshrunk and $0.0338$ at
+$\kappa_{\mathrm{LW}}$, and the optimum reaches the endpoint at
+$\kappa = \kappa^*$ as predicted. Over-shrinkage is the caveat: at fixed
+$\rho > 0$ not scaling with $\tau$, the bias slope dominates and full
+coupling on the shrunk input is optimal for all small $\tau$. This
+matches the walk-forward observation at
+\texttt{schur.microprediction.org} that the empirical minimum survives
+Ledoit--Wolf shrinkage of the inputs.
+\end{remark}
 
 \section{The surrogate in general}
 \label{sec:frontier}

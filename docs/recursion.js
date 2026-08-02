@@ -187,6 +187,9 @@
     for (const S of Shats) tot += Vof(weights4(S, g), ST_A);
     return tot / Shats.length;
   }
+  function wisV(Shats, g) { // per-draw realized variances
+    return Shats.map(S => Vof(weights4(S, g), ST_A));
+  }
 
   // ---------- closed form for the solved family (paper eq. (20)) ----------
   const FA = { a: 0.75, d: 3, c: 0.6 };
@@ -220,6 +223,6 @@
 
   window.SCHUR = { weights4, Vof, famA, famB, Fof, dF0, argminF,
                    famWhole, Fwhole, XiOf, XI_DENOM,
-                   Fent, wisSample, wisF, Qx, Fclosed, FA,
+                   Fent, wisSample, wisF, wisV, Qx, Fclosed, FA,
                    setup, axes };
 })();
