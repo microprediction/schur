@@ -2,7 +2,7 @@
 
 ## Paper
 
-*The Minimum Out-of-Sample Variance Portfolio Lies Strictly Between
+*The Minimum Out-of-Sample Variance Portfolio Generically Lies Between
 Hierarchical Risk Parity and Minimum Variance* — `neither-end-of-the-bridge.tex` (self-contained,
 builds with `tectonic` or any standard pdflatex; no custom class).
 Certificates: `neither_end_certificate.py` (Python stdlib only; prints exact
@@ -39,8 +39,8 @@ https://schur.microprediction.org/min-var-demos.html
 
 Dear Professor Cont,
 
-Please consider the enclosed manuscript, "The Minimum Out-of-Sample Variance Portfolio
-Lies Strictly Between Hierarchical Risk Parity and Minimum Variance," for
+Please consider the enclosed manuscript, "The Minimum Out-of-Sample Variance Portfolio Generically
+Lies Between Hierarchical Risk Parity and Minimum Variance," for
 publication in Mathematical Finance.
 
 Schur-complementary allocation interpolates hierarchical risk parity and
