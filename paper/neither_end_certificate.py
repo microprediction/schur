@@ -231,6 +231,8 @@ def main():
     surrogate_expansion_check()
     print()
     singularity_certificates()
+    print()
+    whole_matrix_checks()
 
     # optional: cross-check against the allocation package and certify SPD
     try:
@@ -616,6 +618,146 @@ def singularity_certificates():
     print("counterexample: a=1, d=6, c=11/10, e=1/20 satisfies the general")
     print("          hypotheses yet is singular on BOTH branches (gamma = 20/21")
     print("          and 20/23); c < a is what confines the family to one")
+
+
+def whole_matrix_checks():
+    """Exact checks for the whole-matrix noise section:
+    (1) rank-one exchangeable noise (every entry perturbed): the recursion
+        reduces exactly to the scalar bridge with (ahat, dhat, zhat), and the
+        exact objective identity of Lemma (whole-matrix) holds;
+    (2) interiority certificate: with independent equal-amplitude signs on
+        all three channels and tau in {1/50, 1/100}, F(ghat) < min(F(0), F(1))
+        exactly at ghat = 1 - (13081/1377) tau^2, the predicted optimum;
+    (3) sharpness (Xi < 0): with noise confined to the dhat channel, F(1) is
+        strictly below F(gamma) at every grid point gamma = k/50 < 1;
+    (4) entrywise noise (exchangeability broken): exact enumeration over all
+        sign states certifies strictly interior minimizers."""
+    import itertools
+    a, d, c = Fr(3, 4), Fr(3), Fr(3, 5)
+    Sv, K = a + d, a + d - 2 * c
+
+    def Sig_rankone(al, de, ze):
+        A = [[Fr(1) + al, Fr(1, 2) + al], [Fr(1, 2) + al, Fr(1) + al]]
+        D = [[Fr(4) + de, Fr(2) + de], [Fr(2) + de, Fr(4) + de]]
+        z = c + ze
+        Sg = [[Fr(0)] * 4 for _ in range(4)]
+        for i in range(2):
+            for j in range(2):
+                Sg[i][j] = A[i][j]
+                Sg[2 + i][2 + j] = D[i][j]
+                Sg[i][2 + j] = z
+                Sg[2 + i][j] = z
+        return Sg
+
+    ST0 = Sig_rankone(Fr(0), Fr(0), Fr(0))
+
+    def Q(x):
+        return a * x * x + d * (1 - x) * (1 - x) + 2 * c * x * (1 - x)
+
+    xstar = (d - c) / K
+
+    def Vr(g, al, de, ze):
+        w = weights(Sig_rankone(al, de, ze), g)
+        return sum(w[i] * ST0[i][j] * w[j] for i in range(4) for j in range(4))
+
+    # (1) reduction and exact objective identity
+    ok = True
+    for g in (Fr(0), Fr(1, 3), Fr(7, 10), Fr(1)):
+        for (al, de, ze) in ((Fr(1, 10), Fr(-1, 10), Fr(1, 10)),
+                             (Fr(-1, 20), Fr(1, 7), Fr(-1, 9))):
+            ah, dh, zh = a + al, d + de, c + ze
+            x = (dh - g * zh) / (ah + dh - 2 * g * zh)
+            w = weights(Sig_rankone(al, de, ze), g)
+            ok &= (w[0] == w[1]) and (w[2] == w[3]) and (w[0] + w[1] == x)
+            V = Vr(g, al, de, ze)
+            ok &= V == Q(x)
+            h = (a - c) * de - (d - c) * al
+            ok &= (Q(x) - Q(xstar)
+                   == ((d - a) * (g * zh - c) + h) ** 2
+                   / (K * (ah + dh - 2 * g * zh) ** 2))
+    assert ok
+    print("whole-matrix (rank-one): recursion == scalar bridge with "
+          "(ahat, dhat, zhat);\n          exact objective identity holds "
+          "(every entry of Sigma-hat noisy)")
+
+    # (2) interiority certificate at the predicted optimum
+    def F8(g, tau):
+        tot = Fr(0)
+        for sa, sd, sz in itertools.product((1, -1), repeat=3):
+            tot += Vr(g, sa * tau, sd * tau, sz * tau)
+        return tot / 8
+
+    for tau in (Fr(1, 50), Fr(1, 100)):
+        ghat = 1 - Fr(13081, 1377) * tau * tau
+        assert Fr(0) < ghat < Fr(1)
+        Fh, F0, F1 = F8(ghat, tau), F8(Fr(0), tau), F8(Fr(1), tau)
+        assert Fh < F0 and Fh < F1
+        print(f"whole-matrix interior: tau = {tau}, ghat = 1 - (13081/1377)tau^2"
+              f" = {ghat}:\n          F(ghat) < min(F(0), F(1)) exactly")
+
+    # (3) sharpness: pure dhat-channel noise, full coupling optimal on the grid
+    def F2d(g, ed):
+        return (Vr(g, Fr(0), ed, Fr(0)) + Vr(g, Fr(0), -ed, Fr(0))) / 2
+
+    for ed in (Fr(1, 10), Fr(1, 4)):
+        F1v = F2d(Fr(1), ed)
+        assert all(F2d(Fr(k, 50), ed) > F1v for k in range(50))
+        print(f"whole-matrix sharpness: dhat-only noise, amplitude {ed}: "
+              f"F(1) < F(k/50) for all k < 50\n          (Xi = -(189/500) "
+              f"E[delta^2] < 0; support does not decide, the sign of Xi does)")
+
+    # (4) entrywise noise: exact enumeration certificates
+    VOL = [Fr(1), Fr(1), Fr(2), Fr(2)]
+    RHOM = [[Fr(1), RW, RC, RC], [RW, Fr(1), RC, RC],
+            [RC, RC, Fr(1), RW], [RC, RC, RW, Fr(1)]]
+    OFFD = [(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3)]
+    DIAG = [(0, 0), (1, 1), (2, 2), (3, 3)]
+
+    def Sig_entry(tau, entries, signs):
+        Sg = [[VOL[i] * VOL[j] * RHOM[i][j] for j in range(4)] for i in range(4)]
+        for (i, j), s in zip(entries, signs):
+            if i == j:
+                Sg[i][i] = VOL[i] * VOL[i] * (1 + s * tau)
+            else:
+                Sg[i][j] = VOL[i] * VOL[j] * (RHOM[i][j] + s * tau)
+                Sg[j][i] = Sg[i][j]
+        return Sg
+
+    def Fent(g, tau, entries):
+        tot, n_sing = Fr(0), 0
+        for s in itertools.product((1, -1), repeat=len(entries)):
+            try:
+                w = weights(Sig_entry(tau, entries, s), g)
+            except ZeroDivisionError:
+                n_sing += 1
+                continue
+            tot += sum(w[i] * ST[i][j] * w[j] for i in range(4) for j in range(4))
+        return tot / (2 ** len(entries) - n_sing), n_sing
+
+    for label, entries, tau, ghat in (
+            ("six off-diagonal entries", OFFD, Fr(1, 5), Fr(2, 5)),
+            ("all ten entries", OFFD + DIAG, Fr(1, 10), Fr(11, 12))):
+        (F0, s0), (Fh, sh), (F1, s1) = (Fent(Fr(0), tau, entries),
+                                        Fent(ghat, tau, entries),
+                                        Fent(Fr(1), tau, entries))
+        assert s0 == sh == s1 == 0
+        assert F0 - Fh > 0 and F1 - Fh > 0
+        print(f"entrywise ({label}, tau = {tau}): every sign state defined;\n"
+              f"          F(0) - F({ghat}) = {float(F0 - Fh):.4e} and "
+              f"F(1) - F({ghat}) = {float(F1 - Fh):.4e},\n"
+              f"          both exactly positive: every minimizer is interior")
+
+    tau, ghat = Fr(3, 20), Fr(12, 25)
+    (F0, s0), (Fh, sh), (F1, s1) = (Fent(Fr(0), tau, OFFD + DIAG),
+                                    Fent(ghat, tau, OFFD + DIAG),
+                                    Fent(Fr(1), tau, OFFD + DIAG))
+    assert s0 == sh == 0 and s1 == 56
+    assert F0 - Fh > 0 and F1 > 1
+    print(f"entrywise (all ten, tau = 3/20): F(0) - F(12/25) = "
+          f"{float(F0 - Fh):.4e} > 0 exactly;\n          at gamma = 1, "
+          f"{s1}/1024 states are singular and the defined mean is "
+          f"{float(F1):.1f}:\n          the minimum-variance end degrades by "
+          f"orders of magnitude")
 
 
 if __name__ == "__main__":

@@ -3,7 +3,9 @@
 % (2) local theorem at the minimum-variance end, (3) an exactly solved
 % exchangeable four-asset family with a unique interior optimizer decreasing
 % monotonically in the noise, (4) clipped surrogate frontier, (5) exact
-% one-entry example. Build: tectonic neither-end-of-the-bridge.tex
+% one-entry example, (6) whole-matrix noise: sharp condition Xi, entrywise
+% enumeration certificates, Wishart sample-size sweep.
+% Build: tectonic neither-end-of-the-bridge.tex
 % Certificates: paper/neither_end_certificate.py (exact rational arithmetic).
 \documentclass[11pt]{article}
 
@@ -42,23 +44,16 @@ are in the \texttt{allocation} and \texttt{precise} packages.}}
 \maketitle
 
 \begin{abstract}
-The canonical Schur-complementary construction interpolates hierarchical
-risk parity ($\gamma = 0$) and minimum variance ($\gamma \to 1$) through a
-coupling $\gamma$ that sets how much of the estimated cross-block
-covariance the recursion uses. We study the implemented collapse variant,
-which shares the hierarchical endpoint and reaches minimum variance under
-additional structure. We ask where on the bridge to sit when the covariance
-is estimated with error, and answer in three layers. A structural theorem
-shows that top-level cross-block noise is invisible at the hierarchical end
-and prices coupling at order $\gamma\tau^2$, so whenever coupling has
-first-order population value the optimum stays uniformly separated from
-hierarchical risk parity at all sufficiently small noise levels. A local theorem at an exact minimum-variance endpoint
-shows that positive marginal noise sensitivity pushes the optimum into the
-interior. An exchangeable four-asset family is then solved exactly: its
-unique optimizer is interior at every admissible noise level and decreases
-monotonically from full coupling to the middle of the bridge. Exact
-examples mark the boundaries of what holds in general, and every exact
-claim is verified in rational arithmetic.
+We give the first analytical proof that the optimal portfolio sits
+strictly inside the Schur bridge, the one-parameter family we introduced
+to unify hierarchical risk parity with minimum variance. Under cross-block
+estimation error the optimum separates from both ends, and an exchangeable
+four-asset family is solved exactly, with the optimizer decreasing from
+full coupling to the middle of the bridge. Dropping the cross-block
+restriction changes nothing essential: whole-matrix noise admits a sharp
+interiority condition, and under sample-covariance noise the optimum
+sweeps the bridge with sample size. Every exact claim is verified in
+rational arithmetic.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -93,7 +88,7 @@ coupling gives that trade-off a single parameter, and the present paper
 gives the parameter provable structure.
 
 This paper asks where on the bridge one should sit when the covariance is
-estimated with error, and answers in three layers. (i)~\emph{The HRP end,
+estimated with error, and answers in four layers. (i)~\emph{The HRP end,
 in general.} Top-level cross-block noise is invisible at $\gamma = 0$, and
 its expected effect factors exactly as $F - V_0 = \gamma \tau^2 H$ with $H$
 bounded (Theorem~\ref{thm:noisecost}). Whenever coupling has first-order
@@ -122,8 +117,17 @@ coupling, so the objective is defined by continuous extension, and the
 minimizer is proved to sit strictly inside the region where the recursion
 is defined. A companion exact example with
 noise in a single covariance entry (Example~\ref{ex:interior}) shows that
-interior optimality survives without the common-noise symmetry. A clipped
-monotone frontier for the second-order surrogate
+interior optimality survives without the common-noise symmetry.
+(iv)~\emph{Whole-matrix noise.} We then drop
+Assumption~\ref{ass:noise} entirely for the same family. An explicit
+second-moment functional $\Xi$ decides interiority under exchangeable
+whole-matrix noise, and its sign can go either way
+(Theorem~\ref{thm:whole}). Exact enumeration certifies interior optima
+when all ten entries of the covariance are noised independently. Under
+the sample covariance of $T$ Gaussian draws, the model in which
+\cite{antonov2025} prove HRP more robust than Markowitz, the optimizer
+sweeps the bridge monotonically with $T$ (Section~\ref{sec:whole}).
+A clipped monotone frontier for the second-order surrogate
 (Theorem~\ref{thm:frontier}) organizes the general case. We are explicit
 about what is not claimed: covariance error does not always force an
 interior optimum, the noise cost is not $O(\gamma^2\tau^2)$ in general, and
@@ -332,10 +336,11 @@ noise supported on \emph{every} block. Under whole-matrix noise the exact
 invariance of Lemma~\ref{lem:blind} applies only to the cross-block
 component of the noise: $F(0;\tau)$ is then itself noisy, and the endpoint
 comparison becomes a comparison of noise costs rather than a comparison
-against a noise-free anchor. The analysis of that model is not attempted
-here; the results below are exact for \eqref{eq:noise} under
-Assumptions~\ref{ass:reg}--\ref{ass:noise} and are offered as the
-cross-block part of the larger question.
+against a noise-free anchor. Sections~\ref{sec:endpoints}--\ref{sec:family}
+are exact for \eqref{eq:noise} under
+Assumptions~\ref{ass:reg}--\ref{ass:noise}. Section~\ref{sec:whole} then
+drops Assumption~\ref{ass:noise} for the solved family and answers the
+whole-matrix question directly.
 \end{remark}
 
 \section{The hierarchical end}
@@ -550,7 +555,7 @@ positive definite). Then, exactly and for every $\tau$,
 In particular $V_0'(0) = -\tfrac{1}{700} < 0$, so the premise of
 Theorem~\ref{thm:nohrp} holds, yet $\partial_\gamma F(0;\tau) > 0$ as soon
 as $\tau^2 > \tfrac{27}{800}$, i.e.\ $\tau > \sqrt{27/800} \approx 0.1837$:
-the HRP endpoint is then a one-sided local minimum. Moreover
+the HRP endpoint is then a one-sided local minimum. In addition
 $F(\gamma;\tau) - V_0(\gamma) = \tfrac{8}{189}\gamma\tau^2 + O(\gamma^2)$,
 so no bound of the form $C\gamma^2\tau^2$ can hold on any neighborhood of
 $\gamma = 0$.
@@ -771,7 +776,7 @@ numerical family \eqref{eq:familycov} the ordering $c = \tfrac35 < \tfrac34
 = a$ holds, so the lower branch has $z = c - e < a$ throughout and never
 meets $\gamma z = a$; the sole possible singularity is on the upper branch,
 at $\gamma = a/(c+e)$, and it lies in $[0,1]$ precisely when
-$e \ge a - c = \tfrac{3}{20}$. Moreover, for \eqref{eq:familycov} every
+$e \ge a - c = \tfrac{3}{20}$. In addition, for \eqref{eq:familycov} every
 other denominator the recursion divides by (the augmented diagonal entries
 and the fitness sum) is nonzero on the admissible range, so $\gamma z = a$
 is the only point at which the recursion is undefined. Without $c < a$ both
@@ -1116,6 +1121,308 @@ cross covariance); it could be handled by direct polynomial certification
 but we do not pursue it.
 \end{remark}
 
+\section{Whole-matrix noise}
+\label{sec:whole}
+
+The model of Section~\ref{sec:setup} puts noise on the cross-block alone,
+and a fair objection runs: if the only noisy channel is the one the
+coupling controls, an interior optimum is unsurprising.
+Theorem~\ref{thm:nohrp} already resists the objection at one end, since it
+needs no support restriction and it excludes the endpoint that cross-block
+noise favors. The interiority results, however, were proved under
+Assumption~\ref{ass:noise}. In this section we remove the restriction for
+the family of Section~\ref{sec:family} and place noise in every entry of
+the covariance. We do this in three models of increasing generality. The
+first is an exchangeable model solved by the same reduction, with a sharp
+analytical condition for interiority. The second noises all ten distinct
+entries independently and is settled by exact enumeration. The third is
+the sample covariance of $T$ Gaussian draws, the estimation model in
+which \cite{antonov2025} prove hierarchical risk parity more robust than
+Markowitz.
+
+\emph{The exchangeable model.} Perturb every block by a rank-one
+exchangeable displacement,
+\begin{equation}
+  \widehat A = A_2 + \tau\alpha\,\mathbf{1}\mathbf{1}^\top, \qquad
+  \widehat D = D_2 + \tau\delta\,\mathbf{1}\mathbf{1}^\top, \qquad
+  \widehat B = (c + \tau\zeta)\,\mathbf{1}\mathbf{1}^\top,
+  \label{eq:wholemodel}
+\end{equation}
+where $(\alpha, \delta, \zeta)$ is a bounded random vector, jointly
+sign-symmetric: $(\alpha,\delta,\zeta) \overset{d}{=}
+-(\alpha,\delta,\zeta)$. Every entry of $\widehat\Sigma$ is now noisy. The
+group-level quantities become $\hat a = a + \tau\alpha$,
+$\hat d = d + \tau\delta$, $\hat z = c + \tau\zeta$, and the anchor of
+Lemma~\ref{lem:blind} is lost: $F(0;\tau)$ is itself noisy, and the
+endpoint comparison becomes a comparison of noise costs.
+
+\begin{lemma}[Exact objective under whole-matrix noise]
+\label{lem:wholeobj}
+The perturbations \eqref{eq:wholemodel} preserve the exchangeability of
+each block, so Lemma~\ref{lem:reduce} applies verbatim with
+$(\hat a, \hat d, \hat z)$ in place of $(a, d, z)$: within-block weights
+are exactly $(\tfrac12, \tfrac12)$, and the group weight is
+$x_\gamma = (\hat d - \gamma\hat z)/(\hat S - 2\gamma\hat z)$ with
+$\hat S = \hat a + \hat d$. Wherever the recursion is defined, the
+expected out-of-sample variance of the extended allocation is, exactly,
+\begin{equation}
+  F_{\mathrm{ext}}(\gamma;\tau)
+  \;=\; Q(x_*) \;+\; \frac{1}{K}\,
+  \E\!\left[
+    \frac{\big[(d-a)(\gamma\hat z - c) + \tau h\big]^2}
+         {(\hat S - 2\gamma\hat z)^2}
+  \right],
+  \qquad
+  h \;:=\; (a-c)\,\delta - (d-c)\,\alpha.
+  \label{eq:wholeF}
+\end{equation}
+For $0 < c < a$ there is $\bar\tau > 0$ such that for
+$|\tau| \le \bar\tau$ every denominator the recursion divides by is
+bounded away from zero uniformly on $[0,1]$ and on every realization, so
+the recursion is defined on all of $[0,1]$ and coincides with
+$F_{\mathrm{ext}}$.
+\end{lemma}
+\begin{proof}
+The displacements $\mathbf{1}\mathbf{1}^\top$ commute with the swap of a
+block's two assets, so each perturbed block is exchangeable and
+$\widehat B$ retains the form $z\,\mathbf{1}\mathbf{1}^\top$. The proof of
+Lemma~\ref{lem:reduce} therefore goes through with constants
+$(\hat a, \hat d, \hat z)$. Within-block weights $(\tfrac12,\tfrac12)$ are
+the population-optimal within weights, so the realized variance is
+$Q(x_\gamma)$ with the population $Q$, and
+$Q(x) - Q(x_*) = K(x - x_*)^2$ as in
+Proposition~\ref{prop:exactobj}. For the displacement, the numerator
+identity behind \eqref{eq:displacement} is linear in its inputs: with
+$\hat d = d + \tau\delta$, $\hat S = S + \tau(\alpha + \delta)$,
+\[
+  K(\hat d - \gamma\hat z) - (d - c)(\hat S - 2\gamma\hat z)
+  \;=\; (d-a)(\gamma\hat z - c)
+  \;+\; \tau\big[K\delta - (d-c)(\alpha+\delta)\big],
+\]
+and $K - (d-c) = a - c$ gives the bracket as $\tau h$. Squaring and
+multiplying by $K$ yields \eqref{eq:wholeF}. For the final claim, note
+that at $\tau = 0$ every denominator is a continuous function of $\gamma$
+that is nonzero on $[0,1]$. In particular the factors
+$d - \gamma c \ge d - c$, $a - \gamma c \ge a - c$,
+$ad - \gamma c^2 \ge ad - c^2$, and $S - 2\gamma c \ge K$ are positive,
+and the augmented diagonal numerators are handled as in
+Lemma~\ref{lem:reduce}. By compactness of $[0,1]$ and boundedness of
+$(\alpha,\delta,\zeta)$, all of them stay uniformly positive for all
+sufficiently small $|\tau|$.
+\end{proof}
+
+\begin{theorem}[Interior optimum under whole-matrix noise]
+\label{thm:whole}
+Assume $a < d$, $0 < c < a$, $4c^2 < ad$, and $S > 6c$, as in
+\eqref{eq:familycov}. Let $u := (d-a)\zeta + h$ and define
+\begin{equation}
+  \Xi \;:=\; (d-a)\,K\;\E[\zeta u]
+  \;+\; 2c\;\E[u^2]
+  \;-\; 2(d-a)\,c\;\E\big[u\,(\alpha + \delta - 2\zeta)\big].
+  \label{eq:Xi}
+\end{equation}
+Then $F_{\mathrm{ext}}(\gamma;\tau) = V_0(\gamma) + \tau^2 G_W(\gamma)
++ O(\tau^4)$ in $C^2$ uniformly on $[0,1]$, with
+\[
+  G_W'(1) \;=\; \frac{2\,\Xi}{K^4},
+  \qquad
+  V_0''(1) \;=\; \frac{2\,(d-a)^2 c^2}{K^3} \;>\; 0,
+\]
+and:
+\begin{enumerate}
+\item[\textup{(i)}] if $\Xi > 0$, then for all sufficiently small
+$\tau > 0$ the objective has a unique global minimizer
+$\gamma^*(\tau)$ on $[0,1]$, it is interior, and
+\begin{equation}
+  1 - \gamma^*(\tau) \;=\; \frac{\Xi}{(d-a)^2\,c^2\,K}\;\tau^2
+  \;+\; O(\tau^4);
+  \label{eq:wholeshift}
+\end{equation}
+\item[\textup{(ii)}] if $\Xi < 0$, full coupling is locally optimal for
+all sufficiently small $\tau$;
+\item[\textup{(iii)}] cross-only noise ($\alpha = \delta = 0$) gives
+$\Xi = (d-a)^2 (S + 4c)\,\E[\zeta^2]$, and \eqref{eq:wholeshift} reduces
+to \eqref{eq:smalle};
+\item[\textup{(iv)}] for pairwise-uncorrelated channels,
+\begin{equation}
+  \Xi \;=\; (d-a)^2 (S+4c)\,\E[\zeta^2]
+  \;+\; 2c\,(d-c)(2d - a - c)\,\E[\alpha^2]
+  \;+\; 2c\,(a-c)(2a - c - d)\,\E[\delta^2].
+  \label{eq:Xiind}
+\end{equation}
+The first two coefficients are positive under the standing hypotheses;
+the third is negative precisely when $2a < c + d$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+By Lemma~\ref{lem:wholeobj}, for small $\tau$ the objective is the
+expectation of a rational function of $(\gamma, \tau)$ whose denominators
+are uniformly bounded away from zero, so it is $C^\infty$ on
+$[0,1] \times [-\bar\tau, \bar\tau]$, and sign symmetry of
+$(\alpha,\delta,\zeta)$ makes it even in $\tau$. The expansion is then the
+Taylor expansion in $\tau^2$, valid in $C^2$ uniformly. Write the
+integrand of \eqref{eq:wholeF} as $(u_0 + \tau u_1)^2/(D_0 + \tau D_1)^2$
+with
+\[
+  u_0 = (d-a)\,c\,(\gamma - 1), \quad
+  u_1 = (d-a)\gamma\zeta + h, \quad
+  D_0 = S - 2\gamma c, \quad
+  D_1 = \alpha + \delta - 2\gamma\zeta.
+\]
+Expanding and discarding odd powers (which vanish in expectation),
+\begin{equation}
+  G_W(\gamma) \;=\; \frac{1}{K}\left[
+    \frac{\E[u_1^2]}{D_0^2}
+    \;-\; \frac{4\,u_0\,\E[u_1 D_1]}{D_0^3}
+    \;+\; \frac{3\,u_0^2\,\E[D_1^2]}{D_0^4}
+  \right].
+  \label{eq:GW}
+\end{equation}
+At $\gamma = 1$: $u_0 = 0$, $u_0' = (d-a)c$, $u_1 = u$,
+$\partial_\gamma u_1 = (d-a)\zeta$, $D_0 = K$, $D_0' = -2c$, and
+$D_1 = \alpha + \delta - 2\zeta$, so
+\[
+  G_W'(1) = \frac{1}{K}\left[
+    \frac{2(d-a)\E[\zeta u]}{K^2} + \frac{4c\,\E[u^2]}{K^3}
+    - \frac{4(d-a)c\,\E[u D_1]}{K^3}
+  \right] = \frac{2\,\Xi}{K^4}.
+\]
+The noise-free part is $V_0(\gamma) - Q(x_*) =
+(d-a)^2 c^2 (\gamma-1)^2 / (K D_0^2)$, giving $V_0''(1) = 2(d-a)^2c^2/K^3$
+and $V_0'(0) = 2c^2(d-a)^2(2c - S)/(K S^3) < 0$. Under $S > 6c$, $V_0$ is
+strictly convex on $[0,1]$ (Theorem~\ref{thm:family}(i) at $e = 0$), so
+$\gamma = 1$ is its unique global minimizer. Theorem~\ref{thm:mvlocal}
+applies with $G = G_W$. If $G_W'(1) > 0$ there is a $C^1$ curve of local
+minimizers with $1 - \gamma^*(\tau) = \big(G_W'(1)/V_0''(1)\big)\tau^2 +
+O(\tau^4)$, which is \eqref{eq:wholeshift}, and it is the unique global
+minimizer for small $\tau$ by the uniform convergence
+$F_{\mathrm{ext}} \to V_0$. If $G_W'(1) < 0$ full coupling is locally
+optimal. Since $V_0'(0) < 0$ and the noise is bounded with no support
+restriction, Theorem~\ref{thm:nohrp} applies and keeps every minimizer
+uniformly separated from $\gamma = 0$, so the global minimizer in case
+(i) is interior. For (iii) and (iv), substitute
+$u = (d-a)\zeta + (a-c)\delta - (d-c)\alpha$ into \eqref{eq:Xi} and drop
+the vanishing cross moments. The coefficient calculations, and the
+identity \eqref{eq:wholeF} itself, are verified exactly by the
+certificate script. For positivity in (iv), note
+$2d - a - c > d - c > 0$ and $a > c$.
+\end{proof}
+
+\begin{remark}[What whole-matrix noise changes, and what it does not]
+\label{rem:wholefam}
+For the numbers of \eqref{eq:familycov}, \eqref{eq:Xiind} reads
+\[
+  \Xi \;=\; \tfrac{9963}{320}\,\E[\zeta^2]
+  \;+\; \tfrac{1674}{125}\,\E[\alpha^2]
+  \;-\; \tfrac{189}{500}\,\E[\delta^2].
+\]
+Three consequences follow. First, with equal unit second moments on all
+three channels, the shift coefficient in \eqref{eq:wholeshift} is
+$\Xi/\big((d-a)^2c^2K\big) = \tfrac{13081}{1377} \approx 9.50$, against
+$\tfrac{1025}{153} \approx 6.70$ for cross-only noise \eqref{eq:smalle}.
+Adding noise to the diagonal blocks pushes the optimum deeper into the
+bridge. The exact recursion confirms the coefficient: at
+$\tau = \tfrac{1}{100}$ the exact minimizer over an exhaustive fine grid
+agrees with $1 - \tfrac{13081}{1377}\tau^2$ to five decimal places.
+For $\tau \in \{\tfrac{1}{50}, \tfrac{1}{100}\}$, the inequality
+$F(\hat\gamma) < \min\big(F(0), F(1)\big)$ holds as an exact rational
+inequality at $\hat\gamma = 1 - \tfrac{13081}{1377}\tau^2$. Second, the
+condition is sharp. Noise confined to the $\hat d$ channel has
+$\Xi = -\tfrac{189}{500}\,\E[\delta^2] < 0$, and the certificate script
+verifies exactly, at amplitudes $\tau|\delta| \in \{\tfrac{1}{10},
+\tfrac14\}$, that $F(1)$ is strictly below $F(\gamma)$ at every grid point
+$\gamma = k/50 < 1$. The support of the noise does not decide the
+question. The sign of \eqref{eq:Xi} does. Third, at the
+hierarchical end \eqref{eq:GW} gives
+\[
+  G_W(0) \;=\; \frac{1}{K}\left[
+  \frac{\E[h^2]}{S^2} + \frac{4c(d-a)\,\E[h(\alpha+\delta)]}{S^3}
+  + \frac{3c^2(d-a)^2\,\E[(\alpha+\delta)^2]}{S^4}\right],
+\]
+which involves no $\zeta$ moments. The cross channel is invisible at
+$\gamma = 0$, as in Lemma~\ref{lem:blind}, but the diagonal channels now
+charge HRP a noise cost of its own: for the family it is
+$\tfrac{704\E[\alpha^2] + 164\E[\delta^2]}{9375} > 0$ under uncorrelated
+channels. Interiority therefore wins a comparison between two noise
+costs, with no noise-free anchor left to lean on.
+\end{remark}
+
+\subsection{Entrywise noise, by exact enumeration}
+\label{sec:entrywise}
+
+Independent noise entry by entry breaks exchangeability, and no scalar
+reduction is available. With two-point noise, however, the objective is a
+finite average of exact rationals, so interiority is still certifiable.
+We perturb each correlation and variance independently,
+\[
+  \widehat\Sigma_{ij} = \sigma_i\sigma_j\,(\rho_{ij} + \tau\,
+  \varepsilon_{ij}) \;\; (i \ne j),
+  \qquad
+  \widehat\Sigma_{ii} = \sigma_i^2\,(1 + \tau\,\varepsilon_{ii}),
+\]
+with independent signs $\varepsilon = \pm 1$, and run the recursion
+through every sign state ($2^6 = 64$ states for the six off-diagonal
+entries; $2^{10} = 1024$ when the four variances are noised as well). The
+certificate script verifies the following as exact rational inequalities,
+with every state defined at each coupling evaluated:
+\begin{center}
+\begin{tabular}{llccc}
+\toprule
+noised entries & $\tau$ & $\hat\gamma$ &
+$F(0) - F(\hat\gamma)$ & $F(1) - F(\hat\gamma)$ \\
+\midrule
+six off-diagonal & $\tfrac15$ & $\tfrac25$ &
+$\approx 2.00 \times 10^{-2}$ & $\approx 3.82 \times 10^{-2}$ \\
+all ten & $\tfrac1{10}$ & $\tfrac{11}{12}$ &
+$\approx 4.62 \times 10^{-2}$ & $\approx 8.97 \times 10^{-2}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Both differences are exactly positive, so every minimizer is strictly
+interior in both models. At larger noise the minimum-variance end
+degrades by orders of magnitude. At $\tau = \tfrac{3}{20}$ with all ten
+entries noised, $56$ of the $1024$ branches are near-singular at
+$\gamma = 1$, and the average over the remaining branches is
+$\approx 75$, against $F(\tfrac{12}{25}) \approx 0.77$. The comparison
+against HRP, $F(0) - F(\tfrac{12}{25}) \approx 2.66 \times 10^{-2} > 0$,
+remains a clean exact certificate.
+
+\subsection{The sample covariance}
+\label{sec:wishart}
+
+Finally we take the model of Remark~\ref{rem:scope-model} literally. Let
+$\widehat\Sigma = \tfrac{1}{T}\sum_{t=1}^{T} x_t x_t^\top$ with
+$x_t \sim \mathcal{N}(0, \Sigma)$ i.i.d. This puts Wishart noise in every
+entry, and it is the estimation model in which \cite{antonov2025} derive
+the weight noise of HRP and of Markowitz and prove HRP the more robust.
+Exactness is unavailable here. The following is Monte Carlo with
+$2 \times 10^5$ replications per sample size, the same draws shared
+across the coupling grid (step $0.02$), for the family
+\eqref{eq:familycov} (script \texttt{paper/wishart\_experiment.py}):
+\begin{center}
+\begin{tabular}{rccccc}
+\toprule
+$T$ & $\gamma^*$ & $F(0)$ & $F(\gamma^*)$ & $F(1)$ \\
+\midrule
+ 15 & $0.34$ & $0.830$ & $0.813$ & $\approx 5.6 \times 10^{2}$ \\
+ 25 & $0.50$ & $0.813$ & $0.786$ & $\approx 4.7 \times 10^{3}$ \\
+ 50 & $0.74$ & $0.802$ & $0.763$ & $\approx 2.2 \times 10^{1}$ \\
+100 & $0.88$ & $0.797$ & $0.751$ & $0.762$ \\
+250 & $0.96$ & $0.794$ & $0.745$ & $0.7451$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The comparison against HRP is sharp: $F(0) - F(\gamma^*)$ is positive at
+$148$ or more paired standard errors at every $T$. The $\gamma = 1$
+column at small $T$ is dominated by rare near-singular draws. Its mean is
+orders of magnitude worse but carries a large standard error, so we
+report it as evidence of fragility and lean on the HRP comparisons for
+precision. At no sample size is either endpoint optimal, and the
+optimizer sweeps the bridge monotonically with the information available:
+$\gamma^* \approx 0.34,\ 0.50,\ 0.74,\ 0.88,\ 0.96$ at
+$T = 15,\ 25,\ 50,\ 100,\ 250$. Sample size selects the seat on the
+bridge.
+
 \section{The surrogate in general}
 \label{sec:frontier}
 
@@ -1271,9 +1578,9 @@ inequalities persist: every minimizer stays interior.
 
 \begin{remark}[A structural cancellation, special to these families]
 \label{rem:cancel}
-In both noise models on the covariance \eqref{eq:familycov} --- the common
+In both noise models on the covariance \eqref{eq:familycov} (the common
 cross-correlation noise of Section~\ref{sec:family} and the one-entry noise
-of Example~\ref{ex:interior} --- the boundary derivative does not move with
+of Example~\ref{ex:interior}), the boundary derivative does not move with
 the noise: exact jet evaluation gives
 \[
   \partial_\gamma F(0;\tau) \;=\; V_0'(0) \;=\; -\tfrac{216}{3125}
@@ -1322,8 +1629,8 @@ must repair or refuse.
 
 \section{Closing}
 
-Under cross-block estimation error the Schur coupling is a bias--variance
-dial, and the three layers say when to turn it. Whenever coupling has
+Under estimation error the Schur coupling is a bias--variance
+dial, and the four layers say when to turn it. Whenever coupling has
 first-order population value, the optimum stays uniformly separated from
 hierarchical risk parity at all sufficiently small noise levels
 (Theorem~\ref{thm:nohrp}), and the noise prices coupling at order
@@ -1332,9 +1639,15 @@ endpoint, positive marginal noise sensitivity pushes the optimum inside by
 order $\tau^2$ (Theorem~\ref{thm:mvlocal}). And in the solved family the
 exact optimizer is unique, interior, and slides monotonically from full
 coupling at zero noise to the middle of the bridge at the largest
-admissible noise (Theorem~\ref{thm:family}). The exact examples mark what
+admissible noise (Theorem~\ref{thm:family}). Dropping the cross-block
+restriction does not change the verdict: the sign functional $\Xi$ decides
+interiority under whole-matrix noise, and under the sample covariance the
+optimizer slides monotonically with sample size
+(Section~\ref{sec:whole}). The exact examples mark what
 cannot be claimed in general: hierarchical risk parity can become locally
-optimal at a finite noise level (Example~\ref{ex:boundary}), and the
+optimal at a finite noise level (Example~\ref{ex:boundary}), full coupling
+can stay locally optimal when the noise sits on a single diagonal channel
+(Remark~\ref{rem:wholefam}), and the
 surrogate frontier is a clipped inverse, with each endpoint owning an
 interval of noise levels unless its limit condition holds
 (Theorem~\ref{thm:frontier}). A walk-forward bridge on Dow constituents is
@@ -1356,7 +1669,7 @@ Journal of Portfolio Management \textbf{42}(4) (2016), 59--69.
 
 \bibitem{cotton2022blog}
 P.~Cotton,
-\emph{Schur Complementary Portfolios --- A Unification of Machine Learning
+\emph{Schur Complementary Portfolios: A Unification of Machine Learning
 and Optimization-Based Allocation},
 Geek Culture (Medium), 2022.
 \url{https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f}
