@@ -738,16 +738,33 @@ def whole_matrix_checks():
             tot += sum(w[i] * ST[i][j] * w[j] for i in range(4) for j in range(4))
         return tot / (2 ** len(entries) - n_sing), n_sing
 
+    def spd_exact(Sg):
+        """Leading principal minors positive, exact (Sylvester)."""
+        def det_k(X, k):
+            if k == 1:
+                return X[0][0]
+            tot = Fr(0)
+            for j in range(k):
+                minor = [[X[i][m] for m in range(k) if m != j]
+                         for i in range(1, k)]
+                tot += (-1) ** j * X[0][j] * det_k(minor, k - 1)
+            return tot
+        return all(det_k([r[:k] for r in Sg[:k]], k) > 0 for k in (1, 2, 3, 4))
+
     for label, entries, tau, ghat in (
-            ("six off-diagonal entries", OFFD, Fr(1, 5), Fr(2, 5)),
+            ("six off-diagonal entries", OFFD, Fr(3, 20), Fr(7, 10)),
             ("all ten entries", OFFD + DIAG, Fr(1, 10), Fr(11, 12))):
+        n_states = 2 ** len(entries)
+        assert all(spd_exact(Sig_entry(tau, entries, s))
+                   for s in itertools.product((1, -1), repeat=len(entries)))
         (F0, s0), (Fh, sh), (F1, s1) = (Fent(Fr(0), tau, entries),
                                         Fent(ghat, tau, entries),
                                         Fent(Fr(1), tau, entries))
         assert s0 == sh == s1 == 0
         assert F0 - Fh > 0 and F1 - Fh > 0
-        print(f"entrywise ({label}, tau = {tau}): every sign state defined;\n"
-              f"          F(0) - F({ghat}) = {float(F0 - Fh):.4e} and "
+        print(f"entrywise ({label}, tau = {tau}): all {n_states} states SPD "
+              f"(exact minors)\n          and defined; "
+              f"F(0) - F({ghat}) = {float(F0 - Fh):.4e} and "
               f"F(1) - F({ghat}) = {float(F1 - Fh):.4e},\n"
               f"          both exactly positive: every minimizer is interior")
 

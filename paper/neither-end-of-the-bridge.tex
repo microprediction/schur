@@ -134,10 +134,26 @@ the $\gamma$-damped Schur complement and its companion vector,
   b_A(\gamma) \;=\; \mathbf{1} - \gamma\, B D^{-1} \mathbf{1},
   \label{eq:family}
 \end{equation}
-and symmetrically for $D^c(\gamma), b_D(\gamma)$. In the canonical
-presentation the intra-group matrix is $A^c(\gamma)$ with an elementwise
-division by $b_A b_A^\top$ and the inter-group fitness is evaluated on
-$\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$. At $\gamma = 0$ every
+and symmetrically for $D^c(\gamma), b_D(\gamma)$. The pair form is
+primary. For SPD $Q$ with blocks $A, B, D$ and any
+$b = (b_L; b_R)$,
+\[
+  Q^{-1} b \;=\;
+  \begin{pmatrix}
+    (A - B D^{-1} B^\top)^{-1}\,(b_L - B D^{-1} b_R) \\
+    (D - B^\top A^{-1} B)^{-1}\,(b_R - B^\top A^{-1} b_L)
+  \end{pmatrix},
+\]
+so recursive exactness follows by induction on the tree with the
+companion vectors carried alongside the blocks. The canonical
+presentation of \cite{cotton2024schur} encodes the pair in a single
+matrix, dividing $A^c(\gamma)$ elementwise by $b_A b_A^\top$ and
+evaluating the inter-group fitness on
+$\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$. That encoding
+requires every coordinate of $b_A$ to be nonzero, which can fail on
+ordinary SPD input (a $4 \times 4$ example with $b_A = (0,1)^\top$ has
+leading principal minors $2, 4, \tfrac72, 3$), so we treat it as an
+optional representation and work with the pair. At $\gamma = 0$ every
 member is HRP. At $\gamma = 1$ the scheme replicates the minimum-variance
 portfolio; the one-step form of that equivalence is
 Proposition~\ref{prop:minvar}, following Appendix~A of
@@ -1244,8 +1260,9 @@ $\gamma^*(\tau)$ on $[0,1]$, it is interior, and
 \item[\textup{(ii)}] if $\Xi < 0$, full coupling is locally optimal for
 all sufficiently small $\tau$;
 \item[\textup{(iii)}] cross-only noise ($\alpha = \delta = 0$) gives
-$\Xi = (d-a)^2 (S + 4c)\,\E[\zeta^2]$, and \eqref{eq:wholeshift} reduces
-to \eqref{eq:smalle};
+$\Xi = (d-a)^2 (S + 4c)\,\E[\zeta^2]$; under the two-point noise of
+Section~\ref{sec:family}, $\zeta = \pm 2$ so $\E[\zeta^2] = 4$, and
+\eqref{eq:wholeshift} reduces exactly to \eqref{eq:smalle};
 \item[\textup{(iv)}] for pairwise-uncorrelated channels,
 \begin{equation}
   \Xi \;=\; (d-a)^2 (S+4c)\,\E[\zeta^2]
@@ -1325,8 +1342,9 @@ three pairwise-uncorrelated channels, the shift coefficient in
 \eqref{eq:wholeshift} is
 $\Xi/\big((d-a)^2c^2K\big) = \tfrac{13081}{1377} \approx 9.50$, against
 $\tfrac{1025}{153} \approx 6.70$ for cross-only noise \eqref{eq:smalle}.
-Adding noise to the diagonal blocks pushes the optimum deeper into the
-bridge. The exact recursion confirms the coefficient: at
+In this equal-amplitude comparison the diagonal channels add a net
+inward push, the positive $\alpha$-channel term dominating the negative
+$\delta$-channel term. The exact recursion confirms the coefficient: at
 $\tau = \tfrac{1}{100}$ the exact minimizer over an exhaustive fine grid
 agrees with $1 - \tfrac{13081}{1377}\tau^2$ to five decimal places.
 For $\tau \in \{\tfrac{1}{50}, \tfrac{1}{100}\}$, the inequality
@@ -1378,13 +1396,22 @@ with every state defined at each coupling evaluated:
 noised entries & $\tau$ & $\hat\gamma$ &
 $F(0) - F(\hat\gamma)$ & $F(1) - F(\hat\gamma)$ \\
 \midrule
-six off-diagonal & $\tfrac15$ & $\tfrac25$ &
-$\approx 2.00 \times 10^{-2}$ & $\approx 3.82 \times 10^{-2}$ \\
+six off-diagonal & $\tfrac{3}{20}$ & $\tfrac{7}{10}$ &
+$\approx 3.57 \times 10^{-2}$ & $\approx 8.28$ \\
 all ten & $\tfrac1{10}$ & $\tfrac{11}{12}$ &
 $\approx 4.62 \times 10^{-2}$ & $\approx 8.97 \times 10^{-2}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+The noise levels are chosen so that every enumerated matrix is a genuine
+covariance: all $64$ off-diagonal states at $\tau = \tfrac{3}{20}$ and
+all $1024$ states at $\tau = \tfrac{1}{10}$ are positive definite
+(smallest eigenvalues $\approx 0.078$ and $\approx 0.148$), certified
+exactly through leading principal minors. At $\tau = \tfrac15$ two of
+the $64$ off-diagonal states leave the cone, so we do not certify
+there. The large second margin in the first row is itself informative:
+it comes from near-poles of the implemented recursion at full coupling
+even though every input is a valid covariance.
 One more step is needed before concluding, because $F$ need not be
 continuous on all of $[0,1]$: an individual sign state can have an
 interior fitness-sum zero, where its loss has a second-order pole. The
@@ -1401,7 +1428,8 @@ interior in both models. At larger noise the full-coupling end degrades
 by orders of magnitude. At $\tau = \tfrac{3}{20}$ with all ten entries
 noised, $56$ of the $1024$ branches are exactly singular at
 $\gamma = 1$ (the collapse factor vanishes there, with finite one-sided
-limits), and the average over the remaining branches is $\approx 75$,
+limits), and, even discarding those branches, the mean loss over the
+$968$ nonsingular branches is $\approx 75$,
 against $F(\tfrac{12}{25}) \approx 0.77$. The comparison against HRP,
 $F(0) - F(\tfrac{12}{25}) \approx 2.66 \times 10^{-2} > 0$, remains a
 clean exact certificate.
@@ -1556,7 +1584,10 @@ The interior coupling of the implemented bridge has the best median at
 every sample size. It beats HRP on three quarters of draws at $T = 15$
 and on essentially all draws at $T = 250$, it beats its own full-coupling
 end, and it beats actual sample Markowitz, whose median is the worst
-column at small $T$ even though its mean is finite. The median
+column at small $T$ even though its mean is finite. The margins at the
+full-coupling end shrink below the table's precision at large $T$:
+$M_T(1) - M_T(\gamma^*) \approx 4 \times 10^{-4}$ at $T = 100$ and
+$5 \times 10^{-5}$ at $T = 250$, consistent with $\gamma^* \to 1$. The median
 comparison is qualitatively consistent with \cite{antonov2025}: sample
 Markowitz overtakes HRP only as $T$ grows. Full coupling of the
 implemented recursion carries the tail: $1.8\%$ of draws at $T = 15$
@@ -1595,8 +1626,10 @@ and the stationarity condition near $\gamma = 1$ gives
   \;=\; \frac{G'(1) - \tfrac{243}{32 K^3}\,\kappa}{V_0''(1)}\;\tau^2
   \;+\; O(\tau^4):
 \]
-the interior optimum survives precisely when
-$\kappa < \kappa^* := \tfrac{32 K^3}{243}\, G'(1)$, where $G$ is the
+the interior optimum survives for
+$\kappa < \kappa^* := \tfrac{32 K^3}{243}\, G'(1)$ and is lost to
+second order for $\kappa > \kappa^*$; at $\kappa = \kappa^*$ the
+fourth-order term decides, as at $\Xi = 0$. Here $G$ is the
 $\tau^2$-coefficient of \eqref{eq:expansion}, four times the
 $e$-parametrized closed form \eqref{eq:closedforms}. For the common
 cross-block noise of Section~\ref{sec:family}, $\kappa^* =
@@ -1759,8 +1792,10 @@ $[0,1]$, on both noise branches, by exhibiting positive Bernstein
 coefficients (with exact subdivision where needed). Hence $F$ is continuous
 on $[0,1]$ and attains its minimum, and
 $\min F \le F(\tfrac{9}{10}) < \min\{F(0), F(1)\}$, so no minimizer is an
-endpoint. The same positivity gives the positive definiteness of the
-augmented blocks for every $\gamma$. Robustness: the certificate proves
+endpoint. The certified polynomials include the determinant numerators
+of the augmented blocks, and for a symmetric $2 \times 2$ block positive
+diagonal entries together with a positive determinant give positive
+definiteness, so the augmented blocks are SPD for every $\gamma$. Robustness: the certificate proves
 more than positivity at three points. Each denominator polynomial is
 strictly positive on all of $[0,1]$, so its minimum over $[0,1]$ is
 positive. The coefficients of these polynomials are rational functions of the
@@ -1839,8 +1874,9 @@ order $\tau^2$ (Theorem~\ref{thm:mvlocal}). And in the solved family the
 exact optimizer is unique, interior, and slides monotonically from full
 coupling at zero noise to the middle of the bridge at the largest noise
 the theorem covers (Theorem~\ref{thm:family}). Dropping the cross-block
-restriction does not change the verdict: the sign functional $\Xi$ decides
-interiority under whole-matrix noise, and in the sample-covariance
+restriction does not change the verdict: when nonzero, the sign of $\Xi$
+gives the second-order direction in which the optimizer leaves full
+coupling under whole-matrix noise, and in the sample-covariance
 experiments the median-optimal coupling increases with sample size
 (Section~\ref{sec:whole}). The exact examples mark what
 cannot be claimed in general: hierarchical risk parity can become locally
