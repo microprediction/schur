@@ -235,6 +235,8 @@ def main():
     whole_matrix_checks()
     print()
     lw_checks()
+    print()
+    endpoint_mismatch_certificate()
 
     # optional: cross-check against the allocation package and certify SPD
     try:
@@ -819,6 +821,42 @@ def lw_checks():
     print("LW over-shrinkage: fixed rho = 1/20, tau = 1/50: F(1) < F(k/50) for "
           "k = 15..49\n          (bias slope dominates; full coupling on the "
           "shrunk input is optimal)")
+
+
+def endpoint_mismatch_certificate():
+    """Exact witness that the implemented recursion at gamma = 1 is not the
+    sample minimum-variance portfolio on non-exchangeable input: an integer
+    SPD matrix M with M (1,1,1,0)' = 2*ones (so w_MV = (1/3,1/3,1/3,0)
+    exactly) on which the recursion returns (1330,1197,952,204)/3683."""
+    M = [[Fr(8), Fr(-7), Fr(1), Fr(-6)],
+         [Fr(-7), Fr(10), Fr(-1), Fr(7)],
+         [Fr(1), Fr(-1), Fr(2), Fr(1)],
+         [Fr(-6), Fr(7), Fr(1), Fr(11)]]
+
+    def det_n(X):
+        if len(X) == 1:
+            return X[0][0]
+        tot = Fr(0)
+        for j in range(len(X)):
+            minor = [[X[i][k] for k in range(len(X)) if k != j]
+                     for i in range(1, len(X))]
+            tot += (-1) ** j * X[0][j] * det_n(minor)
+        return tot
+
+    minors = [det_n([r[:k] for r in M[:k]]) for k in (1, 2, 3, 4)]
+    assert minors == [Fr(8), Fr(31), Fr(58), Fr(230)]
+    v = [Fr(1), Fr(1), Fr(1), Fr(0)]
+    Mv = [sum(M[i][j] * v[j] for j in range(4)) for i in range(4)]
+    assert Mv == [Fr(2)] * 4                      # M^{-1} 1 prop. (1,1,1,0)
+    w_impl = weights(M, Fr(1))
+    assert w_impl == [Fr(1330, 3683), Fr(1197, 3683),
+                      Fr(952, 3683), Fr(204, 3683)]
+    w_mv = [Fr(1, 3), Fr(1, 3), Fr(1, 3), Fr(0)]
+    assert all(w_impl[i] != w_mv[i] for i in range(4))
+    print("endpoint mismatch: integer SPD witness (minors 8, 31, 58, 230) with")
+    print("          w_MV = (1/3, 1/3, 1/3, 0) exactly, while the implemented")
+    print("          recursion at gamma = 1 returns (1330,1197,952,204)/3683;")
+    print("          the two disagree in every entry, exactly")
 
 
 if __name__ == "__main__":

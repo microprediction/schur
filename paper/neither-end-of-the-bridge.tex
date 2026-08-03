@@ -53,8 +53,8 @@ estimation error the optimum separates from both ends, and an exchangeable
 four-asset family is solved exactly, with the optimizer decreasing from
 full coupling to the middle of the bridge. Dropping the cross-block
 restriction changes nothing essential: whole-matrix noise admits a sharp
-second-order interiority criterion, and under sample-covariance noise
-the median-optimal coupling sweeps the bridge with sample size.
+second-order interiority criterion, and in sample-covariance experiments
+the median-optimal coupling climbs the bridge with sample size.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -101,9 +101,10 @@ coupling toward the middle of the bridge as the noise grows.
 
 The restriction to cross-block noise is then dropped. With noise in every
 entry of the covariance the same family still prefers the interior, under
-an explicit and sharp condition on the noise's second moments, and under
-the sample covariance of $T$ Gaussian draws the optimal coupling slides
-along the bridge as $T$ grows: sample size selects the seat. We are
+an explicit and sharp condition on the noise's second moments, and in
+Monte Carlo under the sample covariance of $T$ Gaussian draws the
+median-optimal coupling climbs from $0.62$ to $0.96$ over the sample
+sizes examined: sample size selects the seat. We are
 explicit about what is not claimed. Covariance error does not always force
 an interior optimum, and either endpoint can be optimal on a nontrivial
 interval of noise levels. Exact examples mark those boundaries, and every
@@ -1375,10 +1376,11 @@ interior fitness-sum zero, where its loss has a second-order pole. The
 repair is a lower bound. Every weight vector the recursion produces sums
 to one, so its realized variance is at least
 $1/(\mathbf{1}^\top\Sigma^{-1}\mathbf{1}) > 0$. Each state's loss is a
-rational function of $\gamma$, bounded below, with finitely many
-interior poles at which it diverges to $+\infty$ and finite limits at
-its collapse-factor zeros. $F$ therefore attains its minimum on $[0,1]$
-(extended by continuity at the removable points), and the certified
+nonnegative rational function of $\gamma$ with finitely many exceptional
+points. Extend it at each exceptional point by its finite limit when the
+singularity is removable and by $+\infty$ otherwise. The extension is
+lower semicontinuous, so the finite average is lower semicontinuous and
+attains its minimum on $[0,1]$, and the certified
 inequalities exclude both endpoints: every minimizer is strictly
 interior in both models. At larger noise the full-coupling end degrades
 by orders of magnitude. At $\tau = \tfrac{3}{20}$ with all ten entries
@@ -1407,11 +1409,22 @@ exchangeable, and on non-exchangeable input the implemented recursion at
 $\gamma = 1$ is \emph{not} the sample minimum-variance portfolio: the
 symmetrization in \eqref{eq:aug} and the naive within-block splits both
 break the exact recovery of Proposition~\ref{prop:minvar}, which is why
-Section~\ref{sec:mvend} assumed that recovery rather than derived it. On
-generic random SPD matrices the median distance
-$\|w(1;\widehat\Sigma) - w_{\mathrm{MV}}(\widehat\Sigma)\|_2$ is about
-$0.23$ and exact agreement never occurs, while on the exchangeable family
-the two coincide to machine precision. In this subsection $\gamma = 1$
+Section~\ref{sec:mvend} assumed that recovery rather than derived it. The
+gap is exact. For the SPD matrix
+\[
+  M \;=\; \begin{pmatrix}
+    8 & -7 & 1 & -6 \\ -7 & 10 & -1 & 7 \\ 1 & -1 & 2 & 1 \\ -6 & 7 & 1 & 11
+  \end{pmatrix}
+\]
+(leading principal minors $8, 31, 58, 230$), the implemented recursion
+gives $w(1; M) = \tfrac{1}{3683}\,(1330, 1197, 952, 204)$, while
+$M\,(1,1,1,0)^\top = 2\cdot\mathbf{1}$ gives
+$w_{\mathrm{MV}}(M) = (\tfrac13, \tfrac13, \tfrac13, 0)$: the two
+disagree in every entry, exactly (certificate script). Both maps are
+rational in the entries wherever the recursion is regular, so exact
+agreement is confined to a proper algebraic subset, of Lebesgue measure
+zero under any absolutely continuous sampling model; on the exchangeable
+family the two coincide identically. In this subsection $\gamma = 1$
 therefore means \emph{full coupling of the implemented recursion}, and
 the sample minimum-variance portfolio
 $w_{\mathrm{MV}}(\widehat\Sigma_T)$ enters as a separate benchmark.
@@ -1452,9 +1465,18 @@ $\varepsilon \in [3 \times 10^{-4}, 3 \times 10^{-2}]$, and on the
 blow-up draws the product $L_T D^2$ concentrates near $1$. Consistently,
 the sample mean of $L_T(1)$ never settles while the sample median is
 stable to four decimals as the replication count grows
-(script \texttt{paper/wishart\_experiment.py} prints both). None of this
+(script \texttt{paper/wishart\_experiment.py} prints both). We stop
+short of a theorem: the proposition needs a deterministic lower bound
+$L_T \ge n_0/D^2$ on the whole small-$|D|$ event, and what the numerics
+show is that the divergence is strongly indicated rather than
+established. A full proof would exhibit a regular zero of the fitness
+sum (an SPD matrix where $D = 0$, the gradient is nonzero, and the
+residue does not vanish) and apply the proposition on a neighborhood,
+where the Wishart density is positive; we have located such a zero
+numerically and leave its certification to future work. None of this
 is Markowitz estimation risk. The sample minimum-variance portfolio has
-finite mean, $\E[L_T] = \nu(\Sigma)\,(T-2)/(T-n-1)$ for Gaussian draws,
+finite mean, $\E[L_T^{\mathrm{MV}}] = \nu(\Sigma)\,(T-1)/(T-n)$ for the
+known-mean estimator $\widehat\Sigma_T$ and Gaussian draws,
 and the canonical pair recursion of Proposition~\ref{prop:minvar} has no
 pole of this kind at all, since its augmented block satisfies
 $A - \gamma B D^{-1} B^\top = (1-\gamma)\,A + \gamma\,(A - BD^{-1}B^\top)$,
@@ -1772,8 +1794,8 @@ exact optimizer is unique, interior, and slides monotonically from full
 coupling at zero noise to the middle of the bridge at the largest noise
 the theorem covers (Theorem~\ref{thm:family}). Dropping the cross-block
 restriction does not change the verdict: the sign functional $\Xi$ decides
-interiority under whole-matrix noise, and under the sample covariance the
-optimizer slides monotonically with sample size
+interiority under whole-matrix noise, and in the sample-covariance
+experiments the median-optimal coupling increases with sample size
 (Section~\ref{sec:whole}). The exact examples mark what
 cannot be claimed in general: hierarchical risk parity can become locally
 optimal at a finite noise level (Example~\ref{ex:boundary}), full coupling
