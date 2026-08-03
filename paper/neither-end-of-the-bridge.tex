@@ -73,7 +73,10 @@ $\gamma \to 1$. This unification first appeared in a blog
 \cite{cotton2022blog}, then in a textbook \cite[\S12.3.4]{palomar2025}, with
 a fuller development in \cite{cotton2024schur}. It quickly found its way
 into practice: \texttt{skfolio}, a popular Python portfolio library, ships
-it as \texttt{SchurComplementary}. On the hierarchical graph structures of
+it as \texttt{SchurComplementary}. The shipped variant is exactly HRP at
+$\gamma = 0$ and returns minimum variance at $\gamma = 1$ only under
+additional structure, a distinction Section~\ref{sec:whole} makes exact.
+On the hierarchical graph structures of
 \cite{mograby2025} the $\gamma = 1$ recovery is exact. The endpoints have
 since been compared analytically: \cite{antonov2025} derive the weight noise
 of HRP and of Markowitz under covariance estimation error and prove HRP is
@@ -241,8 +244,17 @@ capital, and the recursion continues inside each augmented block down to
 singletons. Nodes with a singleton child perform no augmentation; the
 implementations skip the augmentation whenever \emph{either} child has one
 asset, so a two-asset node splits by the inverse of its already augmented
-diagonal entries. At $\gamma = 0$ the augmentation \eqref{eq:aug} is the
-identity and the recursion is exactly HRP over the fixed order.
+diagonal entries. The variant is best read as a principled top-down family
+inspired by HRP, and its endpoints deserve care at the outset. At
+$\gamma = 0$ the augmentation \eqref{eq:aug} is the identity and the
+recursion is exactly HRP over the fixed order. At $\gamma = 1$ it
+reproduces minimum variance only under additional structure:
+exchangeability suffices (Lemma~\ref{lem:reduce}), and
+Section~\ref{sec:wishart} gives an integer counterexample. The
+symmetrization is exact for a single level of coupling, because one level
+reads only diagonals and quadratic forms of the augmented blocks, and
+both see only the symmetric part; on deeper trees it matters, and the
+operative gap at $\gamma = 1$ is the naive splits.
 Implementations optionally cap $\gamma$ at an in-sample variance turning
 point (\texttt{keep\_monotonic}); we analyze the raw recursion. One thing
 cannot be simplified away. The inter-group fitness must be a quadratic form
@@ -1407,8 +1419,9 @@ prove HRP the more robust.
 Two objects must be kept apart here. A sample covariance is not
 exchangeable, and on non-exchangeable input the implemented recursion at
 $\gamma = 1$ is \emph{not} the sample minimum-variance portfolio: the
-symmetrization in \eqref{eq:aug} and the naive within-block splits both
-break the exact recovery of Proposition~\ref{prop:minvar}, which is why
+naive within-block splits break the exact recovery of
+Proposition~\ref{prop:minvar} (the symmetrization is exact at a single
+level of coupling, and $n = 4$ has only one), which is why
 Section~\ref{sec:mvend} assumed that recovery rather than derived it. The
 gap is exact. For the SPD matrix
 \[
