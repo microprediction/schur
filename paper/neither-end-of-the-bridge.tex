@@ -1498,6 +1498,24 @@ $\widehat\Sigma_T$ is positive definite. The pole belongs to the collapse
 and the naive splits. Implementations guard against it by forcing the
 augmented blocks positive definite, which truncates the tail.
 
+\begin{remark}[An exact bridge]
+\label{rem:exactbridge}
+The two observations above point to a variant with both endpoints exact
+and no pole, and we sketch it because it will be treated in a future
+paper. Damp the within-block off-diagonals with the same dial, replacing
+each augmented block $Q$ by $(1-\gamma)\operatorname{diag}(Q) + \gamma Q$,
+and solve within blocks canonically. At $\gamma = 0$ the solve
+degenerates to $\operatorname{diag}(Q)^{-1}\mathbf{1}$, which is HRP's
+naive rule. At $\gamma = 1$ nothing is damped and the canonical pair
+returns exact sample minimum variance. Every matrix inverted along the
+way is a convex combination of positive definite matrices, and the
+canonical fitnesses $b^\top Q^{-1} b$ are positive. The open design
+question is the top-level split, which must interpolate HRP's
+inverse-fitness ratio at $\gamma = 0$ and the canonical normalization at
+$\gamma = 1$ while staying away from zero in between. The construction
+and its noise analysis are future work.
+\end{remark}
+
 We therefore summarize the raw recursion by medians
 $M_T(\gamma) = \operatorname{med} L_T(\gamma)$, which are stable. The
 table reports $2 \times 10^5$ replications per sample size, the same
