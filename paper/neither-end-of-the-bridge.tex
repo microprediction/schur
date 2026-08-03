@@ -244,8 +244,10 @@ capital, and the recursion continues inside each augmented block down to
 singletons. Nodes with a singleton child perform no augmentation; the
 implementations skip the augmentation whenever \emph{either} child has one
 asset, so a two-asset node splits by the inverse of its already augmented
-diagonal entries. The variant is best read as a principled top-down family
-inspired by HRP, and its endpoints deserve care at the outset. At
+diagonal entries. The variant is best read as a principled top-down
+family, inspired by HRP, that allows the user to move ``in the
+direction'' of an explicit global optimization in a manner we make
+precise. Its endpoints deserve care at the outset. At
 $\gamma = 0$ the augmentation \eqref{eq:aug} is the identity and the
 recursion is exactly HRP over the fixed order. At $\gamma = 1$ it
 reproduces minimum variance only under additional structure:
