@@ -48,13 +48,15 @@ are in the \texttt{allocation} and \texttt{precise} packages.}}
 We give analytical conditions under which the Schur portfolio with the
 best out-of-sample variance lies strictly inside the bridge, the
 one-parameter family we introduced to unify hierarchical risk parity
-with minimum variance, and exactly provable examples on both sides. Under cross-block
-estimation error the optimum separates from both ends, and an exchangeable
-four-asset family is solved exactly, with the optimizer decreasing from
-full coupling to the middle of the bridge. Dropping the cross-block
-restriction changes nothing essential: whole-matrix noise admits a sharp
-second-order interiority criterion, and in sample-covariance experiments
-the median-optimal coupling climbs the bridge with sample size.
+with minimum variance, and exactly provable examples on both sides.
+Under the stated endpoint conditions, cross-block estimation error
+separates the optimum from both ends, and an exchangeable four-asset
+family is solved exactly, with the optimizer decreasing from full
+coupling to the middle of the bridge. The interior mechanism persists
+under whole-matrix noise, where a sharp second-order sign criterion
+decides whether the optimizer leaves the full-coupling end, and in
+sample-covariance experiments the median-optimal coupling climbs the
+bridge with sample size.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -251,7 +253,7 @@ precise. Its endpoints deserve care at the outset. At
 $\gamma = 0$ the augmentation \eqref{eq:aug} is the identity and the
 recursion is exactly HRP over the fixed order. At $\gamma = 1$ it
 reproduces minimum variance only under additional structure:
-exchangeability suffices (Lemma~\ref{lem:reduce}), and
+the exchangeable structure of Lemma~\ref{lem:reduce} suffices, and
 Section~\ref{sec:wishart} gives an integer counterexample. The
 symmetrization is exact for a single level of coupling, because one level
 reads only diagonals and quadratic forms of the augmented blocks, and
@@ -1436,16 +1438,19 @@ gives $w(1; M) = \tfrac{1}{3683}\,(1330, 1197, 952, 204)$, while
 $M\,(1,1,1,0)^\top = 2\cdot\mathbf{1}$ gives
 $w_{\mathrm{MV}}(M) = (\tfrac13, \tfrac13, \tfrac13, 0)$: the two
 disagree in every entry, exactly (certificate script). Both maps are
-rational in the entries wherever the recursion is regular, so exact
-agreement is confined to a proper algebraic subset, of Lebesgue measure
-zero under any absolutely continuous sampling model; on the exchangeable
-family the two coincide identically. In this subsection $\gamma = 1$
+rational in the entries wherever the recursion is regular. After
+clearing the recursion denominators, at least one coordinate of
+$w(1;\cdot) - w_{\mathrm{MV}}(\cdot)$ has a polynomial numerator that is
+nonzero at the displayed matrix, so that numerator is not the zero
+polynomial and its zero set has Lebesgue measure zero: exact agreement
+has measure zero under any absolutely continuous sampling model. On the
+exchangeable family the two coincide identically. In this subsection $\gamma = 1$
 therefore means \emph{full coupling of the implemented recursion}, and
 the sample minimum-variance portfolio
 $w_{\mathrm{MV}}(\widehat\Sigma_T)$ enters as a separate benchmark.
 
-The expectation $F_T$ is not a usable summary for the raw implemented
-recursion, for a reason worth making precise.
+The sample mean of the raw loss is empirically unstable, and the
+following criterion explains a mechanism that would make $F_T$ infinite.
 
 \begin{proposition}[Pole criterion]
 \label{prop:pole}
@@ -1485,13 +1490,24 @@ short of a theorem: the proposition needs a deterministic lower bound
 $L_T \ge n_0/D^2$ on the whole small-$|D|$ event, and what the numerics
 show is that the divergence is strongly indicated rather than
 established. A full proof would exhibit a regular zero of the fitness
-sum (an SPD matrix where $D = 0$, the gradient is nonzero, and the
-residue does not vanish) and apply the proposition on a neighborhood,
-where the Wishart density is positive; we have located such a zero
+sum: an SPD matrix at which $D = 0$ with nonzero gradient, the
+portfolio residue does not vanish, and every other recursion
+denominator is nonzero. The proposition then applies on a neighborhood,
+where the Wishart density is positive. We have located such a zero
 numerically and leave its certification to future work. None of this
 is Markowitz estimation risk. The sample minimum-variance portfolio has
-finite mean, $\E[L_T^{\mathrm{MV}}] = \nu(\Sigma)\,(T-1)/(T-n)$ for the
-known-mean estimator $\widehat\Sigma_T$ and Gaussian draws,
+finite mean, $\E[L_T^{\mathrm{MV}}] = \nu(\Sigma)\,(T-1)/(T-n)$ for
+$T > n$, the known-mean estimator $\widehat\Sigma_T$, and Gaussian
+draws,\footnote{Write $W = T\,\Sigma^{-1/2}\widehat\Sigma_T
+\Sigma^{-1/2} \sim W_n(T, I)$ and $a = \Sigma^{-1/2}\mathbf{1}$, so
+$\|a\|^2 = 1/\nu(\Sigma)$. By rotational invariance take
+$a = \|a\|\,e_1$ and partition $W$ with first diagonal entry $q$,
+first column tail $b$, and lower block $C$. Normalizing the first
+column of $W^{-1}$ gives $L_T^{\mathrm{MV}}/\nu(\Sigma) = 1 +
+b^\top C^{-2} b$. Conditionally on $C$, $b \sim \mathcal{N}(0, C)$, so
+$\E[b^\top C^{-2} b \mid C] = \operatorname{tr}(C^{-1})$, and
+$\E\operatorname{tr}(C^{-1}) = (n-1)/(T-n)$ for
+$C \sim W_{n-1}(T, I)$, giving $(T-1)/(T-n)$.}
 and the canonical pair recursion of Proposition~\ref{prop:minvar} has no
 pole of this kind at all, since its augmented block satisfies
 $A - \gamma B D^{-1} B^\top = (1-\gamma)\,A + \gamma\,(A - BD^{-1}B^\top)$,
@@ -1500,22 +1516,20 @@ $\widehat\Sigma_T$ is positive definite. The pole belongs to the collapse
 and the naive splits. Implementations guard against it by forcing the
 augmented blocks positive definite, which truncates the tail.
 
-\begin{remark}[An exact bridge]
+\begin{remark}[Toward an endpoint-exact bridge]
 \label{rem:exactbridge}
-The two observations above point to a variant with both endpoints exact
-and no pole, and we sketch it because it will be treated in a future
+These observations suggest a route toward a variant with exact endpoints
+and without the present fitness-sum pole, to be treated in a future
 paper. Damp the within-block off-diagonals with the same dial, replacing
 each augmented block $Q$ by $(1-\gamma)\operatorname{diag}(Q) + \gamma Q$,
-and solve within blocks canonically. At $\gamma = 0$ the solve
-degenerates to $\operatorname{diag}(Q)^{-1}\mathbf{1}$, which is HRP's
-naive rule. At $\gamma = 1$ nothing is damped and the canonical pair
-returns exact sample minimum variance. Every matrix inverted along the
-way is a convex combination of positive definite matrices, and the
-canonical fitnesses $b^\top Q^{-1} b$ are positive. The open design
-question is the top-level split, which must interpolate HRP's
-inverse-fitness ratio at $\gamma = 0$ and the canonical normalization at
-$\gamma = 1$ while staying away from zero in between. The construction
-and its noise analysis are future work.
+and solve within blocks canonically: at $\gamma = 0$ the solve
+degenerates to $\operatorname{diag}(Q)^{-1}\mathbf{1}$, HRP's naive
+rule, and at $\gamma = 1$ the canonical pair returns exact sample
+minimum variance, with every inverted matrix a convex combination of
+positive definite matrices. The recursion cannot be called pole-free
+until the top-level split, which must interpolate HRP's inverse-fitness
+ratio and the canonical normalization, is specified and proved to stay
+away from zero. That is the future paper's problem.
 \end{remark}
 
 We therefore summarize the raw recursion by medians
@@ -1543,8 +1557,8 @@ The interior coupling of the implemented bridge has the best median at
 every sample size. It beats HRP on three quarters of draws at $T = 15$
 and on essentially all draws at $T = 250$, it beats its own full-coupling
 end, and it beats actual sample Markowitz, whose median is the worst
-column at small $T$ even though its mean is finite. The table also
-reproduces the comparison of \cite{antonov2025} in median: sample
+column at small $T$ even though its mean is finite. The median
+comparison is qualitatively consistent with \cite{antonov2025}: sample
 Markowitz overtakes HRP only as $T$ grows. Full coupling of the
 implemented recursion carries the tail: $1.8\%$ of draws at $T = 15$
 land above $10$, more than thirteen times the population minimum
