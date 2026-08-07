@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theorem 5: whole-matrix noise and the sign of Ξ — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Lemma 4 and Theorem 5 — whole-matrix noise: the sign of &Xi; decides</h1>
+
+  <p>The other demos noise only the cross-block. Here every entry of the
+  covariance is perturbed: rank-one exchangeable displacements of amplitude
+  e<sub>&alpha;</sub> on the A block, e<sub>&delta;</sub> on the D block, and
+  e<sub>&zeta;</sub> on the cross-block, with independent signs (8 equally likely
+  states, averaged exactly). Theorem 5 says interiority is decided by the sign of
+  &Xi; = (9963/320)e<sub>&zeta;</sub>&sup2; + (1674/125)e<sub>&alpha;</sub>&sup2;
+  &minus; (189/500)e<sub>&delta;</sub>&sup2;, with
+  1 &minus; &gamma;* &asymp; &Xi;/((d&minus;a)&sup2;c&sup2;K) at small
+  amplitudes. Noise confined to the D block makes &Xi; &lt; 0 and full coupling
+  stays optimal: the support of the noise does not decide the question, the sign
+  of &Xi; does.</p>
+  <div class="widget">
+    <div class="controls">
+      <label for="w5ea">e<sub>&alpha;</sub></label>
+      <input type="range" id="w5ea" min="0" max="0.3" step="0.01" value="0.1" />
+      <span class="val" id="w5eaVal">0.10</span>
+      <label for="w5ed">e<sub>&delta;</sub></label>
+      <input type="range" id="w5ed" min="0" max="0.3" step="0.01" value="0.1" />
+      <span class="val" id="w5edVal">0.10</span>
+      <label for="w5ez">e<sub>&zeta;</sub></label>
+      <input type="range" id="w5ez" min="0" max="0.3" step="0.01" value="0.1" />
+      <span class="val" id="w5ezVal">0.10</span>
+    </div>
+    <div class="controls">
+      <label>presets</label>
+      <button id="w5eq">equal amplitudes</button>
+      <button id="w5cross">cross only</button>
+      <button id="w5delta">&delta; only (&Xi; &lt; 0)</button>
+    </div>
+    <canvas id="w5chart" width="820" height="280"></canvas>
+    <div class="readout" id="w5read"></div>
+  </div>
+  <div class="lookfor">What to look for: with any noise on the cross or A
+  channels the marked minimizer is interior and the measured 1 &minus; &gamma;*
+  tracks the &Xi; prediction at small amplitudes. Click "&delta; only": &Xi; goes
+  negative and the minimizer parks at &gamma; = 1 exactly, at every
+  amplitude.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+const ea=document.getElementById('w5ea'),ed=document.getElementById('w5ed'),ez=document.getElementById('w5ez');
+const eaV=document.getElementById('w5eaVal'),edV=document.getElementById('w5edVal'),ezV=document.getElementById('w5ezVal');
+function setVals(a,d,z){ea.value=a;ed.value=d;ez.value=z;draw();}
+document.getElementById('w5eq').addEventListener('click',()=>setVals(0.1,0.1,0.1));
+document.getElementById('w5cross').addEventListener('click',()=>setVals(0,0,0.15));
+document.getElementById('w5delta').addEventListener('click',()=>setVals(0,0.25,0));
+function draw(){
+  const va=+ea.value,vd=+ed.value,vz=+ez.value;
+  eaV.textContent=va.toFixed(2);edV.textContent=vd.toFixed(2);ezV.textContent=vz.toFixed(2);
+  const {cx,W,H}=S.setup('w5chart',280);cx.clearRect(0,0,W,H);
+  const padL=64,padB=28;
+  const gs=[];for(let g=0;g<=1.0001;g+=0.01)gs.push(g);
+  const F=gs.map(g=>S.Fwhole(g,va,vd,vz));
+  let ymin=Math.min(...F),ymax=Math.max(...F);
+  const pad=(ymax-ymin)*0.08||0.005;ymin-=pad;ymax+=pad;
+  const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(v-ymin)/(ymax-ymin)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,'F(γ) under whole-matrix noise (8 sign states, averaged exactly)');
+  cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
+  [0,0.25,0.5,0.75,1].forEach(g=>cx.fillText(g,X(g),H-12));
+  cx.strokeStyle='#4a3aff';cx.lineWidth=2;cx.beginPath();
+  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(F[i])):cx.moveTo(X(g),Y(F[i]));});cx.stroke();
+  const anyNoise=va>0||vd>0||vz>0;
+  const gstar=anyNoise?S.argminF(g=>S.Fwhole(g,va,vd,vz),0,1):1;
+  cx.fillStyle='#1a1a1a';cx.beginPath();cx.arc(X(gstar),Y(S.Fwhole(gstar,va,vd,vz)),4,0,7);cx.fill();
+  cx.fillStyle='#666';cx.font='11px sans-serif';cx.textAlign='center';
+  cx.fillText('γ* = '+gstar.toFixed(3),Math.min(X(gstar),W-60),Y(S.Fwhole(gstar,va,vd,vz))-10);
+  const Xi=S.XiOf(va,vd,vz);
+  const predShift=Xi/S.XI_DENOM;
+  const measShift=1-gstar;
+  let msg=`&Xi; = <b>${Xi.toFixed(4)}</b>. `;
+  if(Xi>0){
+    msg+=`Predicted 1 − γ* &asymp; &Xi;/((d−a)²c²K) = <b>${predShift.toFixed(4)}</b>; measured 1 − γ* = <b>${measShift.toFixed(4)}</b> (they agree as amplitudes shrink). F(0) = ${S.Fwhole(0,va,vd,vz).toFixed(4)}, F(γ*) = ${S.Fwhole(gstar,va,vd,vz).toFixed(4)}, F(1) = ${S.Fwhole(1,va,vd,vz).toFixed(4)}: interior.`;
+  } else if(Xi<0){
+    msg+=`&Xi; &lt; 0: Theorem 5(ii) says full coupling stays optimal. Measured γ* = <b>${gstar.toFixed(4)}</b>.`;
+  } else {
+    msg+=`No noise: the population optimum is γ = 1.`;
+  }
+  document.getElementById('w5read').innerHTML=msg;
+}
+for(const el of [ea,ed,ez])el.addEventListener('input',draw);
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

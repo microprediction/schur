@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theorem 3: small noise moves the optimum off the minimum-variance end — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Theorem 3 — small noise pushes the optimum off the minimum-variance end</h1>
+
+  <p>At an exact minimum-variance endpoint the population curve is flat
+  (V&#8320;&prime;(1) = 0), so any positive marginal noise sensitivity wins
+  locally and the optimizer moves inside by order &tau;&sup2;:
+  1 &minus; &gamma;*(&tau;) &asymp; (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;.
+  For Family A the paper computes the coefficient exactly: with e = 2&tau;,
+  1 &minus; &gamma;* &asymp; (1025/153)e&sup2;.</p>
+  <div class="widget">
+    <canvas id="t3chart" width="820" height="280"></canvas>
+    <div class="readout">Dots: minimizers of the exact F found by search, plotted
+    as 1 &minus; &gamma;* against e&sup2;. Line: slope 1025/153 from the
+    theorem.</div>
+  </div>
+  <div class="lookfor">What to look for: the dots approach the line as
+  e &darr; 0. The theorem is a small-noise statement, and the curvature away from
+  the line at larger e is the O(e&#8308;) term.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+function draw(){
+  const {cx,W,H}=S.setup('t3chart',280);cx.clearRect(0,0,W,H);
+  const padL=64,padB=28;
+  const es=[0.02,0.04,0.06,0.08,0.10,0.14,0.18,0.22];
+  const pts=es.map(e=>({x:e*e,y:1-S.argminF(g=>S.Fof('A','rho',g,e/2),0.3,1)}));
+  const xmax=Math.max(...pts.map(p=>p.x))*1.05,ymax=Math.max(...pts.map(p=>p.y))*1.15;
+  const X=v=>padL+v/xmax*(W-padL-14),Y=v=>H-padB-v/ymax*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,'1 − γ*(e) against e² — family A; line has slope 1025/153');
+  cx.strokeStyle='#ef6c00';cx.lineWidth=1.6;cx.beginPath();
+  cx.moveTo(X(0),Y(0));cx.lineTo(X(xmax),Y(1025/153*xmax));cx.stroke();
+  cx.fillStyle='#4a3aff';
+  pts.forEach(p=>{cx.beginPath();cx.arc(X(p.x),Y(p.y),3.5,0,7);cx.fill();});
+  cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
+  [0.01,0.02,0.03,0.04].forEach(v=>{if(v<xmax)cx.fillText('e²='+v.toFixed(2),X(v),H-12);});
+}
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

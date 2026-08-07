@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theorem 4: the solved family — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Theorem 4 — the solved family: unique interior optimum, monotone in the noise</h1>
+
+  <p>For Family A with common cross-block noise the paper computes the exact
+  expected out-of-sample variance in closed form, equation (20). The solid curve
+  is the recursion and the dashed curve is the closed form; they coincide. The
+  objective is strictly convex, the minimizer is unique and interior for every
+  0 &lt; e &le; c = 0.6, and it slides monotonically from &gamma;*(0) = 1 to
+  &gamma;*(0.6) = &frac12; exactly. One honest footnote: for e &ge; 0.15 the raw
+  recursion is undefined at the single point &gamma; = 0.75/(0.6 + e), where a
+  block's augmented fitness diverges; the curve shown is the continuous extension
+  (equation (18) of the paper), which the recursion equals everywhere else.
+  Theorem 4(v) proves the minimizer always sits strictly left of that point, so
+  the optimum is a statement about the recursion itself.</p>
+  <div class="widget">
+    <div class="controls">
+      <label for="t4e">group-level noise e = 2&tau;</label>
+      <input type="range" id="t4e" min="0" max="0.6" step="0.01" value="0.3" />
+      <span class="val" id="t4eVal">0.30</span>
+    </div>
+    <canvas id="t4chart" width="820" height="300"></canvas>
+    <canvas id="t4path" width="820" height="200"></canvas>
+    <div class="readout" id="t4read"></div>
+  </div>
+  <div class="lookfor">What to look for: recursion and closed form are
+  indistinguishable; the marked minimizer moves left as e grows and lands exactly
+  on &gamma; = &frac12; at e = 0.6. The lower panel traces &gamma;*(e): monotone,
+  from 1 to &frac12;, with the small-noise parabola
+  1 &minus; (1025/153)e&sup2; overlaid near e = 0.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+const t4e=document.getElementById('t4e'),t4val=document.getElementById('t4eVal');
+function draw(){
+  const e=+t4e.value;t4val.textContent=e.toFixed(2);
+  const {cx,W,H}=S.setup('t4chart',300);cx.clearRect(0,0,W,H);
+  const padL=64,padB=28;
+  const gs=[];for(let g=0;g<=1.0001;g+=0.01)gs.push(g);
+  const rec=gs.map(g=>S.Fof('A','rho',g,e/2));
+  const clo=gs.map(g=>S.Fclosed(g,e));
+  let ymin=Math.min(...rec),ymax=Math.max(...rec);
+  const pad=(ymax-ymin)*0.08||0.01;ymin-=pad;ymax+=pad;
+  const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(v-ymin)/(ymax-ymin)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,'exact F(γ; e): solid = recursion, dashed = closed form (20)');
+  cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
+  [0,0.25,0.5,0.75,1].forEach(g=>cx.fillText(g,X(g),H-12));
+  cx.strokeStyle='#4a3aff';cx.lineWidth=2;cx.beginPath();
+  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(rec[i])):cx.moveTo(X(g),Y(rec[i]));});cx.stroke();
+  cx.strokeStyle='#ef6c00';cx.lineWidth=1.4;cx.setLineDash([6,4]);cx.beginPath();
+  gs.forEach((g,i)=>{i?cx.lineTo(X(g),Y(clo[i])):cx.moveTo(X(g),Y(clo[i]));});cx.stroke();cx.setLineDash([]);
+  const gstar=e>0?S.argminF(g=>S.Fof('A','rho',g,e/2),0,1):1;
+  cx.fillStyle='#1a1a1a';cx.beginPath();cx.arc(X(gstar),Y(S.Fof('A','rho',gstar,e/2)),4,0,7);cx.fill();
+  cx.fillStyle='#666';cx.font='11px sans-serif';cx.textAlign='center';
+  cx.fillText('γ* = '+gstar.toFixed(3),X(gstar),Y(S.Fof('A','rho',gstar,e/2))-10);
+  const P=S.setup('t4path',200);P.cx.clearRect(0,0,P.W,P.H);
+  const es=[];for(let ee=0.02;ee<=0.6001;ee+=0.02)es.push(ee);
+  const path=es.map(ee=>S.argminF(g=>S.Fof('A','rho',g,ee/2),0.3,1));
+  const PX=v=>64+v/0.6*(P.W-64-14),PY=v=>P.H-28-(v-0.45)/(1.02-0.45)*(P.H-28-24);
+  S.axes(P.cx,P.W,P.H,64,28,'γ*(e): recursion (dots), small-noise parabola 1 − (1025/153)e² (line)');
+  P.cx.strokeStyle='#ef6c00';P.cx.lineWidth=1.4;P.cx.beginPath();
+  let first=true;
+  for(let ee=0;ee<=0.25;ee+=0.01){const v=1-1025/153*ee*ee;if(v<0.45)break;
+    first?P.cx.moveTo(PX(ee),PY(v)):P.cx.lineTo(PX(ee),PY(v));first=false;}
+  P.cx.stroke();
+  P.cx.strokeStyle='#bbb';P.cx.setLineDash([3,3]);P.cx.beginPath();
+  P.cx.moveTo(PX(0),PY(0.5));P.cx.lineTo(PX(0.6),PY(0.5));P.cx.stroke();P.cx.setLineDash([]);
+  P.cx.fillStyle='#4a3aff';
+  es.forEach((ee,i)=>{P.cx.beginPath();P.cx.arc(PX(ee),PY(path[i]),3,0,7);P.cx.fill();});
+  P.cx.fillStyle='#1a1a1a';P.cx.beginPath();P.cx.arc(PX(e),PY(e>0?gstar:1),5,0,7);P.cx.stroke();
+  P.cx.fillStyle='#888';P.cx.font='10px sans-serif';P.cx.textAlign='center';
+  [0,0.2,0.4,0.6].forEach(v=>P.cx.fillText('e='+v.toFixed(1),PX(v),P.H-12));
+  const maxgap=Math.max(...gs.map((g,i)=>Math.abs(rec[i]-clo[i])));
+  document.getElementById('t4read').innerHTML=
+    `Max |recursion − closed form| over the γ grid: <b>${maxgap.toExponential(1)}</b>. `+
+    `At e = 0.6 the minimizer is <b>${S.argminF(g=>S.Fof('A','rho',g,0.3),0,1).toFixed(4)}</b> (theorem: exactly ½).`;
+}
+t4e.addEventListener('input',draw);
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

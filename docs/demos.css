@@ -1,0 +1,16 @@
+/* Shared styles for the demo pages. */
+.widget{border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin:18px 0;background:var(--panel)}
+.controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.controls label{font-weight:600;font-size:.95rem;white-space:nowrap}
+.controls input[type=range]{flex:1;min-width:160px;accent-color:var(--accent)}
+.controls button{font:inherit;font-size:.92rem;padding:3px 10px;border:1px solid var(--border);
+  border-radius:5px;background:#fff;color:var(--text);cursor:pointer}
+.controls button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--accent);min-width:3.4em;text-align:right}
+.widget canvas{width:100%;height:auto;display:block;margin:6px 0}
+.readout{font-size:.9rem;color:var(--muted);margin-top:6px}
+.readout b{color:var(--text)}
+.lookfor{font-size:.92rem;color:var(--muted);border-left:3px solid var(--accent);padding-left:12px;margin:10px 0}
+.demo-nav{display:flex;justify-content:space-between;margin:26px 0 10px 0;font-size:.92rem}
+.demo-list li{margin:10px 0}
+.demo-list .claim{color:var(--muted);font-size:.93rem}

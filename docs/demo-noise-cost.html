@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theorems 1 and 2: the noise cost is γτ² — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Theorems 1 and 2 — the noise cost is &gamma;&tau;&sup2;, not &gamma;&sup2;&tau;&sup2;</h1>
+
+  <p>Theorem 2 says the expected excess cost F &minus; V&#8320; factors as
+  &gamma;&tau;&sup2;H with H bounded. The plot shows the measured
+  (F&nbsp;&minus;&nbsp;V&#8320;)/(&gamma;&tau;&sup2;): it stays bounded near
+  &gamma; = 0. Toggle the normalization to &gamma;&sup2;&tau;&sup2; and Family B
+  blows up as &gamma; &darr; 0, which is exactly the failure of the tempting
+  &gamma;&sup2; claim. Family A is the special case where a cancellation makes even
+  the &gamma;&sup2; normalization bounded (the paper's remark on structural
+  cancellation), which is why numerics on Family A alone once suggested the wrong
+  general law. Family A: volatilities (1,1,2,2), within correlation &frac12;,
+  cross correlation 0.3 &plusmn; &tau; in common. Family B: blocks
+  A&nbsp;=&nbsp;D&nbsp;=&nbsp;[[1,&minus;&frac12;],[&minus;&frac12;,2]],
+  cross-block entries 0.1, noise &plusmn;&tau; in one cross entry.</p>
+  <div class="widget">
+    <div class="controls">
+      <label>family</label>
+      <button id="t2famA">A (cancellation)</button>
+      <button id="t2famB" class="on">B (generic)</button>
+      <label>normalize by</label>
+      <button id="t2n1" class="on">&gamma;&tau;&sup2;</button>
+      <button id="t2n2">&gamma;&sup2;&tau;&sup2;</button>
+    </div>
+    <canvas id="t2chart" width="820" height="280"></canvas>
+    <div class="readout">Curves for &tau; = 0.10 and &tau; = 0.15, computed from
+    the recursion. Theorem 1 is also visible: near &gamma; = 0 the derivative of F
+    stays negative for small &tau;, so the optimizer is pushed off the HRP
+    end.</div>
+  </div>
+  <div class="lookfor">What to look for: under &gamma;&tau;&sup2; both families
+  stay bounded (Family B approaches H(0,0) = 8/189 &asymp; 0.042). Under
+  &gamma;&sup2;&tau;&sup2;, Family B diverges near zero; Family A does not
+  (the cancellation).</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+let t2fam='B',t2norm=1;
+for(const [id,fn] of [['t2famA',()=>{t2fam='A';}],['t2famB',()=>{t2fam='B';}],
+                      ['t2n1',()=>{t2norm=1;}],['t2n2',()=>{t2norm=2;}]]){
+  document.getElementById(id).addEventListener('click',()=>{fn();
+    if(id.startsWith('t2fam')){document.getElementById('t2famA').classList.toggle('on',t2fam==='A');
+      document.getElementById('t2famB').classList.toggle('on',t2fam==='B');}
+    else{document.getElementById('t2n1').classList.toggle('on',t2norm===1);
+      document.getElementById('t2n2').classList.toggle('on',t2norm===2);}
+    draw();});
+}
+function draw(){
+  const {cx,W,H}=S.setup('t2chart',280);cx.clearRect(0,0,W,H);
+  const padL=54,padB=28;
+  const taus=[0.10,0.15],cols=['#4a3aff','#ef6c00'];
+  const gs=[];for(let g=0.02;g<=0.9;g+=0.02)gs.push(g);
+  const series=taus.map(tau=>gs.map(g=>{
+    const num=S.Fof(t2fam,'rho',g,tau)-S.Fof(t2fam,'rho',g,0);
+    const den=t2norm===1?g*tau*tau:g*g*tau*tau;
+    return num/den;}));
+  let ymin=Infinity,ymax=-Infinity;
+  series.flat().forEach(v=>{if(isFinite(v)){ymin=Math.min(ymin,v);ymax=Math.max(ymax,v);}});
+  if(t2norm===2){ymax=Math.min(ymax,Math.abs(ymin)*30+1);}
+  const X=g=>padL+(g-0.02)/(0.88)*(W-padL-14);
+  const Y=v=>H-padB-(v-ymin)/(ymax-ymin||1)*(H-padB-24);
+  S.axes(cx,W,H,padL,padB,`(F − V₀) / ${t2norm===1?'γτ²':'γ²τ²'}   —   family ${t2fam}`);
+  cx.fillStyle='#888';cx.font='10px sans-serif';
+  cx.textAlign='right';cx.fillText(ymax.toPrecision(3),padL-4,Y(ymax)+8);
+  cx.fillText(ymin.toPrecision(3),padL-4,Y(ymin));
+  cx.textAlign='center';[0.1,0.3,0.5,0.7,0.9].forEach(g=>cx.fillText(g.toFixed(1),X(g),H-12));
+  series.forEach((sr,k)=>{cx.strokeStyle=cols[k];cx.lineWidth=1.8;cx.beginPath();
+    sr.forEach((v,i)=>{const y=Math.max(12,Math.min(H-padB,Y(v)));i?cx.lineTo(X(gs[i]),y):cx.moveTo(X(gs[i]),y);});
+    cx.stroke();
+    cx.fillStyle=cols[k];cx.textAlign='left';cx.font='10.5px sans-serif';
+    cx.fillText('τ = '+taus[k].toFixed(2),X(gs[gs.length-1])-70,Y(sr[sr.length-1])-6);});
+}
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>

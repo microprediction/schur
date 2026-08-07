@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Theorem 6: the clipped frontier — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
+  <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
+  <h1>Theorem 6 — the clipped frontier</h1>
+
+  <p>For the second-order surrogate, the optimal coupling is the clipped inverse
+  of t(&gamma;) = &minus;V&#8320;&prime;/G&prime;. If t sweeps (0,&infin;) the
+  optimizer sweeps the whole bridge (Family A). If t reaches a finite limit
+  t&#8320; at the HRP end, then for s = &tau;&sup2; &ge; t&#8320; the surrogate
+  parks at HRP (Family B, with t&#8320; = 27/800).</p>
+  <div class="widget">
+    <canvas id="t5chart" width="820" height="280"></canvas>
+    <div class="readout">Left: t(&gamma;) for both families (log scale), computed
+    from the recursion. Right: the resulting surrogate optimizer
+    &gamma;&#8322;*(s); Family A sweeps the bridge, Family B clips to 0 at
+    s = 27/800.</div>
+  </div>
+  <div class="lookfor">What to look for: Family A's t diverges at the left end
+  and vanishes at the right (no clipping); Family B's t hits a ceiling at 27/800
+  &asymp; 0.034, and its optimizer path drops to zero there.</div>
+
+  <p class="muted">The widget runs the recursion of the paper's equation (4) with
+  the naive fitness (5), ported directly from the reference implementations, live
+  in your browser. Nothing is pre-baked.</p>
+</main>
+
+<script src="./recursion.js"></script>
+<script>
+(function(){
+const S=window.SCHUR;
+
+function draw(){
+  const {cx,W,H}=S.setup('t5chart',280);cx.clearRect(0,0,W,H);
+  const half=(W-40)/2;
+  const gs=[];for(let g=0.05;g<=0.95;g+=0.03)gs.push(g);
+  function tOf(fam,g){const h=1e-5,tau=0.08;
+    const dV=(S.Fof(fam,'rho',g+h,0)-S.Fof(fam,'rho',g-h,0))/(2*h);
+    const Gp=((S.Fof(fam,'rho',g+h,tau)-S.Fof(fam,'rho',g+h,0))-(S.Fof(fam,'rho',g-h,tau)-S.Fof(fam,'rho',g-h,0)))/(2*h*tau*tau);
+    return -dV/Gp;}
+  const tA=gs.map(g=>tOf('A',g)),tB=gs.map(g=>tOf('B',g));
+  const all=tA.concat(tB).filter(v=>isFinite(v)&&v>0);
+  const lymin=Math.log10(Math.min(...all)),lymax=Math.log10(Math.max(...all));
+  const X=g=>34+g*(half-40),Y=v=>H-28-(Math.log10(Math.max(v,1e-12))-lymin)/(lymax-lymin)*(H-28-24);
+  S.axes(cx,half+20,H,34,28,'t(γ) = −V₀′/G′ (log scale)');
+  cx.strokeStyle='#4a3aff';cx.lineWidth=1.7;cx.beginPath();
+  gs.forEach((g,i)=>{if(tA[i]>0){i&&tA[i-1]>0?cx.lineTo(X(g),Y(tA[i])):cx.moveTo(X(g),Y(tA[i]));}});cx.stroke();
+  cx.strokeStyle='#ef6c00';cx.beginPath();
+  gs.forEach((g,i)=>{if(tB[i]>0){i&&tB[i-1]>0?cx.lineTo(X(g),Y(tB[i])):cx.moveTo(X(g),Y(tB[i]));}});cx.stroke();
+  cx.fillStyle='#4a3aff';cx.font='10.5px sans-serif';cx.textAlign='left';cx.fillText('family A',40,26);
+  cx.fillStyle='#ef6c00';cx.fillText('family B (t₀ = 27/800)',40,40);
+  const x0=half+40;
+  const ss=[];for(let s=0.0005;s<=0.06;s+=0.0005)ss.push(s);
+  function g2(fam,s){
+    let lo=0.05,hi=0.95;
+    const tlo=tOf(fam,lo),thi=tOf(fam,hi);
+    if(s>=tlo)return 0; if(s<=thi)return 0.95;
+    for(let k=0;k<40;k++){const m=(lo+hi)/2;(tOf(fam,m)>s)?lo=m:hi=m;}
+    return (lo+hi)/2;}
+  const pA=ss.map(s=>g2('A',s)),pB=ss.map(s=>g2('B',s));
+  const X2=s=>x0+34+s/0.06*(half-60),Y2=v=>H-28-v/1.0*(H-28-24);
+  cx.strokeStyle='#ddd';cx.strokeRect(x0+34,10,half-60+8,H-28-10);
+  cx.fillStyle='#666';cx.font='11px sans-serif';cx.textAlign='left';
+  cx.fillText('surrogate optimizer γ₂*(s), s = τ²',x0+34,8);
+  cx.strokeStyle='#4a3aff';cx.lineWidth=1.7;cx.beginPath();
+  ss.forEach((s,i)=>{i?cx.lineTo(X2(s),Y2(pA[i])):cx.moveTo(X2(s),Y2(pA[i]));});cx.stroke();
+  cx.strokeStyle='#ef6c00';cx.beginPath();
+  ss.forEach((s,i)=>{i?cx.lineTo(X2(s),Y2(pB[i])):cx.moveTo(X2(s),Y2(pB[i]));});cx.stroke();
+  cx.strokeStyle='#c0392b';cx.setLineDash([3,3]);cx.beginPath();
+  cx.moveTo(X2(27/800),10);cx.lineTo(X2(27/800),H-28);cx.stroke();cx.setLineDash([]);
+  cx.fillStyle='#c0392b';cx.font='10px sans-serif';cx.fillText('27/800',X2(27/800)+3,22);
+  cx.fillStyle='#888';cx.textAlign='center';
+  [0.02,0.04,0.06].forEach(s=>cx.fillText('s='+s.toFixed(2),X2(s),H-12));
+}
+window.addEventListener('resize',draw);
+draw();
+
+})();
+</script>
+</body>
+</html>
