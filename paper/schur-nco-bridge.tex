@@ -20,8 +20,8 @@
 \title{A Schur Bridge from Nested Clustered Optimization to Global Minimum
 Variance}
 \author{Peter Cotton\thanks{Microprediction.
-Email: \texttt{peter.cotton@microprediction.com}. The numerical certificate
-for every identity in this note is \texttt{paper/verify\_schur\_nco\_bridge.py}
+Email: \texttt{peter.cotton@microprediction.com}. A companion
+verification script is \texttt{paper/verify\_schur\_nco\_bridge.py}
 at \texttt{github.com/microprediction/schur}.}}
 \date{}
 
@@ -49,9 +49,9 @@ conditioning set in the manner of a Vecchia approximation, and we give the rank-
 exact. Damping the complement by $\gamma\in[0,1]$ then gives a bridge with
 nested clustered optimization at $\gamma=0$ and the global optimum at
 $\gamma=1$, with no linear solve larger than a cluster or the number of
-clusters. Under estimation error the best $\gamma$ can be strictly interior
-or can stay at full coupling, and we give the local theorem at the
-minimum-variance end with exact examples of both.
+clusters. Under estimation error the optimal $\gamma$ can be strictly
+interior, and full coupling can remain locally optimal. We give the local
+theorem at the minimum-variance end and exact examples of both.
 \end{abstract}
 
 \section{Introduction}
@@ -90,8 +90,8 @@ under which conditioning on that set loses nothing.
 
 \Cref{sec:where} asks where to sit on the bridge when the covariance is
 estimated. Part of the analysis of the tree in \cite{cotton2026bridge}
-transfers, and exact examples show that both an interior optimum and full
-coupling occur.
+transfers, and exact examples show that both an interior optimum and a
+locally optimal full coupling occur.
 
 All exactness statements concern the unconstrained, fully invested,
 long-short problem. With box or long-only constraints no block
@@ -164,7 +164,7 @@ is zero.
 
 A member may be correlated with anything, but its correlation with other
 clusters passes entirely through its knot. The knot is the cluster's only
-gateway. Each cross-cluster block of $\Sigma$ then has rank one.
+gateway. Each cross-cluster block of $\Sigma$ then has rank at most one.
 
 This is a strong assumption, and clustering alone does not imply it. It
 asks that member residuals be uncorrelated both with the other knots and
@@ -389,15 +389,21 @@ $\gamma$ is how much of that estimate to trust. The analysis of the tree in
 Let $\widehat\Sigma_\tau=\Sigma+\tau E$ be an estimate, where $E$ is a random
 symmetric matrix whose law is unchanged by $E\mapsto-E$, and
 $\widehat\Sigma_\tau\succ0$ on the range of $\tau$ considered. Every
-quantity in the recipe is computed from $\widehat\Sigma_\tau$. Define the
-expected out-of-sample variance and its noiseless profile,
+quantity in the recipe is computed from $\widehat\Sigma_\tau$. The partition
+and the knots are held fixed as $\tau$ varies, since reclustering or
+reselecting knots from the data can destroy smoothness. The portfolio
+$w_\gamma$ of \eqref{eq:top} is normalized by $\ones^\top w_\gamma=1$, and
+we assume the normalizing total stays nonzero. Define the expected
+out-of-sample variance and its noiseless profile,
 \begin{equation}
   F(\gamma,\tau)=\mathbb{E}\big[w_\gamma(\widehat\Sigma_\tau)^\top\,\Sigma\,
   w_\gamma(\widehat\Sigma_\tau)\big],
   \qquad V_0(\gamma)=F(\gamma,0).
   \label{eq:F}
 \end{equation}
-We assume $F$ is smooth. It is even in $\tau$.
+It is even in $\tau$. We assume $F$ is smooth, put
+$G(\gamma)=\tfrac12\,\partial_\tau^2F(\gamma,0)$, and assume the expansion
+$F=V_0+\tau^2G+O(\tau^4)$ holds in $C^2$ as a function of $\gamma$.
 
 \begin{proposition}[Incremental noise cost]
 \label{prop:incremental}
@@ -433,33 +439,49 @@ $\partial_\gamma F(0,\tau)=V_0'(0)+\tau^2H(0,\tau)$.
 \label{prop:mvend}
 Under the gateway model $V_0'(1)=0$ and
 $V_0''(1)=2\,\dot w^\top\Sigma\,\dot w$, where
-$\dot w=\partial_\gamma w_\gamma$ at $\gamma=1$. Suppose $\dot w\neq0$ and
-write $F(\gamma,\tau)=V_0(\gamma)+\tau^2G(\gamma)+O(\tau^4)$. Then the
-stationary point of $F(\cdot,\tau)$ near $1$ is
+$\dot w=\partial_\gamma w_\gamma$ at $\gamma=1$. Suppose $\dot w\neq0$. Then
+for all sufficiently small $\tau$ the map $F(\cdot,\tau)$ has a unique
+stationary point near $1$, a strict local minimizer, at
 \begin{equation}
   \tilde\gamma(\tau)\;=\;1-\frac{G'(1)}{V_0''(1)}\,\tau^2+O(\tau^4).
   \label{eq:shift}
 \end{equation}
-If $G'(1)>0$ the optimum over $[0,1]$ is strictly interior for all
-sufficiently small $\tau>0$. If $G'(1)<0$ full coupling is a strict local
-optimum for all sufficiently small $\tau$. If $G'(1)=0$ the fourth order
-decides.
+If $G'(1)>0$ this local minimizer is strictly inside the bridge for small
+$\tau>0$. If $G'(1)<0$ then $\gamma=1$ is a strict local minimizer of
+$F(\cdot,\tau)$ on $[0,1]$. If $G'(1)=0$ the second order is silent and the
+fourth or a higher order decides.
+
+Suppose in addition that $\gamma=1$ is the unique global minimizer of $V_0$
+on $[0,1]$ and that $F(\cdot,\tau)\to V_0$ uniformly on $[0,1]$. Then for
+all sufficiently small $\tau$ these local minimizers are the global optimum
+over $[0,1]$.
 \end{proposition}
 
 \begin{proof}
-Normalize $w_\gamma$ to sum to one, so $\ones^\top\dot w=0$ and
+Since $\ones^\top w_\gamma=1$ we have $\ones^\top\dot w=0$ and
 $\ones^\top\ddot w=0$. By \cref{prop:bridge},
 $w_1=\Sigma^{-1}\ones/\ones^\top\Sigma^{-1}\ones$, so
 $\Sigma w_1\propto\ones$. Hence $V_0'(1)=2\dot w^\top\Sigma w_1=0$, and in
 $V_0''(1)=2\dot w^\top\Sigma\dot w+2\ddot w^\top\Sigma w_1$ the second term
 vanishes. Apply the implicit function theorem to
 $\partial_\gamma F(\gamma,\tau)=0$ at $(1,0)$, where
-$\partial_\gamma^2F=V_0''(1)>0$.
+$\partial_\gamma^2F=V_0''(1)>0$. This gives \eqref{eq:shift} and strict
+convexity of $F(\cdot,\tau)$ on a neighbourhood of $1$ that does not depend
+on $\tau$.
+
+When $G'(1)<0$ the stationary point lies beyond $1$, so
+$F(\cdot,\tau)$ decreases up to the boundary. Under the additional
+hypotheses the global minimizers of $F(\cdot,\tau)$ converge to $1$, so for
+small $\tau$ they lie in that neighbourhood.
 \end{proof}
 
+Gateway exactness makes $w_1$ the minimum-variance portfolio. It does not by
+itself exclude another $\gamma<1$ that produces the same portfolio, which is
+why uniqueness is a hypothesis of the global statement.
+
 The structure of the bridge does not determine the sign of $G'(1)$. Both
-signs occur, and each is strict in the examples below, so each holds on an
-open set of covariances and noise laws.
+signs occur, and each is strict in the examples below, so each persists on
+a relatively open set within the gateway-model parameterization.
 
 \paragraph{An exact interior optimum.} Take clusters $\{1,2\}$ and
 $\{3,4\}$ with knots $1$ and $3$, and
@@ -491,27 +513,40 @@ $F(0)-F(\tfrac12)=3/1210$ and $F(1)-F(\tfrac12)=5/1452$.
 
 The same covariance with small symmetric noise, $Z=\tfrac12\pm\tau$,
 illustrates \cref{prop:incremental,prop:mvend}. There
-$G'(1)\approx0.0573$ and $V_0''(1)\approx0.01347$, so \eqref{eq:shift}
+$G'(1)=31779128936/554523204167\approx0.0573$ and
+$V_0''(1)=48136/3571279\approx0.01348$ exactly, so \eqref{eq:shift}
 predicts $\tilde\gamma(0.05)\approx0.9894$ against a computed optimum of
 $0.9896$. The function $H$ of \cref{prop:incremental} is close to $0.0071$
 at every $\gamma,\tau\in\{0.05,0.2\}$.
 
-\paragraph{Full coupling stays optimal.} Take three clusters, each a knot
-and one remaining member that is uncorrelated with everything, with member
-variances $1$, $4$ and $8$. Let the knot covariance and its estimates be
+\paragraph{Full coupling stays locally optimal.} Take three clusters, each a
+knot and one remaining member that is uncorrelated with everything, with
+member variances $1$, $4$ and $8$. Let the knot covariance and its estimates
+be
 \begin{equation*}
   S=\begin{pmatrix}5&6&5\\6&\tfrac{33}{2}&12\\5&12&\tfrac{25}{2}\end{pmatrix},
   \qquad
   \widehat S_\tau=S\pm\tau\begin{pmatrix}0&-1&0\\-1&0&2\\0&2&0\end{pmatrix},
 \end{equation*}
 the two signs equally likely. The noise is symmetric, touches only
-cross-knot entries, and preserves the gateway model. Here
-$V_0''(1)\approx2.3949$ and $G'(1)\approx-0.0058498<0$. In exact arithmetic,
-at $\tau=\tfrac1{10}$ and at $\tau=\tfrac1{100}$, $F(\gamma,\tau)>F(1,\tau)$
-for $\gamma\in\{0.999,\,0.99,\,0.9,\,0.5,\,0\}$.
+cross-knot entries, and preserves the gateway model. Exact differentiation
+gives $V_0''(1)\approx2.3949$ and
+\begin{equation*}
+  G'(1)=-\frac{4720238484060245648386156800}{806907939268294475102923640251}
+  \approx-0.0058498<0,
+\end{equation*}
+so by \cref{prop:mvend} full coupling is a strict local minimizer for all
+sufficiently small $\tau$.
+
+As a spot check, at $\tau=\tfrac1{10}$ and $\tau=\tfrac1{100}$ exact
+evaluation gives $F(\gamma,\tau)>F(1,\tau)$ for
+$\gamma\in\{0.999,\,0.99,\,0.9,\,0.5,\,0\}$. This is consistent with a
+global optimum at full coupling but does not prove one.
 
 Neither end owns the bridge. An interior optimum is not a consequence of the
-architecture, and a statement that it is generic needs a noise model.
+architecture, and a statement that it is generic needs a noise model. The
+derivatives quoted in both examples are exact, computed by truncated
+bivariate jets in rational arithmetic.
 
 \section{The outer covariance}
 
