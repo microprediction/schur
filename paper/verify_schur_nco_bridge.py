@@ -21,6 +21,8 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_full_coupling_example exact-rational spot check on a grid (not a proof of global optimality)
   check_endpoint_shift   gamma~(tau) = 1 - G'(1)/V0''(1) tau^2
   check_incremental_cost Phi = gamma tau^2 H with H bounded
+  check_zero_direction   a direction that vanishes is dropped (deterministic regressions)
+  check_sharpe_sign      fully invested Sigma^{-1}mu is max Sharpe only when its total is positive
 """
 import numpy as np
 
@@ -320,6 +322,8 @@ def bridge_unnormalized(sigma_hat, idx, knots, gamma, u=None):
         other = [k for j, k in enumerate(knots) if j != i]
         Q, b = cheap_pair(sigma_hat, I, other, gamma, u)
         D[I, i] = np.linalg.solve(Q, b)
+    keep = [i for i in range(D.shape[1]) if np.abs(D[:, i]).max() > 1e-12]   # a direction that vanishes is dropped
+    D = D[:, keep]
     return D @ np.linalg.solve(D.T @ sigma_hat @ D, D.T @ u)
 
 
@@ -361,31 +365,7 @@ def _sub(S, rows, cols):
 
 def bridge_exact(S_hat, idx, knots, gamma):
     """The bridge portfolio in exact rational arithmetic, normalized to sum to one, u = 1."""
-    n, k = len(S_hat), len(idx)
-    D = [[Fr(0)] * k for _ in range(n)]
-    for i, I in enumerate(idx):
-        P = [q for j, q in enumerate(knots) if j != i]
-        Spp = _sub(S_hat, P, P)
-        # coef rows: gamma * S_{I,P} S_PP^{-1}, via solving S_PP x = S_{P,m} for each member m
-        Q = [[Fr(S_hat[a][b]) for b in I] for a in I]
-        bvec = [Fr(1)] * len(I)
-        ones_sol = _fr_solve(Spp, [1] * len(P))
-        for r, m in enumerate(I):
-            col = [S_hat[q][m] for q in P]
-            for c2, m2 in enumerate(I):
-                sol = _fr_solve(Spp, [S_hat[q][m2] for q in P])
-                Q[r][c2] -= Fr(gamma) * sum(Fr(x) * y for x, y in zip(col, sol))
-            bvec[r] -= Fr(gamma) * sum(Fr(x) * y for x, y in zip(col, ones_sol))
-        d = _fr_solve(Q, bvec)
-        for r, m in enumerate(I):
-            D[m][i] = d[r]
-    SD = [[sum(Fr(S_hat[a][b]) * D[b][j] for b in range(n)) for j in range(k)] for a in range(n)]
-    G = [[sum(D[a][i] * SD[a][j] for a in range(n)) for j in range(k)] for i in range(k)]
-    rhs = [sum(D[a][i] for a in range(n)) for i in range(k)]
-    a = _fr_solve(G, rhs)
-    w = [sum(D[m][i] * a[i] for i in range(k)) for m in range(n)]
-    tot = sum(w)
-    return [x / tot for x in w]
+    return bridge_generic(S_hat, idx, knots, Fr(gamma), Fr, lambda z: z != 0)
 
 
 def _var(w, S):
@@ -538,8 +518,14 @@ def _solve_generic(A, b, lift, nonzero):
     return [M[i][n] for i in range(n)]
 
 
-def bridge_generic(S_hat, idx, knots, gamma, lift, nonzero):
-    """The bridge portfolio w ∝ D(D'SD)^{-1}D'1, normalized to sum to one, over an exact type."""
+def bridge_generic(S_hat, idx, knots, gamma, lift, nonzero, is_zero=None):
+    """The bridge portfolio w ∝ D(D'SD)^{-1}D'1, normalized to sum to one, over an exact type.
+
+    A direction that vanishes identically is dropped, as in the manuscript. With jets, a
+    direction that vanishes only at the base point is a degenerate point for differentiation
+    and is not supported.
+    """
+    is_zero = is_zero or (lambda z: not nonzero(z))
     n, k = len(S_hat), len(idx)
     solve = lambda A, b: _solve_generic(A, b, lift, nonzero)
     zero = lift(0)
@@ -559,6 +545,9 @@ def bridge_generic(S_hat, idx, knots, gamma, lift, nonzero):
         d = solve(Q, bvec)
         for r, m in enumerate(I):
             D[m][i] = d[r]
+    keep = [i for i in range(k) if not all(is_zero(D[m][i]) for m in range(n))]
+    D = [[D[m][i] for i in keep] for m in range(n)]
+    k = len(keep)
     SD = [[sum((lift(S_hat[a][b]) * D[b][j] for b in range(n)), zero) for j in range(k)] for a in range(n)]
     G = [[sum((D[a][i] * SD[a][j] for a in range(n)), zero) for j in range(k)] for i in range(k)]
     rhs = [sum((D[a][i] for a in range(n)), zero) for i in range(k)]
@@ -571,7 +560,8 @@ def bridge_generic(S_hat, idx, knots, gamma, lift, nonzero):
 def _jet_variance(S_hat_jet, Sig, idx, knots):
     """Population variance of the bridge portfolio as a jet in (gamma - 1, tau)."""
     g = Jet.var(1, "gamma")
-    w = bridge_generic(S_hat_jet, idx, knots, g, Jet.of, lambda z: z.c[0][0] != 0)
+    w = bridge_generic(S_hat_jet, idx, knots, g, Jet.of, lambda z: z.c[0][0] != 0,
+                       is_zero=lambda z: all(v == 0 for row in z.c for v in row))
     n = len(w)
     out = Jet()
     for a in range(n):
@@ -649,6 +639,27 @@ def check_incremental_cost():
     return {"H_values": ratios}
 
 
+def check_zero_direction():
+    """A direction that vanishes entirely is dropped; the optimum puts nothing on that cluster."""
+    cases = [([[2, 1], [1, 1]], [[0], [1]], [0, 1], [0, 1]),
+             ([[2, 2, 1], [2, 3, 1], [1, 1, 1]], [[0, 1], [2]], [0, 2], [0, 0, 1])]
+    err, exact_ok = 0.0, True
+    for S, idx, knots, want in cases:
+        w = bridge_unnormalized(np.array(S, float), idx, knots, 1.0)
+        err = max(err, np.abs(w / w.sum() - np.array(want, float)).max())
+        exact_ok = exact_ok and bridge_exact(S, idx, knots, 1) == [Fr(v) for v in want]
+    return {"numpy_error": err, "exact_matches": exact_ok}
+
+
+def check_sharpe_sign():
+    """Sigma = I, mu = (1, -2): the fully invested multiple of Sigma^{-1} mu has Sharpe -sqrt(5)."""
+    mu = np.array([1.0, -2.0])
+    sharpe = lambda w: w @ mu / np.sqrt(w @ w)
+    d = mu.copy()
+    return {"total": d.sum(), "sharpe_fully_invested": sharpe(d / d.sum()),
+            "sharpe_of_1_0": sharpe(np.array([1.0, 0.0])), "max_sharpe": float(np.sqrt(mu @ mu))}
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -695,6 +706,10 @@ def main():
         assert abs((1 - gstar) - (1 - pred)) <= 0.25 * max(1 - pred, 1e-3) + 2e-3, (tau, gstar, pred)
     r = check_incremental_cost(); print("incremental cost H        ", r)
     assert max(abs(v) for v in r["H_values"]) < 10 * (min(abs(v) for v in r["H_values"]) + 1e-12)
+    r = check_zero_direction(); print("zero direction dropped    ", r)
+    assert r["numpy_error"] < 1e-12 and r["exact_matches"]
+    r = check_sharpe_sign(); print("Sharpe sign               ", r)
+    assert r["total"] < 0 and abs(r["sharpe_fully_invested"] + r["max_sharpe"]) < 1e-12 and r["sharpe_of_1_0"] > 0
     print("certificate ok")
 
 

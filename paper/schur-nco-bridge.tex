@@ -50,8 +50,8 @@ exact. Damping the complement by $\gamma\in[0,1]$ then gives a bridge with
 nested clustered optimization at $\gamma=0$ and the global optimum at
 $\gamma=1$, with no linear solve larger than a cluster or the number of
 clusters. Under estimation error the optimal $\gamma$ can be strictly
-interior, and full coupling can remain locally optimal. We give the local
-theorem at the minimum-variance end and exact examples of both.
+interior and full coupling can remain locally optimal, and we give the local
+theorem at the minimum-variance end with exact examples of both.
 \end{abstract}
 
 \section{Introduction}
@@ -349,8 +349,12 @@ no cluster budget times a normalized cluster portfolio represents it, and
 
 \begin{remark}[Other objectives]
 \Cref{prop:bridge} is stated for a direction $\Sigma^{-1}u$. With $u=\mu$
-this is the maximum Sharpe direction, normalized afterwards when
-$\ones^\top\Sigma^{-1}\mu\neq0$. Mean--variance problems with a budget
+the direction $\Sigma^{-1}\mu$ maximizes the Sharpe ratio. Its fully
+invested multiple does so only when $\ones^\top\Sigma^{-1}\mu>0$. When that
+total is negative the fully invested multiple has the opposite orientation
+and the lowest signed Sharpe ratio.
+
+Mean--variance problems with a budget
 constraint have solutions that combine $\Sigma^{-1}\mu$ and
 $\Sigma^{-1}\ones$, and each part is covered separately. Risk parity is not
 of this form. The recipe still runs with a risk-parity outer tier, but
@@ -417,12 +421,17 @@ $\Phi(\gamma,0)=0$, so $\Phi_1(\gamma,0)=0$, and $\Phi_1$ is even in $\tau$,
 so $\Phi_1=\tau^2H$.
 \end{proof}
 
-On the tree the hierarchical end reads no cross-block covariance, and the
-uncentred cost $F-V_0$ already carries the factor $\gamma$
-\cite{cotton2026bridge}. NCO is different. Its outer tier reads
+On the tree, under noise supported only on the top-level cross-block, the
+hierarchical end does not read that block, and the uncentred cost $F-V_0$
+already carries the factor $\gamma$ \cite{cotton2026bridge}. Under
+whole-matrix noise that fails on the tree as well, because $F(0,\tau)$ is
+then noisy.
+
+NCO is different even under cross-cluster noise alone. Its outer tier reads
 cross-cluster covariance at $\gamma=0$, so NCO has an estimation cost of its
 own, and the factor $\gamma$ appears only after centring at the noisy NCO
-end. The cost of moving away from NCO is still of order $\gamma\tau^2$.
+end. The centred statement holds for the general noise of this section, and
+the cost of moving away from NCO is still of order $\gamma\tau^2$.
 
 \begin{corollary}[Separation from NCO]
 \label{cor:separation}
