@@ -1,7 +1,7 @@
 """Certificate for schur-nco-bridge.tex (a Schur bridge from NCO to unconstrained minimum variance).
 
 Each check_* function returns a dict of measured errors. `main` asserts them.
-Run with `python verify_schur_nco_bridge.py`; it needs only NumPy.
+Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standard library.
 
   check_sufficiency      Prop 1: complement against other knots = against everything
   check_bridge_right     Prop 2(2,3): gamma = 1 stacks to Sigma^{-1} u, unnormalized
@@ -15,6 +15,11 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy.
   check_quotient         complements (and companion vectors) compose, so tree = flat at gamma = 1
   check_loss             Delta_i is PSD, zero under the model, and not tracked by the raw size of R
   check_precision_sparsity  Gaussian factorization: zero precision between J_i and assets outside I_i
+  check_unnormalized     w ∝ D(D'SD)^{-1}D'u equals the two-tier form; survives a zero cluster total
+  check_interior_example      exact rationals: unique interior optimum near 0.5587 (3/1210, 5/1452)
+  check_full_coupling_example exact rationals: G'(1) < 0, full coupling stays locally optimal
+  check_endpoint_shift   gamma~(tau) = 1 - G'(1)/V0''(1) tau^2
+  check_incremental_cost Phi = gamma tau^2 H with H bounded
 """
 import numpy as np
 
@@ -299,6 +304,190 @@ def check_precision_sparsity(rng, trials=50):
     return out
 
 
+# ---------------------------------------------------------------------------
+# Where to sit on the bridge: unnormalized form, exact examples, endpoint shift
+# ---------------------------------------------------------------------------
+from fractions import Fraction as Fr
+
+
+def bridge_unnormalized(sigma_hat, idx, knots, gamma, u=None):
+    """w ∝ D (D' S D)^{-1} D' u with every quantity read from sigma_hat."""
+    n = sigma_hat.shape[0]
+    u = np.ones(n) if u is None else u
+    D = np.zeros((n, len(idx)))
+    for i, I in enumerate(idx):
+        other = [k for j, k in enumerate(knots) if j != i]
+        Q, b = cheap_pair(sigma_hat, I, other, gamma, u)
+        D[I, i] = np.linalg.solve(Q, b)
+    return D @ np.linalg.solve(D.T @ sigma_hat @ D, D.T @ u)
+
+
+def check_unnormalized(rng, trials=50):
+    """Equals the two-tier form when totals are nonzero; survives a zero cluster total."""
+    same = zero_total = 0.0
+    for _ in range(trials):
+        sigma, idx, knots, mu = _random_problem(rng)
+        for gam in (0.0, 0.4, 1.0):
+            a = bridge_unnormalized(sigma, idx, knots, gam); a = a / a.sum()
+            b, _ = bridge(sigma, idx, knots, gam, np.ones(sigma.shape[0])); b = b / b.sum()
+            same = max(same, np.abs(a - b).max())
+        # choose u so that Sigma^{-1}u = z has zero total on cluster 0 (needs >= 2 members)
+        if len(idx[0]) >= 2:
+            z = rng.standard_normal(sigma.shape[0])
+            z[idx[0]] -= z[idx[0]].mean()
+            w = bridge_unnormalized(sigma, idx, knots, 1.0, sigma @ z)
+            zero_total = max(zero_total, np.abs(w - z).max())
+    return {"matches_two_tier": same, "zero_total_cluster": zero_total}
+
+
+def _fr_solve(A, b):
+    """Gaussian elimination over Fractions. A is a list of rows, b a list."""
+    n = len(A)
+    M = [list(map(Fr, A[i])) + [Fr(b[i])] for i in range(n)]
+    for c in range(n):
+        piv = next(r for r in range(c, n) if M[r][c] != 0)
+        M[c], M[piv] = M[piv], M[c]
+        M[c] = [v / M[c][c] for v in M[c]]
+        for r in range(n):
+            if r != c and M[r][c] != 0:
+                M[r] = [vr - M[r][c] * vc for vr, vc in zip(M[r], M[c])]
+    return [M[i][n] for i in range(n)]
+
+
+def _sub(S, rows, cols):
+    return [[S[r][c] for c in cols] for r in rows]
+
+
+def bridge_exact(S_hat, idx, knots, gamma):
+    """The bridge portfolio in exact rational arithmetic, normalized to sum to one, u = 1."""
+    n, k = len(S_hat), len(idx)
+    D = [[Fr(0)] * k for _ in range(n)]
+    for i, I in enumerate(idx):
+        P = [q for j, q in enumerate(knots) if j != i]
+        Spp = _sub(S_hat, P, P)
+        # coef rows: gamma * S_{I,P} S_PP^{-1}, via solving S_PP x = S_{P,m} for each member m
+        Q = [[Fr(S_hat[a][b]) for b in I] for a in I]
+        bvec = [Fr(1)] * len(I)
+        ones_sol = _fr_solve(Spp, [1] * len(P))
+        for r, m in enumerate(I):
+            col = [S_hat[q][m] for q in P]
+            for c2, m2 in enumerate(I):
+                sol = _fr_solve(Spp, [S_hat[q][m2] for q in P])
+                Q[r][c2] -= Fr(gamma) * sum(Fr(x) * y for x, y in zip(col, sol))
+            bvec[r] -= Fr(gamma) * sum(Fr(x) * y for x, y in zip(col, ones_sol))
+        d = _fr_solve(Q, bvec)
+        for r, m in enumerate(I):
+            D[m][i] = d[r]
+    SD = [[sum(Fr(S_hat[a][b]) * D[b][j] for b in range(n)) for j in range(k)] for a in range(n)]
+    G = [[sum(D[a][i] * SD[a][j] for a in range(n)) for j in range(k)] for i in range(k)]
+    rhs = [sum(D[a][i] for a in range(n)) for i in range(k)]
+    a = _fr_solve(G, rhs)
+    w = [sum(D[m][i] * a[i] for i in range(k)) for m in range(n)]
+    tot = sum(w)
+    return [x / tot for x in w]
+
+
+def _var(w, S):
+    n = len(w)
+    return sum(w[a] * Fr(S[a][b]) * w[b] for a in range(n) for b in range(n))
+
+
+def check_interior_example():
+    """Two clusters, cross-knot estimate Z in {0,1}: unique interior optimum near 0.5587."""
+    h = Fr(1, 2)
+    S = [[1, 0, h, 0], [0, 1, 0, 0], [h, 0, 4, 0], [0, 0, 0, 1]]
+    idx, knots = [[0, 1], [2, 3]], [0, 2]
+    def est(Z):
+        E = [row[:] for row in S]; E[0][2] = E[2][0] = Z; return E
+    def F(gam):
+        return (_var(bridge_exact(est(0), idx, knots, gam), S) + _var(bridge_exact(est(1), idx, knots, gam), S)) / 2
+    v0 = _var(bridge_exact(est(0), idx, knots, Fr(1, 3)), S)
+    gapa, gapb = F(0) - F(h), F(1) - F(h)
+    P = lambda x: 49 * x**4 + 84 * x**3 - 21 * x**2 + 48 * x - 6
+    dP = lambda x: 196 * x**3 + 252 * x**2 - 42 * x + 48
+    lo, hi = Fr(0), Fr(1, 4)
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if P(mid) < 0 else (lo, mid)
+    xs = float(lo); gstar = (1 - 4 * xs) / (1 - xs)
+    grid = [Fr(j, 40) for j in range(41)]
+    gs = Fr(gstar).limit_denominator(10**6)
+    return {"Z0_variance": v0, "F0_minus_Fhalf": gapa, "F1_minus_Fhalf": gapb,
+            "P0": P(Fr(0)), "Pquarter": P(Fr(1, 4)),
+            "dP_min_on_grid": min(dP(Fr(j, 400)) for j in range(101)),
+            "gamma_star": gstar, "F_star_is_grid_min": all(F(gs) <= F(gq) for gq in grid)}
+
+
+def check_full_coupling_example():
+    """Three clusters where G'(1) < 0: full coupling stays locally optimal under small noise."""
+    Sk = [[5, 6, 5], [6, Fr(33, 2), 12], [5, 12, Fr(25, 2)]]
+    N = [[0, -1, 0], [-1, 0, 2], [0, 2, 0]]
+    resid = [1, 4, 8]
+    idx, knots = [[0, 1], [2, 3], [4, 5]], [0, 2, 4]
+    def full(K):
+        M = [[Fr(0)] * 6 for _ in range(6)]
+        for i in range(3):
+            for j in range(3):
+                M[2 * i][2 * j] = Fr(K[i][j])
+            M[2 * i + 1][2 * i + 1] = Fr(resid[i])
+        return M
+    Sig = full(Sk)
+    def V(gam, tau):
+        K = [[Fr(Sk[i][j]) + Fr(tau) * N[i][j] for j in range(3)] for i in range(3)]
+        return _var(bridge_exact(full(K), idx, knots, gam), Sig)
+    def F(gam, tau):
+        return (V(gam, tau) + V(gam, -tau)) / 2
+    t, hh = Fr(1, 10**4), Fr(1, 10**4)
+    G = lambda gam: (F(gam, t) - V(gam, 0)) / t**2
+    dG1 = float((3 * G(Fr(1)) - 4 * G(1 - hh) + G(1 - 2 * hh)) / (2 * hh))
+    V0pp = float((V(1 - 2 * hh, 0) - 2 * V(1 - hh, 0) + V(Fr(1), 0)) / hh**2)
+    margins = {}
+    for tau in (Fr(1, 10), Fr(1, 100)):
+        base = F(Fr(1), tau)
+        margins[str(tau)] = min(F(gq, tau) - base for gq in (Fr(999, 1000), Fr(99, 100), Fr(9, 10), Fr(1, 2), Fr(0)))
+    return {"G_prime_1": dG1, "V0_pp_1": V0pp, "min_margin": margins}
+
+
+def _two_cluster_F(gam, tau):
+    S = np.array([[1, 0, .5, 0], [0, 1, 0, 0], [.5, 0, 4, 0], [0, 0, 0, 1.0]])
+    idx, knots = [[0, 1], [2, 3]], [0, 2]
+    out = 0.0
+    for sgn in (1, -1):
+        E = S.copy(); E[0, 2] = E[2, 0] = 0.5 + sgn * tau
+        w = bridge_unnormalized(E, idx, knots, gam); w = w / w.sum()
+        out += 0.5 * w @ S @ w
+    return out
+
+
+def check_endpoint_shift():
+    """gamma~(tau) = 1 - G'(1)/V0''(1) tau^2 on the two-cluster family with Z = 1/2 +- tau."""
+    h, t = 1e-3, 1e-3
+    G = lambda g: (_two_cluster_F(g, t) - _two_cluster_F(g, 0.0)) / t**2
+    dG1 = (3 * G(1.0) - 4 * G(1 - h) + G(1 - 2 * h)) / (2 * h)
+    V0pp = (_two_cluster_F(1 - 2 * h, 0) - 2 * _two_cluster_F(1 - h, 0) + _two_cluster_F(1.0, 0)) / h**2
+    out = {"G_prime_1": dG1, "V0_pp_1": V0pp, "rows": []}
+    for tau in (0.05, 0.1):
+        gs = np.linspace(0.5, 1.0, 50001)
+        vals = np.array([_two_cluster_F(g, tau) for g in gs[::50]])
+        g0 = gs[::50][vals.argmin()]
+        fine = np.linspace(max(0.5, g0 - 0.01), min(1.0, g0 + 0.01), 2001)
+        gstar = fine[np.argmin([_two_cluster_F(g, tau) for g in fine])]
+        pred = min(1.0, 1 - dG1 / V0pp * tau**2)
+        out["rows"].append((tau, gstar, pred))
+    return out
+
+
+def check_incremental_cost():
+    """Phi(gamma, tau) / (gamma tau^2) stays bounded as gamma, tau -> 0."""
+    F = _two_cluster_F
+    ratios = []
+    for gam in (0.2, 0.05):
+        for tau in (0.2, 0.05):
+            phi = F(gam, tau) - F(0.0, tau) - (F(gam, 0.0) - F(0.0, 0.0))
+            ratios.append(phi / (gam * tau**2))
+    return {"H_values": ratios}
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -321,6 +510,21 @@ def main():
     assert r["R_vs_loss"][-1][0] < 1e-2 * r["R_vs_loss"][0][0] * 1.0001            # while R -> 0
     r = check_precision_sparsity(rng); print("precision sparsity        ", r)
     assert r["model"] < 1e-8 and r["violated"] > 1e-3
+    r = check_unnormalized(rng); print("unnormalized bridge       ", r)
+    assert r["matches_two_tier"] < 1e-8 and r["zero_total_cluster"] < 1e-8
+    r = check_interior_example(); print("interior example          ", {k: (str(v) if isinstance(v, Fr) else v) for k, v in r.items()})
+    assert r["Z0_variance"] == Fr(56, 169)
+    assert r["F0_minus_Fhalf"] == Fr(3, 1210) and r["F1_minus_Fhalf"] == Fr(5, 1452)
+    assert r["P0"] == -6 and r["Pquarter"] == Fr(1585, 256) and r["dP_min_on_grid"] > 0
+    assert abs(r["gamma_star"] - 0.558733606) < 1e-8 and r["F_star_is_grid_min"]
+    r = check_full_coupling_example(); print("full-coupling example     ", {k: (v if not isinstance(v, dict) else {a: float(b) for a, b in v.items()}) for k, v in r.items()})
+    assert abs(r["G_prime_1"] + 0.00584978565) < 1e-5 and r["V0_pp_1"] > 2
+    assert all(m > 0 for m in r["min_margin"].values())
+    r = check_endpoint_shift(); print("endpoint shift            ", r)
+    for tau, gstar, pred in r["rows"]:
+        assert abs((1 - gstar) - (1 - pred)) <= 0.25 * max(1 - pred, 1e-3) + 2e-3, (tau, gstar, pred)
+    r = check_incremental_cost(); print("incremental cost H        ", r)
+    assert max(abs(v) for v in r["H_values"]) < 10 * (min(abs(v) for v in r["H_values"]) + 1e-12)
     print("certificate ok")
 
 
