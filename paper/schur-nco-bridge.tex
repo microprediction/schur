@@ -20,8 +20,8 @@
 \title{A Schur Bridge from Nested Clustered Optimization to Global Minimum
 Variance}
 \author{Peter Cotton\thanks{Microprediction.
-Email: \texttt{peter.cotton@microprediction.com}. The numerical certificate
-for every identity in this note is \texttt{paper/verify\_schur\_nco\_bridge.py}
+Email: \texttt{peter.cotton@microprediction.com}. A companion
+verification script is \texttt{paper/verify\_schur\_nco\_bridge.py}
 at \texttt{github.com/microprediction/schur}.}}
 \date{}
 
@@ -49,7 +49,9 @@ conditioning set in the manner of a Vecchia approximation, and we give the rank-
 exact. Damping the complement by $\gamma\in[0,1]$ then gives a bridge with
 nested clustered optimization at $\gamma=0$ and the global optimum at
 $\gamma=1$, with no linear solve larger than a cluster or the number of
-clusters.
+clusters. Under estimation error the optimal $\gamma$ can be strictly
+interior and full coupling can remain locally optimal, and we give the local
+theorem at the minimum-variance end with exact examples of both.
 \end{abstract}
 
 \section{Introduction}
@@ -85,6 +87,11 @@ in the low-rank spatial models of Banerjee et al.~\cite{banerjee2008} that
 Katzfuss and Guinness~\cite{katzfuss2021} place inside the Vecchia framework. The other
 clusters' knots are a cluster's \emph{conditioning set}. We state the model
 under which conditioning on that set loses nothing.
+
+\Cref{sec:where} asks where to sit on the bridge when the covariance is
+estimated. Part of the analysis of the tree in \cite{cotton2026bridge}
+transfers, and exact examples show that both an interior optimum and a
+locally optimal full coupling occur.
 
 All exactness statements concern the unconstrained, fully invested,
 long-short problem. With box or long-only constraints no block
@@ -157,7 +164,7 @@ is zero.
 
 A member may be correlated with anything, but its correlation with other
 clusters passes entirely through its knot. The knot is the cluster's only
-gateway. Each cross-cluster block of $\Sigma$ then has rank one.
+gateway. Each cross-cluster block of $\Sigma$ then has rank at most one.
 
 This is a strong assumption, and clustering alone does not imply it. It
 asks that member residuals be uncorrelated both with the other knots and
@@ -277,17 +284,25 @@ $\gamma\in[0,1]$ define the \emph{conditioned pair} of cluster $i$,
 \end{aligned}
   \label{eq:pair}
 \end{equation}
-and the direction $d_i(\gamma)=Q_i(\gamma)^{-1}b_i(\gamma)$. When
-$\ones^\top d_i(\gamma)\neq0$ set $v_i=d_i/\ones^\top d_i$ in
-\eqref{eq:twostage}, and let the outer tier solve the same problem on the
-span of $V$, which gives
+and the direction $d_i(\gamma)=Q_i(\gamma)^{-1}b_i(\gamma)$. Let $D_\gamma$
+be the $n\times k$ matrix with $d_i(\gamma)$ in column $i$, supported on
+$I_i$. The bridge portfolio is
 \begin{equation}
-  a \;\propto\; \big(V^\top\Sigma V\big)^{-1}V^\top u,
-  \qquad w = Va .
+  w_\gamma \;\propto\; D_\gamma\big(D_\gamma^\top\Sigma D_\gamma\big)^{-1}D_\gamma^\top u .
   \label{eq:top}
 \end{equation}
-The induced outer inputs are the $k\times k$ covariance $V^\top\Sigma V$
-and the $k$-vector $V^\top u$, which is $\ones$ when $u=\ones$.
+It solves, on the span of the $k$ directions, the problem that
+$\Sigma^{-1}u$ solves on the whole space. A direction that vanishes is
+dropped.
+
+\paragraph{Two-tier reading.} The right side of \eqref{eq:top} does not
+change when a column of $D_\gamma$ is rescaled. When every total
+$\ones^\top d_i(\gamma)$ is nonzero, set $v_i=d_i/\ones^\top d_i$. Then
+\eqref{eq:top} is the two-stage method \eqref{eq:twostage} with
+$a\propto(V^\top\Sigma V)^{-1}V^\top u$. The induced outer inputs are the
+$k\times k$ covariance $V^\top\Sigma V$ and the $k$-vector $V^\top u$, which
+is $\ones$ when $u=\ones$. The unnormalized form \eqref{eq:top} has no
+singularity when a cluster total crosses zero.
 
 \begin{proposition}[The two ends of the bridge]
 \label{prop:bridge}
@@ -295,22 +310,19 @@ and the $k$-vector $V^\top u$, which is $\ones$ when $u=\ones$.
 \begin{enumerate}
 \item At $\gamma=0$ with $u=\ones$ the recipe is NCO with minimum variance
   at both tiers.
-\item Under the gateway model the stacked directions $d_i(1)$ are the blocks
-  of $\Sigma^{-1}u$.
-\item If in addition every $\ones^\top d_i(1)$ is nonzero, then $w$ in
-  \eqref{eq:top} is proportional to $\Sigma^{-1}u$.
+\item Under the gateway model the columns of $D_1$ are the blocks of
+  $\Sigma^{-1}u$, and $w_1\propto\Sigma^{-1}u$.
 \end{enumerate}
 \end{proposition}
 
 \begin{proof}
-At $\gamma=0$ the pair is $(\Sigma_{ii},\ones)$, so $v_i$ is the
-minimum-variance portfolio of the block and \eqref{eq:top} is minimum
-variance across the cluster portfolios. The second claim is
-\eqref{eq:blockinv} with \cref{prop:sufficient}. For the third,
-$w^\star=\Sigma^{-1}u$ lies in the column span of $V$, say
-$w^\star=V\alpha$. Then
-$(V^\top\Sigma V)^{-1}V^\top u
-=(V^\top\Sigma V)^{-1}V^\top\Sigma V\alpha=\alpha$.
+At $\gamma=0$ the pair is $(\Sigma_{ii},\ones)$, so $d_i=\Sigma_{ii}^{-1}\ones$
+has a positive total, $v_i$ is the minimum-variance portfolio of the block,
+and the outer tier is minimum variance across the cluster portfolios. For
+the second claim, \eqref{eq:blockinv} and \cref{prop:sufficient} give
+$\Sigma^{-1}u=D_1\ones$, which lies in the column span of $D_1$. Then
+$D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top u
+=D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top\Sigma D_1\ones=D_1\ones$.
 \end{proof}
 
 \begin{table}[ht]
@@ -329,16 +341,20 @@ $1$ & unconstrained global minimum variance, under the gateway model \\
 \end{table}
 
 \paragraph{Scope.} The right end is the unconstrained, fully invested,
-long-short solution. The third claim also needs every cluster total to be
-nonzero. A global solution can hold a self-financing position inside a
-cluster with zero net weight, and then no cluster budget times a normalized
-cluster portfolio represents it. The second claim is unaffected, because it
-stacks unnormalized directions.
+long-short solution. No condition on cluster totals is needed for
+\eqref{eq:top}. A global solution can hold a self-financing position inside
+a cluster with zero net weight. The two-tier reading fails there, because
+no cluster budget times a normalized cluster portfolio represents it, and
+\eqref{eq:top} does not.
 
 \begin{remark}[Other objectives]
 \Cref{prop:bridge} is stated for a direction $\Sigma^{-1}u$. With $u=\mu$
-this is the maximum Sharpe direction, normalized afterwards when
-$\ones^\top\Sigma^{-1}\mu\neq0$. Mean--variance problems with a budget
+the direction $\Sigma^{-1}\mu$ maximizes the Sharpe ratio. Its fully
+invested multiple does so only when $\ones^\top\Sigma^{-1}\mu>0$. When that
+total is negative the fully invested multiple has the opposite orientation
+and the lowest signed Sharpe ratio.
+
+Mean--variance problems with a budget
 constraint have solutions that combine $\Sigma^{-1}\mu$ and
 $\Sigma^{-1}\ones$, and each part is covered separately. Risk parity is not
 of this form. The recipe still runs with a risk-parity outer tier, but
@@ -367,15 +383,179 @@ compounds along the path, while \eqref{eq:pair} damps each cluster once
 against all the other knots.
 \end{remark}
 
-\begin{remark}[What $\gamma$ means]
-The cross-knot regression coefficients in \eqref{eq:pair} are estimated.
-The companion paper \cite{cotton2026bridge} shows that on the bisection tree, with
-estimation error, the out-of-sample-optimal $\gamma$ generically lies
-strictly inside $(0,1)$. We conjecture the same here, since the cross-knot
-block is the only object $\gamma$ touches, but we do not prove it. Knot
-covariances in a bond universe are highly correlated, so the inverse in
-\eqref{eq:pair} is where we would expect damping to matter.
-\end{remark}
+\section{Where to sit on the bridge}
+\label{sec:where}
+
+The cross-knot regression coefficients in \eqref{eq:pair} are estimated, and
+$\gamma$ is how much of that estimate to trust. The analysis of the tree in
+\cite{cotton2026bridge} transfers in part. This section takes $u=\ones$.
+
+Let $\widehat\Sigma_\tau=\Sigma+\tau E$ be an estimate, where $E$ is a random
+symmetric matrix whose law is unchanged by $E\mapsto-E$, and
+$\widehat\Sigma_\tau\succ0$ on the range of $\tau$ considered. Every
+quantity in the recipe is computed from $\widehat\Sigma_\tau$. The partition
+and the knots are held fixed as $\tau$ varies, since reclustering or
+reselecting knots from the data can destroy smoothness. The portfolio
+$w_\gamma$ of \eqref{eq:top} is normalized by $\ones^\top w_\gamma=1$, and
+we assume the normalizing total stays nonzero. Define the expected
+out-of-sample variance and its noiseless profile,
+\begin{equation}
+  F(\gamma,\tau)=\mathbb{E}\big[w_\gamma(\widehat\Sigma_\tau)^\top\,\Sigma\,
+  w_\gamma(\widehat\Sigma_\tau)\big],
+  \qquad V_0(\gamma)=F(\gamma,0).
+  \label{eq:F}
+\end{equation}
+It is even in $\tau$. We assume $F$ is smooth, put
+$G(\gamma)=\tfrac12\,\partial_\tau^2F(\gamma,0)$, and assume the expansion
+$F=V_0+\tau^2G+O(\tau^4)$ holds in $C^2$ as a function of $\gamma$.
+
+\begin{proposition}[Incremental noise cost]
+\label{prop:incremental}
+Let $\Phi(\gamma,\tau)=F(\gamma,\tau)-F(0,\tau)-\big[V_0(\gamma)-V_0(0)\big]$.
+Then $\Phi(\gamma,\tau)=\gamma\,\tau^2H(\gamma,\tau)$ for a smooth $H$.
+\end{proposition}
+
+\begin{proof}
+$\Phi(0,\tau)=0$, so $\Phi=\gamma\,\Phi_1$ with $\Phi_1$ smooth. Also
+$\Phi(\gamma,0)=0$, so $\Phi_1(\gamma,0)=0$, and $\Phi_1$ is even in $\tau$,
+so $\Phi_1=\tau^2H$.
+\end{proof}
+
+On the tree, under noise supported only on the top-level cross-block, the
+hierarchical end does not read that block, and the uncentred cost $F-V_0$
+already carries the factor $\gamma$ \cite{cotton2026bridge}. Under
+whole-matrix noise that fails on the tree as well, because $F(0,\tau)$ is
+then noisy.
+
+NCO is different even under cross-cluster noise alone. Its outer tier reads
+cross-cluster covariance at $\gamma=0$, so NCO has an estimation cost of its
+own, and the factor $\gamma$ appears only after centring at the noisy NCO
+end. The centred statement holds for the general noise of this section, and
+the cost of moving away from NCO is still of order $\gamma\tau^2$.
+
+\begin{corollary}[Separation from NCO]
+\label{cor:separation}
+If $V_0'(0)<0$ then $\partial_\gamma F(0,\tau)<0$ for all sufficiently small
+$\tau$, and NCO is strictly suboptimal.
+\end{corollary}
+
+\begin{proof}
+By \cref{prop:incremental},
+$\partial_\gamma F(0,\tau)=V_0'(0)+\tau^2H(0,\tau)$.
+\end{proof}
+
+\begin{proposition}[The minimum-variance end]
+\label{prop:mvend}
+Under the gateway model $V_0'(1)=0$ and
+$V_0''(1)=2\,\dot w^\top\Sigma\,\dot w$, where
+$\dot w=\partial_\gamma w_\gamma$ at $\gamma=1$. Suppose $\dot w\neq0$. Then
+for all sufficiently small $\tau$ the map $F(\cdot,\tau)$ has a unique
+stationary point near $1$, a strict local minimizer, at
+\begin{equation}
+  \tilde\gamma(\tau)\;=\;1-\frac{G'(1)}{V_0''(1)}\,\tau^2+O(\tau^4).
+  \label{eq:shift}
+\end{equation}
+If $G'(1)>0$ this local minimizer is strictly inside the bridge for small
+$\tau>0$. If $G'(1)<0$ then $\gamma=1$ is a strict local minimizer of
+$F(\cdot,\tau)$ on $[0,1]$. If $G'(1)=0$ the second order is silent and the
+fourth or a higher order decides.
+
+Suppose in addition that $\gamma=1$ is the unique global minimizer of $V_0$
+on $[0,1]$ and that $F(\cdot,\tau)\to V_0$ uniformly on $[0,1]$. Then for
+all sufficiently small $\tau$ these local minimizers are the global optimum
+over $[0,1]$.
+\end{proposition}
+
+\begin{proof}
+Since $\ones^\top w_\gamma=1$ we have $\ones^\top\dot w=0$ and
+$\ones^\top\ddot w=0$. By \cref{prop:bridge},
+$w_1=\Sigma^{-1}\ones/\ones^\top\Sigma^{-1}\ones$, so
+$\Sigma w_1\propto\ones$. Hence $V_0'(1)=2\dot w^\top\Sigma w_1=0$, and in
+$V_0''(1)=2\dot w^\top\Sigma\dot w+2\ddot w^\top\Sigma w_1$ the second term
+vanishes. Apply the implicit function theorem to
+$\partial_\gamma F(\gamma,\tau)=0$ at $(1,0)$, where
+$\partial_\gamma^2F=V_0''(1)>0$. This gives \eqref{eq:shift} and strict
+convexity of $F(\cdot,\tau)$ on a neighbourhood of $1$ that does not depend
+on $\tau$.
+
+When $G'(1)<0$ the stationary point lies beyond $1$, so
+$F(\cdot,\tau)$ decreases up to the boundary. Under the additional
+hypotheses the global minimizers of $F(\cdot,\tau)$ converge to $1$, so for
+small $\tau$ they lie in that neighbourhood.
+\end{proof}
+
+Gateway exactness makes $w_1$ the minimum-variance portfolio. It does not by
+itself exclude another $\gamma<1$ that produces the same portfolio, which is
+why uniqueness is a hypothesis of the global statement.
+
+The structure of the bridge does not determine the sign of $G'(1)$. Both
+signs occur, and each is strict in the examples below, so each persists on
+a relatively open set within the gateway-model parameterization.
+
+\paragraph{An exact interior optimum.} Take clusters $\{1,2\}$ and
+$\{3,4\}$ with knots $1$ and $3$, and
+\begin{equation*}
+  \Sigma=\begin{pmatrix}1&0&\tfrac12&0\\0&1&0&0\\\tfrac12&0&4&0\\0&0&0&1\end{pmatrix}.
+\end{equation*}
+The estimate replaces the cross-knot entry $\tfrac12$ by $Z\in\{0,1\}$, each
+with probability $\tfrac12$. The population and both estimates are positive
+definite and satisfy the gateway model, because the remaining members are
+uncorrelated with everything.
+
+On the branch $Z=0$ the directions do not depend on $\gamma$ and the
+population variance is $56/169$. On the branch $Z=1$ the directions are
+$d_1=(1,1)$ and $d_2=(x,1)$ with $x=(1-\gamma)/(4-\gamma)\in[0,\tfrac14]$,
+and the population variance of the resulting portfolio is
+\begin{equation*}
+  V(x)=\frac{49x^4-7x^3+36x^2-2x+6}{2\,(7x^2+3)^2},
+  \qquad
+  V'(x)=\frac{P(x)}{2\,(7x^2+3)^3},
+\end{equation*}
+with $P(x)=49x^4+84x^3-21x^2+48x-6$. On $[0,\tfrac14]$ we have
+$P'(x)=196x^3+252x^2-42x+48>0$, while $P(0)=-6$ and $P(\tfrac14)=1585/256$.
+So $P$ has exactly one root $x_\star\approx0.12823$ there, and
+\begin{equation*}
+  \gamma_\star=\frac{1-4x_\star}{1-x_\star}\approx0.5587
+\end{equation*}
+is the unique optimum, strictly inside the bridge. In exact arithmetic
+$F(0)-F(\tfrac12)=3/1210$ and $F(1)-F(\tfrac12)=5/1452$.
+
+The same covariance with small symmetric noise, $Z=\tfrac12\pm\tau$,
+illustrates \cref{prop:incremental,prop:mvend}. There
+$G'(1)=31779128936/554523204167\approx0.0573$ and
+$V_0''(1)=48136/3571279\approx0.01348$ exactly, so \eqref{eq:shift}
+predicts $\tilde\gamma(0.05)\approx0.9894$ against a computed optimum of
+$0.9896$. The function $H$ of \cref{prop:incremental} is close to $0.0071$
+at every $\gamma,\tau\in\{0.05,0.2\}$.
+
+\paragraph{Full coupling stays locally optimal.} Take three clusters, each a
+knot and one remaining member that is uncorrelated with everything, with
+member variances $1$, $4$ and $8$. Let the knot covariance and its estimates
+be
+\begin{equation*}
+  S=\begin{pmatrix}5&6&5\\6&\tfrac{33}{2}&12\\5&12&\tfrac{25}{2}\end{pmatrix},
+  \qquad
+  \widehat S_\tau=S\pm\tau\begin{pmatrix}0&-1&0\\-1&0&2\\0&2&0\end{pmatrix},
+\end{equation*}
+the two signs equally likely. The noise is symmetric, touches only
+cross-knot entries, and preserves the gateway model. Exact differentiation
+gives $V_0''(1)\approx2.3949$ and
+\begin{equation*}
+  G'(1)=-\frac{4720238484060245648386156800}{806907939268294475102923640251}
+  \approx-0.0058498<0,
+\end{equation*}
+so by \cref{prop:mvend} full coupling is a strict local minimizer for all
+sufficiently small $\tau$.
+
+As a spot check, at $\tau=\tfrac1{10}$ and $\tau=\tfrac1{100}$ exact
+evaluation gives $F(\gamma,\tau)>F(1,\tau)$ for
+$\gamma\in\{0.999,\,0.99,\,0.9,\,0.5,\,0\}$. This is consistent with a
+global optimum at full coupling but does not prove one.
+
+Neither end owns the bridge. An interior optimum is not a consequence of the
+architecture, and a statement that it is generic needs a noise model. The
+derivatives quoted in both examples are exact, computed by truncated
+bivariate jets in rational arithmetic.
 
 \section{The outer covariance}
 
@@ -434,8 +614,9 @@ makes cheap.
 
 \Cref{prop:sufficient} may also serve Schur-complementary allocation on the
 tree, where the complement against a sibling block could be taken against
-that block's knots. We leave that, and an empirical comparison, to future
-work.
+that block's knots. The whole-matrix analysis of \cite{cotton2026bridge}
+rests on a scalar reduction specific to the tree and needs a replacement
+here. We leave both, and an empirical comparison, to future work.
 
 \begin{thebibliography}{99}
 
