@@ -26,6 +26,11 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_only_knots_move  member part of d_i is constant in gamma; knot exposure in closed form
   check_equicorrelated_knots  closed-form kappa(gamma) for equicorrelated knots
   check_degenerate_partitions singletons or one cluster: the bridge is the GMV for every gamma
+  check_identical_clusters    knot share t/(t+delta) and the quadratic V(x)-V(x*), exact
+  check_two_thirds       gamma* = 2/3 with gaps 1/576 and 1/900; the general closed form, exact
+  check_sign_threshold   (8 - delta)/(1 + 13 delta/4) for k = 10, c = 1/4, by exact jets
+  check_compression      a cluster is its knot plus one independent asset of variance 1/delta_i
+  check_unit_betas       unit betas make the portfolio independent of gamma
 """
 import numpy as np
 
@@ -719,6 +724,140 @@ def check_degenerate_partitions(rng, trials=30):
     return {"bridge_minus_gmv": err}
 
 
+# ---------------------------------------------------------------------------
+# Identical clusters: the one-dimensional picture
+# ---------------------------------------------------------------------------
+def _t(gam, z, k):
+    return (1 + (k - 2) * z - gam * (k - 1) * z) / (1 + (k - 2) * z - gam * (k - 1) * z * z)
+
+
+def _identical_clusters(k, z, delta):
+    """k clusters of (knot, independent asset of variance 1/delta); knot correlation z."""
+    n = 2 * k
+    S = [[Fr(0)] * n for _ in range(n)]
+    for i in range(k):
+        for j in range(k):
+            S[2 * i][2 * j] = Fr(1) if i == j else Fr(z)
+        S[2 * i + 1][2 * i + 1] = 1 / Fr(delta)
+    return S, [[2 * i, 2 * i + 1] for i in range(k)], [2 * i for i in range(k)]
+
+
+def check_identical_clusters():
+    """The knot share of the bridge portfolio is t/(t + delta); V(x) - V(x*) is the stated quadratic."""
+    share = quad = Fr(0)
+    for k, c, z, delta, gam in ((2, Fr(1, 4), Fr(1, 2), 1, Fr(1, 3)), (5, Fr(1, 10), Fr(3, 10), Fr(5, 2), Fr(4, 5)),
+                                (4, Fr(1, 5), Fr(-1, 5), Fr(7, 10), Fr(1, 2)), (10, Fr(1, 4), Fr(1, 5), 12, 1)):
+        S_hat, idx, knots = _identical_clusters(k, z, delta)
+        Sig, _, _ = _identical_clusters(k, c, delta)
+        w = bridge_exact(S_hat, idx, knots, gam)
+        x = sum(w[2 * i] for i in range(k))
+        t = _t(Fr(gam), z, k)
+        share = max(share, abs(x - t / (t + Fr(delta))))
+        L = 1 + (k - 1) * c
+        xs = 1 / (1 + Fr(delta) * L)
+        quad = max(quad, abs(_var(w, Sig) - (L * xs**2 + (1 - xs)**2 / Fr(delta)) / k - (L + 1 / Fr(delta)) / k * (x - xs)**2))
+    return {"knot_share": share, "quadratic": quad}
+
+
+def check_two_thirds():
+    """Z in {0, 2c}: gamma* = (1 + 2(k-2)c) / (2[1 + (k-3)c]) recovers the population optimum on
+    the Z = 2c branch. With k = 2, c = 1/4, delta = 1: gamma* = 2/3, gaps 1/576 and 1/900."""
+    def F(k, c, delta, gam):
+        Sig, idx, knots = _identical_clusters(k, c, delta)
+        return sum(_var(bridge_exact(_identical_clusters(k, Z, delta)[0], idx, knots, gam), Sig) for Z in (Fr(0), 2 * c)) / 2
+    k, c = 2, Fr(1, 4)
+    gs = (1 + 2 * (k - 2) * c) / (2 * (1 + (k - 3) * c))
+    out = {"gamma_star": gs, "gap0": F(k, c, 1, 0) - F(k, c, 1, gs), "gap1": F(k, c, 1, 1) - F(k, c, 1, gs),
+           "beats_grid": all(F(k, c, 1, gs) < F(k, c, 1, Fr(j, 30)) for j in range(31) if Fr(j, 30) != gs)}
+    hits = True
+    for k, c, delta in ((2, Fr(1, 4), 1), (3, Fr(1, 5), 3), (10, Fr(1, 4), 12), (6, Fr(2, 5), Fr(1, 2))):
+        g = (1 + 2 * (k - 2) * c) / (2 * (1 + (k - 3) * c))
+        L = 1 + (k - 1) * c
+        hits = hits and 0 < g < 1 and _t(g, 2 * c, k) == 1 / L
+        Sig, idx, knots = _identical_clusters(k, c, delta)
+        w = bridge_exact(_identical_clusters(k, 2 * c, delta)[0], idx, knots, g)
+        pop = bridge_exact(Sig, idx, knots, 1)          # population minimum variance
+        hits = hits and w == pop
+    out["general_formula_hits_population_optimum"] = hits
+    out["ten_clusters_delta_12"] = (1 + 2 * 8 * Fr(1, 4)) / (2 * (1 + 7 * Fr(1, 4)))
+    return out
+
+
+def check_sign_threshold():
+    """k = 10, c = 1/4, Z = c +- tau: G'(1)/V0''(1) = (8 - delta)/(1 + 13 delta/4), by exact jets
+    on the scalar reduction."""
+    k, c = 10, Fr(1, 4)
+    L = 1 + (k - 1) * c
+    out = {}
+    for delta in (Fr(4), Fr(8), Fr(12)):
+        g, z = Jet.var(1, "gamma"), Jet.var(c, "tau")
+        t = (1 + (k - 2) * z - g * (k - 1) * z) / (1 + (k - 2) * z - g * (k - 1) * z * z)
+        x = t / (t + delta)
+        V = (L * x * x + (1 - x) * (1 - x) / delta) / k
+        assert V.c[1][0] == 0                                   # endpoint flatness
+        out[str(delta)] = (V.c[1][2] / (2 * V.c[2][0]), (8 - delta) / (1 + Fr(13, 4) * delta))
+    return out
+
+
+def _assemble(Spp, idx, parts):
+    n = idx[-1][-1] + 1
+    load = np.zeros((n, len(idx)))
+    for i, I in enumerate(idx):
+        load[I[0], i] = 1.0
+        load[I[1:], i] = parts[i][0]
+    S = load @ Spp @ load.T
+    for i, I in enumerate(idx):
+        J = I[1:]
+        S[np.ix_(J, J)] += parts[i][1]
+    return S
+
+
+def check_compression(rng, trials=30):
+    """A gateway cluster acts as its knot plus one independent asset of variance 1/delta_i, for the
+    noiseless profile and under noise on the knot covariance that preserves the gateway structure."""
+    err = 0.0
+    for _ in range(trials):
+        sizes = list(rng.integers(1, 6, size=rng.integers(2, 6)))
+        sigma, idx, knots = gateway_model_cov(rng, sizes)
+        k = len(idx)
+        parts = []
+        for I in idx:
+            p, J = I[0], I[1:]
+            beta = sigma[J, p] / sigma[p, p]
+            parts.append((beta, sigma[np.ix_(J, J)] - np.outer(beta, beta) * sigma[p, p]))
+        Spp = sigma[np.ix_(knots, knots)]
+        deltas = [(1 - b) @ np.linalg.solve(E, 1 - b) for b, E in parts]
+        idx_c = [[2 * i, 2 * i + 1] for i in range(k)]
+        parts_c = [(np.zeros(1), np.array([[1 / deltas[i]]])) for i in range(k)]
+        N = rng.standard_normal((k, k)); N = (N + N.T) / 2; np.fill_diagonal(N, 0)
+        for tau in (0.0, 0.05, 0.15):
+            Sh = Spp + tau * N
+            if np.linalg.eigvalsh(Sh).min() <= 0:
+                continue
+            for gam in (0.0, 0.4, 0.8, 1.0):
+                v = []
+                for ix, pr in ((idx, parts), (idx_c, parts_c)):
+                    w = bridge_unnormalized(_assemble(Sh, ix, pr), ix, [I[0] for I in ix], gam)
+                    w = w / w.sum()
+                    v.append(w @ _assemble(Spp, ix, pr) @ w)
+                err = max(err, abs(v[0] - v[1]))
+    return {"variance_gap": err}
+
+
+def check_unit_betas(rng):
+    """Every member has unit beta to its knot: the portfolio is the same at every gamma."""
+    idx, knots = clusters([2, 3, 1, 2])
+    Spp = random_spd(rng, 4)
+    parts = [(np.ones(len(I) - 1), random_spd(rng, len(I) - 1, 0.3)) for I in idx]
+    S = _assemble(Spp, idx, parts)
+    ws = []
+    for gam in (0.0, 0.25, 0.5, 0.75, 1.0):
+        w = bridge_unnormalized(S, idx, knots, gam)
+        ws.append(w / w.sum())
+    return {"change_across_gamma": max(np.abs(w - ws[0]).max() for w in ws),
+            "weight_on_members": np.abs(np.delete(ws[0], knots)).max()}
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -773,6 +912,17 @@ def main():
     assert r["member_part"] < 1e-9 and r["knot_exposure"] < 1e-9
     r = check_equicorrelated_knots(); print("equicorrelated knots      ", r); assert r["closed_form"] < 1e-12
     r = check_degenerate_partitions(rng); print("degenerate partitions     ", r); assert r["bridge_minus_gmv"] < 1e-10
+    r = check_identical_clusters(); print("identical clusters        ", {a: str(b) for a, b in r.items()})
+    assert r["knot_share"] == 0 and r["quadratic"] == 0
+    r = check_two_thirds(); print("two-thirds example        ", {a: str(b) for a, b in r.items()})
+    assert r["gamma_star"] == Fr(2, 3) and r["gap0"] == Fr(1, 576) and r["gap1"] == Fr(1, 900)
+    assert r["beats_grid"] and r["general_formula_hits_population_optimum"] and r["ten_clusters_delta_12"] == Fr(10, 11)
+    r = check_sign_threshold(); print("sign threshold            ", {a: tuple(map(str, b)) for a, b in r.items()})
+    assert all(got == want for got, want in r.values())
+    assert r["4"][0] > 0 and r["8"][0] == 0 and r["12"][0] == Fr(-1, 10)
+    r = check_compression(rng); print("cluster compression       ", r); assert r["variance_gap"] < 1e-10
+    r = check_unit_betas(rng); print("unit betas                ", r)
+    assert r["change_across_gamma"] < 1e-12 and r["weight_on_members"] < 1e-12
     print("certificate ok")
 
 
