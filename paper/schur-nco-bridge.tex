@@ -92,7 +92,9 @@ under which conditioning on that set loses nothing.
 \Cref{sec:where} asks where to sit on the bridge when the covariance is
 estimated. Part of the analysis of the tree in \cite{cotton2026bridge}
 transfers, and exact examples show that both an interior optimum and a
-locally optimal full coupling occur.
+locally optimal full coupling occur. \Cref{sec:rank} treats singular
+covariances, where the parameterization by $\gamma$ itself becomes
+singular.
 
 All exactness statements concern the unconstrained, fully invested,
 long-short problem. With box or long-only constraints no block
@@ -475,6 +477,79 @@ as one scalar. If every member has unit beta to its knot then
 $\delta_i=0$, the members carry no budget, and $w_\gamma$ is the same for
 every $\gamma$ at which the knot exposures are nonzero.
 
+For the rest of this section take $u=\ones$ and write $S=\Sigma_{PP}$ for
+the knot covariance, $s_i=S_{ii}$, $h=S^{-1}\ones$ and
+$\nu_i=1/(S^{-1})_{ii}$, the variance of knot $i$ left unexplained by the
+other knots. In the notation of \cref{prop:knotsmove},
+$\nu_i=s_i-c_i$ and $h_i=(1-a_i)/\nu_i$.
+
+\begin{proposition}[Effective damping]
+\label{prop:effective}
+With $r_i=\nu_i/s_i$,
+\begin{equation}
+  \kappa_i(\gamma)=(1-\lambda_i)\,\frac{1}{s_i}+\lambda_i\,h_i,
+  \qquad
+  \lambda_i=\frac{\gamma\,r_i}{1-\gamma+\gamma\,r_i},
+  \qquad\text{that is}\qquad
+  \frac{\lambda_i}{1-\lambda_i}=r_i\,\frac{\gamma}{1-\gamma}.
+  \label{eq:effective}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Write the denominator of $\kappa_i$ as $s_i(1-\gamma)+\gamma\nu_i$ and the
+numerator as $(1-\gamma)+\gamma\nu_ih_i$, and divide.
+\end{proof}
+
+The knot exposure interpolates between its NCO value $1/s_i$ and its
+minimum-variance value $h_i$, and $\lambda_i$ is the interpolation actually
+achieved. A common $\gamma$ does not damp the clusters equally. A knot that
+the other knots nearly explain has small $r_i$, and its exposure barely
+moves until $\gamma$ is very close to $1$.
+
+\begin{proposition}[Lost precision]
+\label{prop:lost}
+Suppose every $\delta_i>0$. Put $\Delta=\operatorname{diag}(\delta_i)$,
+$K_\gamma=\operatorname{diag}(\kappa_i(\gamma))$,
+$Z=\ones^\top h+\sum_i\delta_i$ and
+$W_\gamma=\big(S^{-1}+K_\gamma\Delta^{-1}K_\gamma\big)^{-1}$. The minimum
+variance is $V_\star=1/Z$, and
+\begin{equation}
+  V_0(\gamma)-V_\star=\frac{L_\gamma}{Z\,(Z-L_\gamma)},
+  \qquad
+  L_\gamma=(h-\kappa)^\top W_\gamma\,(h-\kappa).
+  \label{eq:lost}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By \cref{cor:compress} work with $2k$ assets of covariance
+$\operatorname{diag}(S,\Delta^{-1})$ and budget vector $(\ones,\ones)$. The
+unconstrained precision is $Z$ and its direction is $(h,\delta)$. The bridge
+restricts the knot exposures to $K_\gamma a$ and the member weights to
+$\Delta a$, and its precision $1/V_0(\gamma)$ falls short of $Z$ by the
+squared distance from $(h,\delta)$ to that subspace,
+$\min_a\{(h-K_\gamma a)^\top S\,(h-K_\gamma a)
++(\ones-a)^\top\Delta\,(\ones-a)\}$. Eliminating $a$ and applying the
+Woodbury identity gives $L_\gamma$.
+\end{proof}
+
+Since $W_\gamma\succ0$, the bridge attains the minimum variance exactly when
+$\kappa=h$, and
+\begin{equation}
+  \kappa_i(\gamma)-h_i=\frac{(1-\gamma)\,(1-s_ih_i)}{(1-\gamma)s_i+\gamma\nu_i}.
+  \label{eq:kminush}
+\end{equation}
+So if some $s_ih_i\neq1$ then $\gamma=1$ is the unique global minimizer of
+$V_0$ on $[0,1]$. If every $s_ih_i=1$ the whole bridge is already optimal.
+The curvature at the end is explicit as well. With
+$p_i=\kappa_i'(1)=(s_ih_i-1)/\nu_i$ and
+$W_1=\big(S^{-1}+\operatorname{diag}(h_i^2/\delta_i)\big)^{-1}$,
+\begin{equation}
+  V_0''(1)=\frac{2\,p^\top W_1\,p}{Z^2}.
+  \label{eq:curvature}
+\end{equation}
+
 \paragraph{Equicorrelated knots.} Let the $k$ knots have unit variance and
 common correlation $\rho$, and take $u=\ones$. Then
 $a=\rho(k-1)/\big(1+(k-2)\rho\big)$ and $c=\rho\,a$, so every cluster has
@@ -595,9 +670,19 @@ hypotheses the global minimizers of $F(\cdot,\tau)$ converge to $1$, so for
 small $\tau$ they lie in that neighbourhood.
 \end{proof}
 
-Gateway exactness makes $w_1$ the minimum-variance portfolio. It does not by
-itself exclude another $\gamma<1$ that produces the same portfolio, which is
-why uniqueness is a hypothesis of the global statement.
+When every $\delta_i>0$ the uniqueness hypothesis is supplied by
+\cref{prop:lost}, unless the whole bridge is already optimal. It remains a
+hypothesis when some $\delta_i=0$, since gateway exactness alone does not
+exclude another $\gamma<1$ that produces the same portfolio.
+
+The displacement in \eqref{eq:shift} is of second order in the noise, and
+the gain from making it is of fourth order. When $G'(1)>0$,
+\begin{equation}
+  F(1,\tau)-F(\tilde\gamma(\tau),\tau)
+  =\frac{G'(1)^2}{2\,V_0''(1)}\,\tau^4+O(\tau^6).
+  \label{eq:gain}
+\end{equation}
+A large gain at finite noise should not be inferred from the local sign.
 
 The structure of the bridge does not determine the sign of $G'(1)$. Both
 signs occur, and each is strict in the examples below, so each persists on
@@ -720,6 +805,109 @@ Neither end owns the bridge. An interior optimum is not a consequence of the
 architecture, and a statement that it is generic needs a noise model. The
 derivatives quoted in both examples are exact, computed by truncated
 bivariate jets in rational arithmetic.
+
+\section{Rank deficiency}
+\label{sec:rank}
+
+Everything so far assumes $\Sigma\succ0$. This section allows
+$\Sigma\succeq0$.
+
+A singular covariance is one of two kinds. If some null portfolio has a
+nonzero total, a fully invested portfolio of zero variance exists. If every
+null portfolio is self-financing, the redundant assets can be removed, and
+only then is the pseudoinverse formula
+$w_\star=\Sigma^\dagger\ones/\ones^\top\Sigma^\dagger\ones$ valid. The
+condition is $\ones\in\operatorname{range}(\Sigma)$. For
+$\Sigma=\big(\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\big)$ the
+portfolio $(2,-1)$ has budget $1$ and variance $0$, while normalizing
+$\Sigma^\dagger\ones$ gives $(\tfrac13,\tfrac23)$ with variance $25/9$.
+
+\paragraph{Harmless redundancy breaks the recipe.} Take two clusters, each a
+knot and an independent asset, all of unit variance, and make the two knots
+duplicates. The budget vector lies in the range of $\Sigma$, the optimum is
+$w_\star=(\tfrac16,\tfrac13,\tfrac16,\tfrac13)$ in the order knot, member,
+knot, member, and $V_\star=\tfrac13$. For every $\gamma<1$ the pairs are
+$Q_i=\operatorname{diag}(1-\gamma,1)$ and $b_i=(1-\gamma,1)$, so both
+directions are $(1,1)$ and the bridge holds equal weights.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+Construction & Variance \\
+\midrule
+Global optimum & $1/3$ \\
+Bridge at every $\gamma<1$ & $3/8$ \\
+Bridge at $\gamma=1$ with each $Q_i^{-1}$ replaced by $Q_i^\dagger$ & $1/2$ \\
+\bottomrule
+\end{tabular}
+\caption{Duplicated knots.}
+\label{tab:duplicate}
+\end{table}
+
+At full conditioning each knot is completely explained by the other, and
+each local pseudoinverse discards its own knot. Together they discard a
+common return that is still useful. The singular Schur equations leave some
+weights undetermined, and choosing a minimum-norm solution separately in
+each cluster does not coordinate those choices.
+
+\Cref{prop:effective} explains the approach to this case. As a knot becomes
+redundant $r_i\to0$, so at every fixed $\gamma<1$ its effective damping
+tends to zero and all the movement is compressed into a shrinking interval
+near $\gamma=1$. The limits do not commute. With the knot covariance
+regularized to $\ones\ones^\top+\varepsilon I$,
+\begin{equation*}
+  \lim_{\varepsilon\downarrow0}\,\lim_{\gamma\uparrow1}V_0=\tfrac13,
+  \qquad
+  \lim_{\gamma\uparrow1}\,\lim_{\varepsilon\downarrow0}V_0=\tfrac38 .
+\end{equation*}
+This is more than numerical instability. The parameterization by $\gamma$
+is itself singular there.
+
+\begin{proposition}[A bridge in effective exposure]
+\label{prop:lambda}
+Let the knot covariance $S\succeq0$ have positive diagonal, let
+$\ones\in\operatorname{range}(S)$, and let every $\delta_i>0$. Put
+$h=S^\dagger\ones$ and, for $\lambda\in[0,1]$,
+\begin{equation}
+  \bar\kappa_i(\lambda)=(1-\lambda)\,\frac1{s_i}+\lambda\,h_i ,
+  \label{eq:lambdapath}
+\end{equation}
+keep the member parts of \cref{prop:knotsmove}, and allocate across the
+resulting cluster portfolios as before. The outer matrix
+$\bar K S\bar K+\Delta$ is positive definite, the portfolio is continuous in
+$\lambda$, it is NCO at $\lambda=0$, and it is minimum variance at
+$\lambda=1$.
+\end{proposition}
+
+\begin{proof}
+Positive definiteness follows from $\Delta\succ0$. At $\lambda=1$,
+$Sh=\ones$ gives
+$\big(\operatorname{diag}(h)\,S\,\operatorname{diag}(h)+\Delta\big)\ones=h+\delta$,
+so the outer solution is $a=\ones$ and the portfolio has knot exposures
+proportional to $h$ and member weights proportional to $E_i^{-1}(\ones-\beta_i)$,
+which is the minimum-variance portfolio of the compressed problem.
+\end{proof}
+
+For duplicated knots $\bar\kappa_i=1-\lambda/2$, and the portfolio moves
+continuously from variance $3/8$ to $1/3$. When $S\succ0$ this path gives
+every cluster the same effective damping $\lambda$, which corresponds to
+cluster-specific parameters $\gamma_i=\lambda/\big(r_i+(1-r_i)\lambda\big)$.
+It is a different interior path with the same two ends, and we do not claim
+it performs better out of sample. It makes a design choice visible: whether
+clusters should share a nominal $\gamma$ or an effective $\lambda$.
+
+\begin{remark}[Noise around a singular covariance]
+If $\Sigma$ is singular and both $\Sigma+\tau E$ and $\Sigma-\tau E$ are
+positive semidefinite for some $\tau>0$, then $E\ker(\Sigma)=0$. For
+$v\in\ker\Sigma$ both signs force $v^\top Ev=0$, and a positive semidefinite
+matrix with $v^\top(\Sigma+\tau E)v=0$ has $(\Sigma+\tau E)v=0$. Symmetric
+additive noise must therefore preserve the structural null space. A singular
+sample estimate of a positive definite population covariance is a different
+problem, since its empirical null directions are not riskless. In
+\cref{prop:mvend} the condition $\dot w\neq0$ becomes
+$\dot w^\top\Sigma\dot w>0$.
+\end{remark}
 
 \section{Cost}
 

@@ -31,6 +31,11 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_sign_threshold   (8 - delta)/(1 + 13 delta/4) for k = 10, c = 1/4, by exact jets
   check_compression      a cluster is its knot plus one independent asset of variance 1/delta_i
   check_unit_betas       unit betas make the portfolio independent of gamma
+  check_effective_damping kappa_i = (1-lambda_i)/s_i + lambda_i h_i with lambda_i = gamma r_i/(1-gamma+gamma r_i)
+  check_lost_precision   V0 - V* = L/(Z(Z-L)); kappa - h in closed form; curvature exactly, via jets
+  check_gain_order       the gain from tuning gamma is G'(1)^2/(2 V0''(1)) tau^4 to leading order
+  check_rank_deficiency  duplicated knots (3/8, 1/2, 1/3), the exposure path, non-commuting limits,
+                         and noise that must preserve the null space
 """
 import numpy as np
 
@@ -858,6 +863,138 @@ def check_unit_betas(rng):
             "weight_on_members": np.abs(np.delete(ws[0], knots)).max()}
 
 
+# ---------------------------------------------------------------------------
+# Effective damping, lost precision, rank deficiency
+# ---------------------------------------------------------------------------
+def _kappa(S, gam):
+    s = np.diag(S); nu = 1 / np.diag(np.linalg.inv(S)); h = np.linalg.solve(S, np.ones(len(S)))
+    return ((1 - gam) + gam * nu * h) / ((1 - gam) * s + gam * nu), s, nu, h
+
+
+def _compressed_variance(S_hat, S_pop, delta, kappa):
+    """Variance of the two-tier portfolio in the compressed model (knots S, member precisions delta)."""
+    K = np.diag(kappa)
+    a = np.linalg.solve(K @ S_hat @ K + np.diag(delta), kappa + delta)
+    J = (kappa + delta) @ a
+    q = K @ a / J
+    return q @ S_pop @ q + ((a / J) ** 2 * delta).sum(), J
+
+
+def check_effective_damping(rng, trials=100):
+    err = 0.0
+    for _ in range(trials):
+        S = random_spd(rng, int(rng.integers(2, 7)))
+        for gam in (0.0, 0.3, 0.7, 0.95):
+            kap, s, nu, h = _kappa(S, gam)
+            r = nu / s
+            lam = gam * r / (1 - gam + gam * r)
+            err = max(err, np.abs(kap - ((1 - lam) / s + lam * h)).max())
+    return {"kappa_vs_interpolation": err}
+
+
+def check_lost_precision(rng, trials=100):
+    """J = Z - L, V0 - V* = L/(Z(Z-L)), kappa - h in closed form (floating point), and the
+    curvature V0''(1) = 2 p'W1 p / Z^2 in exact arithmetic via jets."""
+    loss = regret = gap = 0.0
+    for _ in range(trials):
+        k = int(rng.integers(2, 7))
+        S = random_spd(rng, k); delta = rng.uniform(0.2, 3.0, size=k)
+        for gam in (0.0, 0.3, 0.7, 0.95):
+            kap, s, nu, h = _kappa(S, gam)
+            Z = h.sum() + delta.sum()
+            V, J = _compressed_variance(S, S, delta, kap)
+            W = np.linalg.inv(np.linalg.inv(S) + np.diag(kap * kap / delta))
+            L = (h - kap) @ W @ (h - kap)
+            loss = max(loss, abs(J - (Z - L)))
+            regret = max(regret, abs(V - 1 / Z - L / (Z * (Z - L))))
+            gap = max(gap, np.abs((kap - h) - (1 - gam) * (1 - s * h) / ((1 - gam) * s + gam * nu)).max())
+    # exact curvature on a rational example
+    S = [[Fr(4), Fr(1), Fr(1, 2)], [Fr(1), Fr(3), Fr(-1, 2)], [Fr(1, 2), Fr(-1, 2), Fr(2)]]
+    delta = [Fr(1, 2), Fr(2), Fr(3, 4)]
+    k = 3
+    solve = lambda A, b: _solve_generic(A, b, Fr, lambda z: z != 0)
+    h = solve(S, [1] * k)
+    Sinv = [solve(S, [1 if i == j else 0 for i in range(k)]) for j in range(k)]
+    nu = [1 / Sinv[i][i] for i in range(k)]
+    s = [S[i][i] for i in range(k)]
+    Z = sum(h) + sum(delta)
+    pvec = [(s[i] * h[i] - 1) / nu[i] for i in range(k)]
+    A1 = [[Sinv[j][i] + (h[i] ** 2 / delta[i] if i == j else 0) for j in range(k)] for i in range(k)]
+    claim = 2 * sum(pi * xi for pi, xi in zip(pvec, solve(A1, pvec))) / Z ** 2
+    g = Jet.var(1, "gamma")
+    jsolve = lambda A, b: _solve_generic(A, b, Jet.of, lambda z: z.c[0][0] != 0)
+    kap = [((1 - g) + g * nu[i] * h[i]) / ((1 - g) * s[i] + g * nu[i]) for i in range(k)]
+    M = [[kap[i] * S[i][j] * kap[j] + (delta[i] if i == j else 0) for j in range(k)] for i in range(k)]
+    b = [kap[i] + delta[i] for i in range(k)]
+    a = jsolve(M, b)
+    J = sum((bi * ai for bi, ai in zip(b, a)), Jet())
+    V0 = 1 / J
+    return {"J_vs_Z_minus_L": loss, "regret": regret, "kappa_minus_h": gap,
+            "curvature_exact_match": 2 * V0.c[2][0] == claim, "V0_prime_1": V0.c[1][0]}
+
+
+def check_gain_order():
+    """F(1, tau) - min F  ~  G'(1)^2 / (2 V0''(1)) tau^4, identical clusters with k = 10, c = 1/4, delta = 4."""
+    k, c, delta = 10, 0.25, 4.0
+    L = 1 + (k - 1) * c
+    Vx = lambda x: (L * x * x + (1 - x) ** 2 / delta) / k
+    def F(gam, tau):
+        return 0.5 * sum(Vx(_t(gam, z, k) / (_t(gam, z, k) + delta)) for z in (c + tau, c - tau))
+    g, z = Jet.var(1, "gamma"), Jet.var(Fr(1, 4), "tau")
+    t = (1 + (k - 2) * z - g * (k - 1) * z) / (1 + (k - 2) * z - g * (k - 1) * z * z)
+    x = t / (t + Fr(4))
+    V = (Fr(L) * x * x + (1 - x) * (1 - x) / Fr(4)) / k
+    pred = float(V.c[1][2]) ** 2 / (2 * float(2 * V.c[2][0]))
+    ratios = []
+    for tau in (0.02, 0.04):
+        gs = np.linspace(0.9, 1.0, 200001)
+        ratios.append(float((F(1.0, tau) - F(gs, tau).min()) / (pred * tau ** 4)))
+    return {"gain_over_prediction": ratios}
+
+
+def check_rank_deficiency(rng):
+    """Duplicated knots, the exposure path, non-commuting limits, and null-space-preserving noise."""
+    out = {}
+    S4 = [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1]]
+    idx, knots = [[0, 1], [2, 3]], [0, 2]
+    out["bridge_below_one"] = {str(gq): _var(bridge_exact(S4, idx, knots, gq), S4) for gq in (Fr(0), Fr(1, 2), Fr(99, 100))}
+    Sn = np.array(S4, float)
+    D = np.zeros((4, 2))
+    for i, (I, p) in enumerate((([0, 1], 2), ([2, 3], 0))):
+        Q = Sn[np.ix_(I, I)] - np.outer(Sn[I, p], Sn[I, p]) / Sn[p, p]
+        D[I, i] = np.linalg.pinv(Q) @ (np.ones(2) - Sn[I, p] / Sn[p, p])
+    w = D @ np.linalg.solve(D.T @ Sn @ D, D.T @ np.ones(4)); w /= w.sum()
+    out["local_pinv_endpoint"] = float(w @ Sn @ w)
+    S2, d2 = np.ones((2, 2)), np.ones(2)
+    h = np.linalg.pinv(S2) @ np.ones(2)
+    path = [_compressed_variance(S2, S2, d2, (1 - lam) + lam * h)[0] for lam in np.linspace(0, 1, 21)]
+    out["lambda_path_ends"] = (float(path[0]), float(path[-1]))
+    out["lambda_path_decreasing"] = bool(np.all(np.diff(path) < 0))
+    out["eps_then_gamma"] = float(_compressed_variance(S2 + 1e-6 * np.eye(2), S2, d2, _kappa(S2 + 1e-6 * np.eye(2), 1.0)[0])[0])
+    out["gamma_then_eps"] = float(_compressed_variance(S2 + 1e-9 * np.eye(2), S2, d2, _kappa(S2 + 1e-9 * np.eye(2), 0.999)[0])[0])
+    end = 0.0
+    for _ in range(30):
+        k = int(rng.integers(3, 7)); rk = int(rng.integers(1, k))
+        B = np.column_stack([rng.standard_normal((k, rk - 1)), np.ones(k)])
+        S = B @ B.T                                           # singular, with 1 in its range
+        assert np.linalg.matrix_rank(S) < k and np.allclose(S @ np.linalg.pinv(S) @ np.ones(k), np.ones(k))
+        delta = rng.uniform(0.3, 2.0, size=k)
+        hh = np.linalg.pinv(S) @ np.ones(k)
+        end = max(end, abs(_compressed_variance(S, S, delta, hh)[0] - 1 / (hh.sum() + delta.sum())))
+    out["lambda_one_is_minvar"] = end
+    # noise around a singular covariance
+    B = rng.standard_normal((5, 3)); Sig = B @ B.T
+    U = np.linalg.svd(Sig)[0]; R, Nn = U[:, :3], U[:, 3:]
+    X = rng.standard_normal((3, 3)); X = (X + X.T) / 2; X /= np.abs(np.linalg.eigvalsh(X)).max()
+    E_ok = R @ X @ R.T                                   # supported on range(Sigma): E ker(Sigma) = 0
+    E_bad = E_ok + (Nn[:, :1] @ R[:, :1].T + R[:, :1] @ Nn[:, :1].T)   # couples the kernel to the range
+    tau = 0.2 * np.linalg.eigvalsh(Sig)[2]               # a fifth of the smallest nonzero eigenvalue
+    mins = lambda E: min(np.linalg.eigvalsh(Sig + sgn * tau * E).min() for sgn in (1, -1))
+    out["noise"] = {"preserving_min_eig": float(mins(E_ok)), "preserving_E_ker": float(np.abs(E_ok @ Nn).max()),
+                    "violating_min_eig": float(mins(E_bad))}
+    return out
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -923,6 +1060,17 @@ def main():
     r = check_compression(rng); print("cluster compression       ", r); assert r["variance_gap"] < 1e-10
     r = check_unit_betas(rng); print("unit betas                ", r)
     assert r["change_across_gamma"] < 1e-12 and r["weight_on_members"] < 1e-12
+    r = check_effective_damping(rng); print("effective damping         ", r); assert r["kappa_vs_interpolation"] < 1e-12
+    r = check_lost_precision(rng); print("lost precision            ", {a: (str(b) if isinstance(b, Fr) else b) for a, b in r.items()})
+    assert r["J_vs_Z_minus_L"] < 1e-10 and r["regret"] < 1e-12 and r["kappa_minus_h"] < 1e-12
+    assert r["curvature_exact_match"] and r["V0_prime_1"] == 0
+    r = check_gain_order(); print("fourth-order gain         ", r)
+    assert abs(r["gain_over_prediction"][0] - 1) < 0.06 and r["gain_over_prediction"][0] < r["gain_over_prediction"][1]
+    r = check_rank_deficiency(rng); print("rank deficiency           ", {a: ({x: str(y) for x, y in b.items()} if a == "bridge_below_one" else b) for a, b in r.items()})
+    assert all(v == Fr(3, 8) for v in r["bridge_below_one"].values()) and abs(r["local_pinv_endpoint"] - 0.5) < 1e-12
+    assert abs(r["lambda_path_ends"][0] - 3 / 8) < 1e-12 and abs(r["lambda_path_ends"][1] - 1 / 3) < 1e-12 and r["lambda_path_decreasing"]
+    assert abs(r["eps_then_gamma"] - 1 / 3) < 1e-5 and abs(r["gamma_then_eps"] - 3 / 8) < 1e-5 and r["lambda_one_is_minvar"] < 1e-10
+    assert r["noise"]["preserving_min_eig"] > -1e-12 and r["noise"]["preserving_E_ker"] < 1e-12 and r["noise"]["violating_min_eig"] < -1e-6
     print("certificate ok")
 
 
