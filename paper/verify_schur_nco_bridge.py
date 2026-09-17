@@ -23,6 +23,9 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_incremental_cost Phi = gamma tau^2 H with H bounded
   check_zero_direction   a direction that vanishes is dropped (deterministic regressions)
   check_sharpe_sign      fully invested Sigma^{-1}mu is max Sharpe only when its total is positive
+  check_only_knots_move  member part of d_i is constant in gamma; knot exposure in closed form
+  check_equicorrelated_knots  closed-form kappa(gamma) for equicorrelated knots
+  check_degenerate_partitions singletons or one cluster: the bridge is the GMV for every gamma
 """
 import numpy as np
 
@@ -660,6 +663,62 @@ def check_sharpe_sign():
             "sharpe_of_1_0": sharpe(np.array([1.0, 0.0])), "max_sharpe": float(np.sqrt(mu @ mu))}
 
 
+def check_only_knots_move(rng, trials=60):
+    """Under the gateway model the member part of d_i(gamma) is E^{-1}(u_J - beta u_p) for every
+    gamma, and the knot exposure is (u_p - gamma a)/(sigma_p^2 - gamma c)."""
+    member = exposure = 0.0
+    for _ in range(trials):
+        sigma, idx, knots, mu = _random_problem(rng)
+        for u in (np.ones(len(mu)), mu):
+            for i, I in enumerate(idx):
+                p, J = I[0], I[1:]
+                other = [k for j, k in enumerate(knots) if j != i]
+                beta = sigma[J, p] / sigma[p, p]
+                E = sigma[np.ix_(J, J)] - np.outer(beta, beta) * sigma[p, p]
+                Spp, sp = sigma[np.ix_(other, other)], sigma[p, other]
+                a, cc = sp @ np.linalg.solve(Spp, u[other]), sp @ np.linalg.solve(Spp, sp)
+                xJ = np.linalg.solve(E, u[J] - beta * u[p]) if J else np.zeros(0)
+                for g in (0.0, 0.3, 0.7, 1.0):
+                    Q, b = cheap_pair(sigma, I, other, g, u)
+                    d = np.linalg.solve(Q, b)
+                    if J:
+                        member = max(member, np.abs(d[1:] - xJ).max())
+                    exposure = max(exposure, abs(d[0] + beta @ d[1:] - (u[p] - g * a) / (sigma[p, p] - g * cc)))
+    return {"member_part": member, "knot_exposure": exposure}
+
+
+def check_equicorrelated_knots():
+    """Closed form kappa(gamma) for k unit-variance knots with common correlation rho."""
+    err = 0.0
+    for k in (2, 3, 5, 8):
+        for rho in (-0.1, 0.2, 0.6):
+            S = (1 - rho) * np.eye(k) + rho * np.ones((k, k))
+            other = list(range(1, k))
+            a = S[0, other] @ np.linalg.solve(S[np.ix_(other, other)], np.ones(k - 1))
+            cc = S[0, other] @ np.linalg.solve(S[np.ix_(other, other)], S[0, other])
+            err = max(err, abs(a - rho * (k - 1) / (1 + (k - 2) * rho)), abs(cc - rho * a))
+            for g in (0.0, 0.5, 1.0):
+                closed = (1 + (k - 2) * rho - g * rho * (k - 1)) / (1 + (k - 2) * rho - g * rho**2 * (k - 1))
+                err = max(err, abs((1 - g * a) / (1 - g * cc) - closed))
+            err = max(err, abs((1 - a) / (1 - cc) - 1 / (1 + (k - 1) * rho)))
+    return {"closed_form": err}
+
+
+def check_degenerate_partitions(rng, trials=30):
+    """Singleton clusters, or one cluster: the bridge is the minimum-variance portfolio for every
+    gamma, on any SPD covariance (no gateway model)."""
+    err = 0.0
+    for _ in range(trials):
+        n = int(rng.integers(3, 8))
+        S = random_spd(rng, n)
+        gmv = np.linalg.solve(S, np.ones(n)); gmv /= gmv.sum()
+        for idx, knots in (([[i] for i in range(n)], list(range(n))), ([list(range(n))], [0])):
+            for g in (0.0, 0.37, 1.0):
+                w = bridge_unnormalized(S, idx, knots, g)
+                err = max(err, np.abs(w / w.sum() - gmv).max())
+    return {"bridge_minus_gmv": err}
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -710,6 +769,10 @@ def main():
     assert r["numpy_error"] < 1e-12 and r["exact_matches"]
     r = check_sharpe_sign(); print("Sharpe sign               ", r)
     assert r["total"] < 0 and abs(r["sharpe_fully_invested"] + r["max_sharpe"]) < 1e-12 and r["sharpe_of_1_0"] > 0
+    r = check_only_knots_move(rng); print("only the knots move       ", r)
+    assert r["member_part"] < 1e-9 and r["knot_exposure"] < 1e-9
+    r = check_equicorrelated_knots(); print("equicorrelated knots      ", r); assert r["closed_form"] < 1e-12
+    r = check_degenerate_partitions(rng); print("degenerate partitions     ", r); assert r["bridge_minus_gmv"] < 1e-10
     print("certificate ok")
 
 

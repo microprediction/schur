@@ -557,9 +557,11 @@ architecture, and a statement that it is generic needs a noise model. The
 derivatives quoted in both examples are exact, computed by truncated
 bivariate jets in rational arithmetic.
 
-\section{The outer covariance}
+\section{Structure under the gateway model}
+\label{sec:structure}
 
-The gateway model also gives the outer covariance a simple form.
+The gateway model gives both the outer covariance and the cluster
+directions a simple form.
 
 \begin{proposition}[Knot covariance plus a ridge]
 \label{prop:outer}
@@ -589,6 +591,61 @@ portfolios' knot betas, plus their residual variances on the diagonal. The
 diagonal term raises the smallest eigenvalue of the outer covariance by at
 least the smallest residual variance. The remaining members supply a ridge, which
 is one reading of why the outer tier of NCO is stable.
+
+\begin{proposition}[Only the knots move]
+\label{prop:knotsmove}
+Under the gateway model, split the direction $d_i(\gamma)$ into its member
+part $d_{i,J_i}$ and its knot exposure
+$\kappa_i=d_{i,p_i}+\beta_i^\top d_{i,J_i}$. Then
+\begin{equation}
+  d_{i,J_i}(\gamma)=E_i^{-1}\big(u_{J_i}-\beta_i\,u_{p_i}\big),
+  \qquad
+  \kappa_i(\gamma)=\frac{u_{p_i}-\gamma\,a_i}{\sigma_{p_i}^2-\gamma\,c_i},
+  \label{eq:knotsmove}
+\end{equation}
+where $a_i=\Sigma_{p_i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}u_{P_{-i}}$ and
+$c_i=\Sigma_{p_i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}\Sigma_{P_{-i},p_i}$. The
+member part depends on neither $\gamma$ nor any other cluster.
+\end{proposition}
+
+\begin{proof}
+Under the model $\Sigma_{I_i,P_{-i}}=\binom{1}{\beta_i}\Sigma_{p_i,P_{-i}}$,
+so $Q_i(\gamma)=\Sigma_{ii}-\gamma c_i\binom{1}{\beta_i}\binom{1}{\beta_i}^{\!\top}$
+and $b_i(\gamma)=u_{I_i}-\gamma a_i\binom{1}{\beta_i}$. In the coordinates
+$(\kappa,x_J)$ the quadratic form $x^\top Q_ix$ is
+$(\sigma_{p_i}^2-\gamma c_i)\kappa^2+x_J^\top E_ix_J$ and the constraint
+$b_i^\top x$ is $(u_{p_i}-\gamma a_i)\kappa+(u_{J_i}-\beta_iu_{p_i})^\top x_J$.
+The two parts decouple, and $Q_i^{-1}b_i$ is \eqref{eq:knotsmove}.
+\end{proof}
+
+NCO and the global optimum hold the same member position inside every
+cluster, up to the cluster's scale. Moving along the bridge reprices only
+the knot. With $u=\ones$ a member earns weight in proportion to $1-\beta$,
+its shortfall in beta to the knot, per unit of residual variance.
+
+The interior example of \cref{sec:where} is an instance. There
+$\beta=0$ and $E=1$, so the member part is $1$, and the variable
+$x=(1-\gamma)/(4-\gamma)$ is the knot exposure $\kappa_2(\gamma)$ with
+$a_2=c_2=1$ and $\sigma_{p_2}^2=4$.
+
+\paragraph{Equicorrelated knots.} Let the $k$ knots have unit variance and
+common correlation $\rho$, and take $u=\ones$. Then
+$a=\rho(k-1)/\big(1+(k-2)\rho\big)$ and $c=\rho\,a$, so every cluster has
+\begin{equation*}
+  \kappa(\gamma)=\frac{1+(k-2)\rho-\gamma\,\rho\,(k-1)}{1+(k-2)\rho-\gamma\,\rho^2(k-1)} .
+\end{equation*}
+For $\rho>0$ the knot exposure falls from $1$ at the NCO end to
+$1/\big(1+(k-1)\rho\big)$ at the minimum-variance end, which is the scale of
+the equicorrelated minimum-variance weight. The more knots and the higher
+their correlation, the further the bridge has to travel.
+
+\begin{remark}[Degenerate partitions]
+With every asset its own cluster the directions span the whole space
+whenever none vanishes, and with a single cluster there is nothing to
+condition on. In both cases $w_\gamma$ is the minimum-variance portfolio for
+every $\gamma$, and no model is needed. The bridge has length only for
+partitions strictly between the two.
+\end{remark}
 
 \section{Cost}
 
