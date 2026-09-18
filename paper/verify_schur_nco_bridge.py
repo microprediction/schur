@@ -21,7 +21,9 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_full_coupling_example exact-rational spot check on a grid (not a proof of global optimality)
   check_endpoint_shift   gamma~(tau) = 1 - G'(1)/V0''(1) tau^2
   check_incremental_cost Phi = gamma tau^2 H with H bounded
-  check_zero_direction   a direction that vanishes is dropped (deterministic regressions)
+  check_zero_direction   a vanishing block of Sigma^{-1}u at gamma = 1 still yields the optimum
+  check_interior_zero_direction  the continuous extension at an interior vanishing (issue 11)
+  check_scale_invariance rescaling Sigma or u leaves the weights unchanged (issue 12)
   check_sharpe_sign      fully invested Sigma^{-1}mu is max Sharpe only when its total is positive
   check_only_knots_move  member part of d_i is constant in gamma; knot exposure in closed form
   check_equicorrelated_knots  closed-form kappa(gamma) for equicorrelated knots
@@ -326,17 +328,38 @@ def check_precision_sparsity(rng, trials=50):
 from fractions import Fraction as Fr
 
 
+def cluster_direction(sigma_hat, I, other, gamma, u, rel=1e-10):
+    """d_i = Q_i^{-1} b_i, with the continuous extension when b_i vanishes.
+
+    b_i = u_I - gamma a_i with a_i = S_{I,P} S_PP^{-1} u_P. The test for b_i = 0 is relative to
+    the two terms that cancel, so it is invariant to rescaling Sigma or u. When b_i vanishes
+    at gamma > 0 the shape of d_i has the limit Q_i^{-1} d b_i / d gamma = -Q_i^{-1} a_i, and
+    that limiting direction is used, which keeps the span continuous in gamma. A cluster is
+    dropped only if u_I itself is zero. Returns None for a dropped cluster.
+    """
+    Q, b = cheap_pair(sigma_hat, I, other, gamma, u)
+    a = (u[I] - b) / gamma if gamma > 0 else np.zeros(len(I))
+    scale = max(np.abs(u[I]).max(), np.abs(gamma * a).max())
+    if np.abs(b).max() <= rel * scale:
+        if gamma > 0 and np.abs(a).max() > 0:
+            b = -a
+        else:
+            return None
+    d = np.linalg.solve(Q, b)
+    return d / np.abs(d).max()          # scale is immaterial to the span; unit columns condition the Gram matrix
+
+
 def bridge_unnormalized(sigma_hat, idx, knots, gamma, u=None):
     """w ∝ D (D' S D)^{-1} D' u with every quantity read from sigma_hat."""
     n = sigma_hat.shape[0]
     u = np.ones(n) if u is None else u
-    D = np.zeros((n, len(idx)))
+    cols = []
     for i, I in enumerate(idx):
         other = [k for j, k in enumerate(knots) if j != i]
-        Q, b = cheap_pair(sigma_hat, I, other, gamma, u)
-        D[I, i] = np.linalg.solve(Q, b)
-    keep = [i for i in range(D.shape[1]) if np.abs(D[:, i]).max() > 1e-12]   # a direction that vanishes is dropped
-    D = D[:, keep]
+        d = cluster_direction(sigma_hat, I, other, gamma, u)
+        if d is not None:
+            c = np.zeros(n); c[I] = d; cols.append(c)
+    D = np.array(cols).T
     return D @ np.linalg.solve(D.T @ sigma_hat @ D, D.T @ u)
 
 
@@ -555,6 +578,10 @@ def bridge_generic(S_hat, idx, knots, gamma, lift, nonzero, is_zero=None):
                 sol = solve(Spp, [S_hat[q][m2] for q in P])
                 Q[r][c2] = Q[r][c2] - gamma * sum((x * y for x, y in zip(col, sol)), zero)
             bvec[r] = bvec[r] - gamma * sum((x * y for x, y in zip(col, ones_sol)), zero)
+        if all(is_zero(v) for v in bvec):                       # b_i vanishes exactly
+            a_vec = [(lift(u_val) - bv) for u_val, bv in zip([1] * len(I), bvec)]   # gamma * a_i
+            if not all(is_zero(v) for v in a_vec):
+                bvec = [-v for v in a_vec]                       # limiting direction Q^{-1}(-a_i), scale immaterial
         d = solve(Q, bvec)
         for r, m in enumerate(I):
             D[m][i] = d[r]
@@ -995,6 +1022,36 @@ def check_rank_deficiency(rng):
     return out
 
 
+def check_interior_zero_direction():
+    """Issue 11: S = [[4, 3/2], [3/2, 1]], singleton clusters, b_1 = 1 - (3/2) gamma vanishes at
+    gamma = 2/3. The continuous extension keeps w = (-1/4, 5/4) and variance 7/8 there."""
+    S = np.array([[4.0, 1.5], [1.5, 1.0]]); idx, knots = [[0], [1]], [0, 1]
+    out = {}
+    for g in (2 / 3 - 1e-6, 2 / 3, 2 / 3 + 1e-6):
+        w = bridge_unnormalized(S, idx, knots, g); w = w / w.sum()
+        out[f"{g:.7f}"] = (float(w[0]), float(w[1]), float(w @ S @ w))
+    Sx = [[Fr(4), Fr(3, 2)], [Fr(3, 2), Fr(1)]]
+    out["exact_at_two_thirds"] = bridge_exact(Sx, idx, knots, Fr(2, 3))
+    # the gamma = 1 regressions must survive: a vanishing block of Sigma^{-1}u still gives the optimum
+    out["endpoint_regressions"] = check_zero_direction()
+    return out
+
+
+def check_scale_invariance(rng, trials=40):
+    """Issue 12: rescaling Sigma or u must not change fully invested weights."""
+    worst = 0.0
+    for _ in range(trials):
+        sigma, idx, knots, mu = _random_problem(rng)
+        for u in (np.ones(len(mu)), mu):
+            for g in (0.0, 0.5, 1.0):
+                ref = bridge_unnormalized(sigma, idx, knots, g, u); ref = ref / ref.sum()
+                for cs, cu in ((1e12, 1.0), (1e-9, 1.0), (1.0, 1e8), (1e6, 1e-7)):
+                    w = bridge_unnormalized(cs * sigma, idx, knots, g, cu * u); w = w / w.sum()
+                    worst = max(worst, np.abs(w - ref).max())
+    diag = bridge_unnormalized(1e12 * np.diag([1.0, 2.0]), [[0], [1]], [0, 1], 0.0)
+    return {"max_change_under_rescaling": worst, "diag_1e12": (diag / diag.sum()).tolist()}
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -1041,8 +1098,14 @@ def main():
         assert abs((1 - gstar) - (1 - pred)) <= 0.25 * max(1 - pred, 1e-3) + 2e-3, (tau, gstar, pred)
     r = check_incremental_cost(); print("incremental cost H        ", r)
     assert max(abs(v) for v in r["H_values"]) < 10 * (min(abs(v) for v in r["H_values"]) + 1e-12)
-    r = check_zero_direction(); print("zero direction dropped    ", r)
+    r = check_zero_direction(); print("zero direction at gamma=1 ", r)
     assert r["numpy_error"] < 1e-12 and r["exact_matches"]
+    r = check_interior_zero_direction(); print("interior zero direction   ", {a: (str(b) if not isinstance(b, dict) else "…") for a, b in r.items()})
+    for key, (w0, w1, v) in [(k2, v2) for k2, v2 in r.items() if k2[0].isdigit()]:
+        assert abs(w0 + 0.25) < 1e-9 and abs(w1 - 1.25) < 1e-9 and abs(v - 7 / 8) < 1e-9, key
+    assert r["exact_at_two_thirds"] == [Fr(-1, 4), Fr(5, 4)]
+    r = check_scale_invariance(rng); print("scale invariance          ", r)
+    assert r["max_change_under_rescaling"] < 1e-8 and np.allclose(r["diag_1e12"], [2 / 3, 1 / 3])
     r = check_sharpe_sign(); print("Sharpe sign               ", r)
     assert r["total"] < 0 and abs(r["sharpe_fully_invested"] + r["max_sharpe"]) < 1e-12 and r["sharpe_of_1_0"] > 0
     r = check_only_knots_move(rng); print("only the knots move       ", r)

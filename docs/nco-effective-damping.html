@@ -74,13 +74,16 @@
   portfolio puts a third in each independent asset and a sixth in each copy of
   the representative, for a variance of 1/3 as &epsilon; goes to 0.</p>
 
-  <p>NCO cannot see that the two representatives are the same asset. Inside
-  each group the representative looks like an ordinary asset, so NCO holds a
-  quarter in everything, with variance 3/8. The bridge repairs this only as
-  the dial approaches 1, and the smaller &epsilon; is, the later the repair
-  starts. The paper proposes an alternative dial &lambda; that moves every
-  group's representative by the same fraction of its journey, which walks
-  smoothly from 3/8 to 1/3 no matter how small &epsilon; is.</p>
+  <p>NCO cannot see that the two representatives are nearly the same asset.
+  Inside each group the representative looks like an ordinary asset, so NCO
+  holds close to a quarter in everything, with variance near 3/8. The bridge
+  repairs this only as the dial approaches 1, and the smaller &epsilon; is, the
+  later the repair starts. The paper proposes an alternative dial &lambda; that
+  moves every group's representative by the same fraction of its journey, and
+  that path stays smooth no matter how small &epsilon; is. Both paths are built
+  from, and scored on, the same covariance with the chosen &epsilon;, so they
+  share their two ends exactly; what changes with &epsilon; is the shape between
+  them.</p>
 
   <div class="widget">
     <div class="controls">
@@ -89,12 +92,14 @@
     <canvas id="chartDup" width="820" height="300"></canvas>
     <div class="readout" id="readDup"></div>
   </div>
-  <div class="lookfor">How to read it. Both curves start at NCO's variance 3/8
-  and end at the optimum 1/3. The solid curve is the bridge against its dial
-  &gamma;; drag &epsilon; toward 10<sup>&minus;6</sup> and watch it stay flat across
-  almost the whole dial before plunging at the right end. The dashed curve is
-  the alternative dial &lambda;, and it does not depend on &epsilon; at all. The
-  paper's phrase for this is that the two limits, &epsilon; &rarr; 0 and
+  <div class="lookfor">How to read it. Both curves start at NCO's variance for
+  this &epsilon; and end at the optimum for this &epsilon;; the two grey lines mark
+  those values, and they tend to 3/8 and 1/3 as &epsilon; shrinks. The solid
+  curve is the bridge against its dial &gamma;; drag &epsilon; toward
+  10<sup>&minus;6</sup> and watch it stay flat across almost the whole dial before
+  plunging at the right end. The dashed curve is the alternative dial &lambda;,
+  and it keeps its smooth shape at every &epsilon;. The paper's phrase for the
+  solid curve's behaviour is that the two limits, &epsilon; &rarr; 0 and
   &gamma; &rarr; 1, do not commute.</div>
 
   <p class="muted">Both curves are the paper's two-tier formulas with a
@@ -112,11 +117,12 @@ function draw(){
     title:'fraction of the journey from NCO to minimum variance, λ, against the dial γ',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',hlines:[{y:0.5,label:'half way',color:'#999'}],height:280});
   const le=+$('leps').value, eps=Math.pow(10,le); $('lepsVal').textContent=le.toFixed(2);
   const gpts=Array.from({length:801},(_,i)=>{const g=i/800;return [g,N.duplicatedKnotsV0(g,eps)];});
-  const lpts=Array.from({length:201},(_,i)=>{const l=i/200;return [l,N.duplicatedKnotsLambdaPath(l)];});
-  N.lineChart('chartDup',{series:[{name:'bridge, against its dial γ',points:gpts},{name:'alternative dial λ (same at every ε)',points:lpts,dash:[6,4]}],
-    title:'variance of the portfolio along the two dials',xlabel:'position of the dial, γ or λ',xname:'dial',hlines:[{y:3/8,label:'3/8, what NCO gets',color:'#999'},{y:1/3,label:'1/3, the optimum',color:'#999'}],height:300});
-  const half=gpts.find(p=>p[1]<(3/8+1/3)/2);
-  $('readDup').innerHTML='<b>Result.</b> At this ε the bridge is only half repaired at <b>γ ≈ '+(half?half[0].toFixed(4):'—')+'</b>. Its variance at γ = 0.99 is '+N.duplicatedKnotsV0(0.99,eps).toFixed(5)+' and at γ = 1 it is '+N.duplicatedKnotsV0(1,eps).toFixed(5)+'.';
+  const lpts=Array.from({length:201},(_,i)=>{const l=i/200;return [l,N.duplicatedKnotsLambdaPath(l,eps)];});
+  const v0=gpts[0][1], v1=gpts[gpts.length-1][1];
+  N.lineChart('chartDup',{series:[{name:'bridge, against its dial γ',points:gpts},{name:'alternative dial λ',points:lpts,dash:[6,4]}],
+    title:'variance of the portfolio along the two dials, at this ε',xlabel:'position of the dial, γ or λ',xname:'dial',hlines:[{y:v0,label:'NCO at this ε: '+v0.toFixed(4)+' (→ 3/8)',color:'#999'},{y:v1,label:'optimum at this ε: '+v1.toFixed(4)+' (→ 1/3)',color:'#999'}],height:300});
+  const half=gpts.find(p=>p[1]<(v0+v1)/2);
+  $('readDup').innerHTML='<b>Result.</b> At this ε the two ends are '+v0.toFixed(5)+' and '+v1.toFixed(5)+', shared by both paths (the λ path ends at '+lpts[0][1].toFixed(5)+' and '+lpts[lpts.length-1][1].toFixed(5)+'). The bridge is only half repaired at <b>γ ≈ '+(half?half[0].toFixed(4):'—')+'</b>; its variance at γ = 0.99 is '+N.duplicatedKnotsV0(0.99,eps).toFixed(5)+'.';
 }
 $('leps').addEventListener('input',draw); window.addEventListener('resize',draw); draw();
 })();

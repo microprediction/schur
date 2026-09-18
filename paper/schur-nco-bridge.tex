@@ -295,8 +295,12 @@ $I_i$. The bridge portfolio is
   \label{eq:top}
 \end{equation}
 It solves, on the span of the $k$ directions, the problem that
-$\Sigma^{-1}u$ solves on the whole space. A direction that vanishes is
-dropped.
+$\Sigma^{-1}u$ solves on the whole space. Since $b_i(\gamma)=u_{I_i}-\gamma a_i$
+with $a_i=\Sigma_{i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}u_{P_{-i}}$ fixed, a
+direction can vanish only at isolated $\gamma$, and there its shape has
+the limit $-Q_i(\gamma)^{-1}a_i$. We use that limiting direction, which
+keeps the span continuous in $\gamma$; only its scale is lost, and scale
+does not enter \eqref{eq:top}. A cluster is dropped only when $u_{I_i}=0$.
 
 \paragraph{Two-tier reading.} The right side of \eqref{eq:top} does not
 change when a column of $D_\gamma$ is rescaled. When every total
@@ -313,8 +317,8 @@ singularity when a cluster total crosses zero.
 \begin{enumerate}
 \item At $\gamma=0$ with $u=\ones$ the recipe is NCO with minimum variance
   at both tiers.
-\item Under the gateway model the columns of $D_1$ are the blocks of
-  $\Sigma^{-1}u$, and $w_1\propto\Sigma^{-1}u$.
+\item Under the gateway model the nonvanishing columns of $D_1$ are the
+  blocks of $\Sigma^{-1}u$, and $w_1\propto\Sigma^{-1}u$.
 \end{enumerate}
 \end{proposition}
 
@@ -323,9 +327,11 @@ At $\gamma=0$ the pair is $(\Sigma_{ii},\ones)$, so $d_i=\Sigma_{ii}^{-1}\ones$
 has a positive total, $v_i$ is the minimum-variance portfolio of the block,
 and the outer tier is minimum variance across the cluster portfolios. For
 the second claim, \eqref{eq:blockinv} and \cref{prop:sufficient} give
-$\Sigma^{-1}u=D_1\ones$, which lies in the column span of $D_1$. Then
+$\Sigma^{-1}u$ as the sum of the nonvanishing columns of $D_1$, which lies
+in the column span of $D_1$ whatever replaces a vanishing column. Then
 $D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top u
-=D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top\Sigma D_1\ones=D_1\ones$.
+=D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top\Sigma D_1\alpha=D_1\alpha$ for the
+$\alpha$ with $\Sigma^{-1}u=D_1\alpha$.
 \end{proof}
 
 \begin{table}[ht]
@@ -562,9 +568,10 @@ the equicorrelated minimum-variance weight. The more knots and the higher
 their correlation, the further the bridge has to travel.
 
 \begin{remark}[Degenerate partitions]
-With every asset its own cluster the directions span the whole space
-whenever none vanishes, and with a single cluster there is nothing to
-condition on. In both cases $w_\gamma$ is the minimum-variance portfolio for
+With every asset its own cluster each direction is a multiple of a
+coordinate vector, so with the limiting direction at a vanishing the
+directions span the whole space at every $\gamma$. With a single cluster
+there is nothing to condition on. In both cases $w_\gamma$ is the minimum-variance portfolio for
 every $\gamma$, and no model is needed. The bridge has length only for
 partitions strictly between the two.
 \end{remark}
