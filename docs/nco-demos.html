@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Where to sit on the NCO bridge: the analytic conditions, checked live — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <h1>Where to sit on the NCO bridge: the analytic conditions, checked live</h1>
+  <p class="subtitle">Three pages, each stating a closed-form condition from
+  <a href="./schur-nco-bridge.pdf"><em>A Schur Bridge from Nested Clustered
+  Optimization to Global Minimum Variance</em></a> and then computing it in front of you.</p>
+
+  <p class="lead">The paper is about a dial. Assets are grouped, and each group
+  has a representative asset. At one end of the dial, &gamma; = 0, each group is
+  allocated from its own covariance alone and the groups are then combined,
+  which is <em>nested clustered optimization</em>. At the other end, &gamma; = 1,
+  the whole covariance is used at once, which is <em>global minimum
+  variance</em>. In between, each group is told a fraction &gamma; of what the
+  other groups' representatives explain about its own. The question is where
+  on the dial to sit when the covariance is estimated with error. The paper
+  answers with analytic conditions: a closed-form best dial for a noisy
+  estimate, a sign that decides whether small noise moves the best dial inside
+  at all, a formula for how far each group actually travels along the dial,
+  and a closed form for the variance given up at every setting. Each page
+  below states one of these conditions, explains the setting, and then
+  evaluates the condition live so you can see it hold.</p>
+
+  <ul class="demo-list">
+    <li><a href="./nco-identical.html">The best dial in closed form, and the sign
+      that decides whether small noise moves it</a>
+      <div class="claim">When every group is the same, the only decision is how
+      much to hold of the representatives, and the out-of-sample variance is a
+      closed-form function of the dial. With a noisy two-point estimate the
+      best dial is strictly inside, at exactly 2/3 in the simplest case, and
+      with small noise it can go either way, with an explicit threshold.</div></li>
+    <li><a href="./nco-effective-damping.html">How far each group really travels:
+      &lambda; = &gamma;r / (1 &minus; &gamma; + &gamma;r)</a>
+      <div class="claim">Setting &gamma; = &frac12; moves an independent
+      representative halfway to its minimum-variance holding but a nearly
+      redundant one almost not at all. In the limit of two identical
+      representatives the bridge is stuck until the very end of the dial, and an
+      alternative dial fixes it.</div></li>
+    <li><a href="./nco-knots-move.html">The member weights do not depend on the
+      dial, so the variance given up has a closed form</a>
+      <div class="claim">On a random market that satisfies the paper's model, the
+      dial changes how much each group holds of its representative and nothing
+      else; the member weights are the same at every &gamma;. The bridge's
+      distance from the optimum then has a closed form, checked live.</div></li>
+  </ul>
+
+  <p class="muted">The exact rational checks behind the same claims are in
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py"><code>paper/verify_schur_nco_bridge.py</code></a>.</p>
+</main>
+</body>
+</html>

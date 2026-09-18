@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The best dial in closed form, and the sign that decides whether small noise moves it — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>The best dial in closed form, and the sign that decides whether small
+  noise moves it</h1>
+  <p class="subtitle">Identical groups reduce the whole problem to one number,
+  and two conditions from the paper become exact: the optimal dial under a
+  two-point estimate is (1 + 2(k&minus;2)c) / (2[1 + (k&minus;3)c]), and under small
+  noise the dial leaves full coupling only if a computable coefficient is
+  positive.</p>
+
+  <h2>The setting</h2>
+  <p>There are k groups of assets. Each group contains two: a
+  <em>representative</em>, which the paper calls the group's knot, and an
+  <em>independent asset</em>. The representatives of different groups are
+  correlated with each other, every pair at the same correlation c. The
+  independent assets are uncorrelated with everything. All representatives have
+  variance 1; all independent assets have variance 1/&delta;, so a large
+  &delta; means a safe independent asset.</p>
+
+  <p>Because every group looks the same, a sensible portfolio treats them the
+  same. It puts some total weight x on the representatives and the rest, 1 &minus; x,
+  on the independent assets, spread evenly. The whole allocation problem is
+  therefore one number, x. The lowest-variance choice is
+  x&#8902; = 1 / (1 + &delta;L), where L = 1 + (k &minus; 1)c measures how much the
+  representatives move together, and the variance you pay for missing it
+  grows with the square of the miss.</p>
+
+  <h2>Two methods, and the bridge between them</h2>
+  <p><em>Nested clustered optimization</em> (NCO) first builds a portfolio
+  inside each group using only that group's own covariance, then allocates
+  across the groups. Inside a group it cannot see that the representative is
+  correlated with the other groups' representatives. <em>Global minimum
+  variance</em> uses the whole covariance at once. The bridge is a family of
+  portfolios indexed by a dial &gamma; between 0 and 1: at &gamma; = 0 it is NCO,
+  at &gamma; = 1 it is global minimum variance, and in between each group is
+  told a fraction &gamma; of what the other representatives explain about its
+  own.</p>
+
+  <h2>Why the dial matters: the correlation is estimated</h2>
+  <p>The true correlation c is unknown. The portfolio is built from an
+  estimate z, and then it has to live under the true c. The score is therefore
+  the <em>expected out-of-sample variance</em> F(&gamma;): build the bridge
+  portfolio from the estimate, compute its variance under the truth, and
+  average over what the estimate might have been. Two kinds of estimate are
+  offered below.</p>
+  <ul>
+    <li><b>Two-point estimate.</b> The estimate is either 0 or 2c, each half the
+    time. It is unbiased but very noisy.</li>
+    <li><b>Small symmetric noise.</b> The estimate is c + &tau; or c &minus; &tau;,
+    each half the time.</li>
+  </ul>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="k">k groups</label><input type="range" id="k" min="2" max="12" step="1" value="2" /><span class="val" id="kVal">2</span>
+      <label for="c">true correlation c</label><input type="range" id="c" min="0.02" max="0.48" step="0.01" value="0.25" /><span class="val" id="cVal">0.25</span>
+    </div>
+    <div class="controls">
+      <label for="d">&delta; (independent-asset precision)</label><input type="range" id="d" min="0.25" max="16" step="0.25" value="1" /><span class="val" id="dVal">1.00</span>
+    </div>
+    <div class="controls">
+      <label for="tau">&tau; (noise size)</label><input type="range" id="tau" min="0.005" max="0.12" step="0.005" value="0.05" /><span class="val" id="tauVal">0.050</span>
+    </div>
+    <div class="controls">
+      <button id="modeTwo" class="on">two-point estimate: 0 or 2c</button>
+      <button id="modeSym">small symmetric noise: c &plusmn; &tau;</button>
+    </div>
+    <canvas id="chartX" width="820" height="240"></canvas>
+    <div class="readout"><b>What the portfolio does.</b> The weight x that the
+    bridge puts on the representatives, against the dial &gamma;, on each of the
+    two estimates. The grey line is the ideal weight x&#8902; under the true
+    correlation. The bridge is trying to land on that line while only seeing
+    the estimate.</div>
+    <canvas id="chartF" width="820" height="280"></canvas>
+    <div class="readout" id="readF"></div>
+  </div>
+  <div class="lookfor">How to read the second chart. Lower is better. The
+  left end is NCO, the right end is global minimum variance. If the lowest
+  point is strictly inside, then trusting the estimated correlation only partly
+  beats both trusting it fully and ignoring it. With the two-point estimate the
+  paper gives the best dial in closed form,
+  &gamma;&#8902; = (1 + 2(k&minus;2)c) / (2[1 + (k&minus;3)c]), drawn in red; the numerical
+  minimum is drawn in green and should sit on top of it. At the default k = 2,
+  c = &frac14;, &delta; = 1 the answer is exactly 2/3. The reason is visible in the
+  first chart: on the estimate 0 the bridge cannot move, and on the estimate 2c
+  the dial 2/3 lands the weight exactly on x&#8902;.</div>
+
+  <h2>When a little damping helps, and when it does not</h2>
+  <p>For small noise the paper shows the best dial is
+  1 &minus; (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;: a fixed coefficient times the noise
+  squared, below 1. If the coefficient is positive, full coupling is beaten by
+  a slightly smaller &gamma;. If it is negative, the formula points past 1 and
+  the best you can do is stay at full coupling. The chart plots that
+  coefficient against &delta; for the current k and c.</p>
+
+  <div class="widget">
+    <canvas id="chartShift" width="820" height="240"></canvas>
+    <div class="readout" id="readShift"></div>
+  </div>
+  <div class="lookfor">How to read it. Above the zero line, small noise pushes
+  the best dial inside; below it, full coupling stays best. For k = 10 and
+  c = &frac14; the paper gives the coefficient exactly, (8 &minus; &delta;)/(1 + 13&delta;/4),
+  so the crossing is at &delta; = 8. Set k = 10 and &delta; = 12: small noise then
+  leaves the best dial at 1, yet switching to the two-point estimate moves it
+  to 10/11. Whether damping helps depends on how noisy the estimate is, not on
+  the method alone.</div>
+
+  <p class="muted">Every curve is the paper's closed-form scalar expressions
+  evaluated live; nothing is simulated. The same numbers are checked in exact
+  rational arithmetic by the verification script.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+let mode='two';
+function read(){return {k:+$('k').value,c:+$('c').value,d:+$('d').value,tau:+$('tau').value};}
+function draw(){
+  const {k,c,d,tau}=read();
+  $('kVal').textContent=k; $('cVal').textContent=c.toFixed(2); $('dVal').textContent=d.toFixed(2); $('tauVal').textContent=tau.toFixed(3);
+  const zs=mode==='two'?[0,2*c]:[c-tau,c+tau];
+  const names=mode==='two'?['estimate 0','estimate 2c']:['estimate c − τ','estimate c + τ'];
+  const gs=Array.from({length:401},(_,i)=>i/400);
+  const xs=N.xStar(k,c,d);
+  N.lineChart('chartX',{series:zs.map((z,j)=>({name:names[j],points:gs.map(g=>[g,N.x_of(g,z,k,d)])})),
+    title:'weight on the representatives, x, against the dial γ',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',
+    hlines:[{y:xs,label:'ideal x⋆ = '+xs.toFixed(4),color:'#999'}],height:240});
+  const F=g=>0.5*(N.V_of(N.x_of(g,zs[0],k,d),k,c,d)+N.V_of(N.x_of(g,zs[1],k,d),k,c,d));
+  const best=N.argmin(F,0,1,4000);
+  let claim;
+  if(mode==='two'){claim=N.gammaStarTwoPoint(k,c);}
+  else{const coef=N.shiftCoefficient(k,c,d); claim=Math.min(1,1-coef*tau*tau);}
+  N.lineChart('chartF',{series:[{name:'F(γ)',points:gs.map(g=>[g,F(g)])}],title:'expected out-of-sample variance F(γ)',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',
+    vlines:[{x:claim,label:(mode==='two'?'closed form γ⋆ = ':'predicted = ')+claim.toFixed(4),color:'#c0392b'},{x:best.g,label:'',color:'#0f8b6e'}],height:280});
+  $('readF').innerHTML='<b>Result.</b> Numerical minimum at <b>γ = '+best.g.toFixed(4)+'</b> (green); the paper\'s value is <b>'+claim.toFixed(4)+'</b> (red). '+
+    'Variance at the ideal weight: '+N.V_of(xs,k,c,d).toFixed(5)+'. Cost of NCO over the best dial: '+(F(0)-F(claim)).toExponential(3)+'; cost of full coupling over it: '+(F(1)-F(claim)).toExponential(3)+'.'+
+    (mode==='two'&&k===2&&Math.abs(c-0.25)<1e-9&&Math.abs(d-1)<1e-9?' At these settings those two costs are exactly 1/576 and 1/900.':'');
+  const ds=Array.from({length:64},(_,i)=>{const dd=(i+1)/4; return [dd,N.shiftCoefficient(k,c,dd)];});
+  const vl2=(k===10&&Math.abs(c-0.25)<1e-9)?[{x:8,label:'δ = 8',color:'#c0392b'}]:[];
+  N.lineChart('chartShift',{series:[{name:'coefficient G′(1)/V₀″(1)',points:ds,color:'#ef6c00'}],title:'small-noise shift coefficient against δ, at the current k and c',xlabel:'δ',xname:'δ',hlines:[{y:0,label:'',color:'#999'}],vlines:vl2,height:240});
+  let z=null; for(let i=1;i<ds.length;i++){const a=ds[i-1],b=ds[i]; if(Math.sign(a[1])!==Math.sign(b[1])){z=a[0]+(b[0]-a[0])*a[1]/(a[1]-b[1]);break;}}
+  $('readShift').innerHTML=z!==null?'Sign change at <b>δ ≈ '+z.toFixed(2)+'</b>. Below it, small noise makes a dial just under 1 best; above it, full coupling is best.':'No sign change on this range of δ: '+(ds[0][1]>0?'small noise always pushes the best dial inside here.':'full coupling stays best throughout.');
+}
+['k','c','d','tau'].forEach(id=>$(id).addEventListener('input',draw));
+$('modeTwo').onclick=()=>{mode='two';$('modeTwo').classList.add('on');$('modeSym').classList.remove('on');draw();};
+$('modeSym').onclick=()=>{mode='sym';$('modeSym').classList.add('on');$('modeTwo').classList.remove('on');draw();};
+window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>
