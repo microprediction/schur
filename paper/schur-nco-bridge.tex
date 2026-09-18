@@ -50,8 +50,9 @@ exact. Damping the complement by $\gamma\in[0,1]$ then gives a bridge with
 nested clustered optimization at $\gamma=0$ and the global optimum at
 $\gamma=1$, with no linear solve larger than a cluster or the number of
 clusters. Under estimation error the optimal $\gamma$ can be strictly
-interior and full coupling can remain locally optimal, and we give the local
-theorem at the minimum-variance end with exact examples of both.
+interior and full coupling can remain optimal, and we give the local
+theorem at the minimum-variance end with exact examples of both, including
+a symmetric family in which the optimum is a closed form.
 \end{abstract}
 
 \section{Introduction}
@@ -91,7 +92,9 @@ under which conditioning on that set loses nothing.
 \Cref{sec:where} asks where to sit on the bridge when the covariance is
 estimated. Part of the analysis of the tree in \cite{cotton2026bridge}
 transfers, and exact examples show that both an interior optimum and a
-locally optimal full coupling occur.
+locally optimal full coupling occur. \Cref{sec:rank} treats singular
+covariances, where the parameterization by $\gamma$ itself becomes
+singular.
 
 All exactness statements concern the unconstrained, fully invested,
 long-short problem. With box or long-only constraints no block
@@ -383,6 +386,189 @@ compounds along the path, while \eqref{eq:pair} damps each cluster once
 against all the other knots.
 \end{remark}
 
+\section{Structure under the gateway model}
+\label{sec:structure}
+
+The gateway model gives both the outer covariance and the cluster
+directions a simple form.
+
+\begin{proposition}[Knot covariance plus a ridge]
+\label{prop:outer}
+Under the gateway model, let $v_i$ be any portfolios supported on their
+clusters. Write $\beta_i=\Sigma_{J_ip_i}/\sigma_{p_i}^2$ for the member
+betas, $E_i=\Sigma_{J_iJ_i}-\beta_i\beta_i^\top\sigma_{p_i}^2$ for the
+residual covariance, and $\kappa_i=v_{i,p_i}+\beta_i^\top v_{i,J_i}$ for
+the cluster portfolio's beta to its knot. Then
+\begin{equation}
+  V^\top\Sigma V \;=\; K\,\Sigma_{PP}\,K + D,
+  \qquad K=\diag(\kappa_i),
+  \quad D=\diag\!\big(v_{i,J_i}^\top E_i\,v_{i,J_i}\big).
+  \label{eq:outer}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Under the gateway model $\Sigma_{J_i,l}=\beta_i\Sigma_{p_i,l}$ for every
+asset $l$ outside $I_i$. Applying this on both sides gives
+$v_i^\top\Sigma_{I_iI_l}v_l=\kappa_i\kappa_l\Sigma_{p_ip_l}$ for $i\neq l$.
+On the diagonal, the knot is uncorrelated with the member residual, so
+$v_i^\top\Sigma_{ii}v_i=\kappa_i^2\sigma_{p_i}^2+v_{i,J_i}^\top E_iv_{i,J_i}$.
+\end{proof}
+
+The outer problem sees the knot covariance, scaled by the cluster
+portfolios' knot betas, plus their residual variances on the diagonal. The
+diagonal term raises the smallest eigenvalue of the outer covariance by at
+least the smallest residual variance. The remaining members supply a ridge, which
+is one reading of why the outer tier of NCO is stable.
+
+\begin{proposition}[Only the knots move]
+\label{prop:knotsmove}
+Under the gateway model, split the direction $d_i(\gamma)$ into its member
+part $d_{i,J_i}$ and its knot exposure
+$\kappa_i=d_{i,p_i}+\beta_i^\top d_{i,J_i}$. Then
+\begin{equation}
+  d_{i,J_i}(\gamma)=E_i^{-1}\big(u_{J_i}-\beta_i\,u_{p_i}\big),
+  \qquad
+  \kappa_i(\gamma)=\frac{u_{p_i}-\gamma\,a_i}{\sigma_{p_i}^2-\gamma\,c_i},
+  \label{eq:knotsmove}
+\end{equation}
+where $a_i=\Sigma_{p_i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}u_{P_{-i}}$ and
+$c_i=\Sigma_{p_i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}\Sigma_{P_{-i},p_i}$. The
+member part depends on neither $\gamma$ nor any other cluster.
+\end{proposition}
+
+\begin{proof}
+Under the model $\Sigma_{I_i,P_{-i}}=\binom{1}{\beta_i}\Sigma_{p_i,P_{-i}}$,
+so $Q_i(\gamma)=\Sigma_{ii}-\gamma c_i\binom{1}{\beta_i}\binom{1}{\beta_i}^{\!\top}$
+and $b_i(\gamma)=u_{I_i}-\gamma a_i\binom{1}{\beta_i}$. In the coordinates
+$(\kappa,x_J)$ the quadratic form $x^\top Q_ix$ is
+$(\sigma_{p_i}^2-\gamma c_i)\kappa^2+x_J^\top E_ix_J$ and the constraint
+$b_i^\top x$ is $(u_{p_i}-\gamma a_i)\kappa+(u_{J_i}-\beta_iu_{p_i})^\top x_J$.
+The two parts decouple, and $Q_i^{-1}b_i$ is \eqref{eq:knotsmove}.
+\end{proof}
+
+NCO and the global optimum hold the same member position inside every
+cluster, up to the cluster's scale. Moving along the bridge reprices only
+the knot. With $u=\ones$ a member earns weight in proportion to $1-\beta$,
+its shortfall in beta to the knot, per unit of residual variance.
+
+\begin{corollary}[A cluster is a knot and one independent asset]
+\label{cor:compress}
+Take $u=\ones$ and put
+$\delta_i=(\ones-\beta_i)^\top E_i^{-1}(\ones-\beta_i)$. Under the gateway
+model, replace each cluster by its knot together with one asset that is
+uncorrelated with everything and has variance $1/\delta_i$. Then
+$V_0(\gamma)$ is unchanged for every $\gamma$. So is $F(\gamma,\tau)$ of
+\cref{sec:where} under noise that perturbs only the knot covariance and
+preserves the gateway structure.
+\end{corollary}
+
+\begin{proof}
+By \cref{prop:knotsmove} the direction of cluster $i$ has knot exposure
+$\kappa_i(\gamma)$, total weight $\kappa_i(\gamma)+\delta_i$ and residual
+variance $\delta_i$. By \cref{prop:outer} the outer tier, and the variance
+of the resulting portfolio, read the cluster only through these and the
+knot covariance. The replacement cluster has $\beta=0$ and $E=1/\delta_i$,
+which gives the same three quantities.
+\end{proof}
+
+A large cluster interior therefore never obscures the analysis: it enters
+as one scalar. If every member has unit beta to its knot then
+$\delta_i=0$, the members carry no budget, and $w_\gamma$ is the same for
+every $\gamma$ at which the knot exposures are nonzero.
+
+For the rest of this section take $u=\ones$ and write $S=\Sigma_{PP}$ for
+the knot covariance, $s_i=S_{ii}$, $h=S^{-1}\ones$ and
+$\nu_i=1/(S^{-1})_{ii}$, the variance of knot $i$ left unexplained by the
+other knots. In the notation of \cref{prop:knotsmove},
+$\nu_i=s_i-c_i$ and $h_i=(1-a_i)/\nu_i$.
+
+\begin{proposition}[Effective damping]
+\label{prop:effective}
+With $r_i=\nu_i/s_i$,
+\begin{equation}
+  \kappa_i(\gamma)=(1-\lambda_i)\,\frac{1}{s_i}+\lambda_i\,h_i,
+  \qquad
+  \lambda_i=\frac{\gamma\,r_i}{1-\gamma+\gamma\,r_i},
+  \qquad\text{that is}\qquad
+  \frac{\lambda_i}{1-\lambda_i}=r_i\,\frac{\gamma}{1-\gamma}.
+  \label{eq:effective}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Write the denominator of $\kappa_i$ as $s_i(1-\gamma)+\gamma\nu_i$ and the
+numerator as $(1-\gamma)+\gamma\nu_ih_i$, and divide.
+\end{proof}
+
+The knot exposure interpolates between its NCO value $1/s_i$ and its
+minimum-variance value $h_i$, and $\lambda_i$ is the interpolation actually
+achieved. A common $\gamma$ does not damp the clusters equally. A knot that
+the other knots nearly explain has small $r_i$, and its exposure barely
+moves until $\gamma$ is very close to $1$.
+
+\begin{proposition}[Lost precision]
+\label{prop:lost}
+Suppose every $\delta_i>0$. Put $\Delta=\operatorname{diag}(\delta_i)$,
+$K_\gamma=\operatorname{diag}(\kappa_i(\gamma))$,
+$Z=\ones^\top h+\sum_i\delta_i$ and
+$W_\gamma=\big(S^{-1}+K_\gamma\Delta^{-1}K_\gamma\big)^{-1}$. The minimum
+variance is $V_\star=1/Z$, and
+\begin{equation}
+  V_0(\gamma)-V_\star=\frac{L_\gamma}{Z\,(Z-L_\gamma)},
+  \qquad
+  L_\gamma=(h-\kappa)^\top W_\gamma\,(h-\kappa).
+  \label{eq:lost}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By \cref{cor:compress} work with $2k$ assets of covariance
+$\operatorname{diag}(S,\Delta^{-1})$ and budget vector $(\ones,\ones)$. The
+unconstrained precision is $Z$ and its direction is $(h,\delta)$. The bridge
+restricts the knot exposures to $K_\gamma a$ and the member weights to
+$\Delta a$, and its precision $1/V_0(\gamma)$ falls short of $Z$ by the
+squared distance from $(h,\delta)$ to that subspace,
+$\min_a\{(h-K_\gamma a)^\top S\,(h-K_\gamma a)
++(\ones-a)^\top\Delta\,(\ones-a)\}$. Eliminating $a$ and applying the
+Woodbury identity gives $L_\gamma$.
+\end{proof}
+
+Since $W_\gamma\succ0$, the bridge attains the minimum variance exactly when
+$\kappa=h$, and
+\begin{equation}
+  \kappa_i(\gamma)-h_i=\frac{(1-\gamma)\,(1-s_ih_i)}{(1-\gamma)s_i+\gamma\nu_i}.
+  \label{eq:kminush}
+\end{equation}
+So if some $s_ih_i\neq1$ then $\gamma=1$ is the unique global minimizer of
+$V_0$ on $[0,1]$. If every $s_ih_i=1$ the whole bridge is already optimal.
+The curvature at the end is explicit as well. With
+$p_i=\kappa_i'(1)=(s_ih_i-1)/\nu_i$ and
+$W_1=\big(S^{-1}+\operatorname{diag}(h_i^2/\delta_i)\big)^{-1}$,
+\begin{equation}
+  V_0''(1)=\frac{2\,p^\top W_1\,p}{Z^2}.
+  \label{eq:curvature}
+\end{equation}
+
+\paragraph{Equicorrelated knots.} Let the $k$ knots have unit variance and
+common correlation $\rho$, and take $u=\ones$. Then
+$a=\rho(k-1)/\big(1+(k-2)\rho\big)$ and $c=\rho\,a$, so every cluster has
+\begin{equation*}
+  \kappa(\gamma)=\frac{1+(k-2)\rho-\gamma\,\rho\,(k-1)}{1+(k-2)\rho-\gamma\,\rho^2(k-1)} .
+\end{equation*}
+For $\rho>0$ the knot exposure falls from $1$ at the NCO end to
+$1/\big(1+(k-1)\rho\big)$ at the minimum-variance end, which is the scale of
+the equicorrelated minimum-variance weight. The more knots and the higher
+their correlation, the further the bridge has to travel.
+
+\begin{remark}[Degenerate partitions]
+With every asset its own cluster the directions span the whole space
+whenever none vanishes, and with a single cluster there is nothing to
+condition on. In both cases $w_\gamma$ is the minimum-variance portfolio for
+every $\gamma$, and no model is needed. The bridge has length only for
+partitions strictly between the two.
+\end{remark}
+
 \section{Where to sit on the bridge}
 \label{sec:where}
 
@@ -484,52 +670,117 @@ hypotheses the global minimizers of $F(\cdot,\tau)$ converge to $1$, so for
 small $\tau$ they lie in that neighbourhood.
 \end{proof}
 
-Gateway exactness makes $w_1$ the minimum-variance portfolio. It does not by
-itself exclude another $\gamma<1$ that produces the same portfolio, which is
-why uniqueness is a hypothesis of the global statement.
+When every $\delta_i>0$ the uniqueness hypothesis is supplied by
+\cref{prop:lost}, unless the whole bridge is already optimal. It remains a
+hypothesis when some $\delta_i=0$, since gateway exactness alone does not
+exclude another $\gamma<1$ that produces the same portfolio.
+
+The displacement in \eqref{eq:shift} is of second order in the noise, and
+the gain from making it is of fourth order. When $G'(1)>0$,
+\begin{equation}
+  F(1,\tau)-F(\tilde\gamma(\tau),\tau)
+  =\frac{G'(1)^2}{2\,V_0''(1)}\,\tau^4+O(\tau^6).
+  \label{eq:gain}
+\end{equation}
+A large gain at finite noise should not be inferred from the local sign.
 
 The structure of the bridge does not determine the sign of $G'(1)$. Both
 signs occur, and each is strict in the examples below, so each persists on
 a relatively open set within the gateway-model parameterization.
 
-\paragraph{An exact interior optimum.} Take clusters $\{1,2\}$ and
-$\{3,4\}$ with knots $1$ and $3$, and
-\begin{equation*}
-  \Sigma=\begin{pmatrix}1&0&\tfrac12&0\\0&1&0&0\\\tfrac12&0&4&0\\0&0&0&1\end{pmatrix}.
-\end{equation*}
-The estimate replaces the cross-knot entry $\tfrac12$ by $Z\in\{0,1\}$, each
-with probability $\tfrac12$. The population and both estimates are positive
-definite and satisfy the gateway model, because the remaining members are
-uncorrelated with everything.
+\subsection{Identical clusters}
 
-On the branch $Z=0$ the directions do not depend on $\gamma$ and the
-population variance is $56/169$. On the branch $Z=1$ the directions are
-$d_1=(1,1)$ and $d_2=(x,1)$ with $x=(1-\gamma)/(4-\gamma)\in[0,\tfrac14]$,
-and the population variance of the resulting portfolio is
-\begin{equation*}
-  V(x)=\frac{49x^4-7x^3+36x^2-2x+6}{2\,(7x^2+3)^2},
+Give each of $k$ clusters a knot of unit variance and one independent asset
+of variance $1/\delta$, and let every pair of knots have correlation $c$.
+By \cref{cor:compress} this is less special than it looks. By symmetry a
+portfolio is described by one number, the total weight $x$ on the knots,
+and with $L=1+(k-1)c$ its variance is
+\begin{equation}
+  V(x)=\frac1k\Big[L\,x^2+\frac{(1-x)^2}{\delta}\Big],
   \qquad
-  V'(x)=\frac{P(x)}{2\,(7x^2+3)^3},
-\end{equation*}
-with $P(x)=49x^4+84x^3-21x^2+48x-6$. On $[0,\tfrac14]$ we have
-$P'(x)=196x^3+252x^2-42x+48>0$, while $P(0)=-6$ and $P(\tfrac14)=1585/256$.
-So $P$ has exactly one root $x_\star\approx0.12823$ there, and
-\begin{equation*}
-  \gamma_\star=\frac{1-4x_\star}{1-x_\star}\approx0.5587
-\end{equation*}
-is the unique optimum, strictly inside the bridge. In exact arithmetic
-$F(0)-F(\tfrac12)=3/1210$ and $F(1)-F(\tfrac12)=5/1452$.
+  V(x)-V(x_\star)=\frac{L+1/\delta}{k}\,(x-x_\star)^2,
+  \qquad x_\star=\frac{1}{1+\delta L}.
+  \label{eq:scalar}
+\end{equation}
+The bridge is estimating the split between a correlated basket and an
+independent one.
 
-The same covariance with small symmetric noise, $Z=\tfrac12\pm\tau$,
-illustrates \cref{prop:incremental,prop:mvend}. There
-$G'(1)=31779128936/554523204167\approx0.0573$ and
-$V_0''(1)=48136/3571279\approx0.01348$ exactly, so \eqref{eq:shift}
-predicts $\tilde\gamma(0.05)\approx0.9894$ against a computed optimum of
-$0.9896$. The function $H$ of \cref{prop:incremental} is close to $0.0071$
-at every $\gamma,\tau\in\{0.05,0.2\}$.
+If the estimated knot correlation is $z$, \cref{prop:knotsmove} gives the
+member part $\delta$ and the knot exposure
+\begin{equation}
+  t_\gamma(z)=\frac{1+(k-2)z-\gamma(k-1)z}{1+(k-2)z-\gamma(k-1)z^2},
+  \qquad\text{so}\qquad
+  x_\gamma(z)=\frac{t_\gamma(z)}{t_\gamma(z)+\delta}.
+  \label{eq:tgamma}
+\end{equation}
+No matrix inversion remains. For $0<z<1$ the exposure is strictly
+decreasing in $\gamma$, because $\partial_\gamma t_\gamma(z)$ has the sign
+of $-z(k-1)(1-z)\big(1+(k-2)z\big)$.
 
-\paragraph{Full coupling stays locally optimal.} Take three clusters, each a
-knot and one remaining member that is uncorrelated with everything, with
+\paragraph{An exact interior optimum.} Let the estimate be $Z\in\{0,2c\}$
+with equal probability, for some $0<c<\tfrac12$. On the branch $Z=0$
+damping does nothing. On the branch $Z=2c$ the choice
+\begin{equation}
+  \gamma_\star=\frac{1+2(k-2)c}{2\,\big[1+(k-3)c\big]}
+  \label{eq:gammastar}
+\end{equation}
+gives $t_{\gamma_\star}(2c)=1/L$ and hence $x=x_\star$, the population optimum.
+One branch is constant and the other attains its absolute minimum, uniquely
+since $t_\gamma$ is strictly monotone. So $\gamma_\star$ is the unique
+global optimum. It lies strictly inside $(0,1)$ and does not depend on
+$\delta$.
+
+With two clusters, $c=\tfrac14$ and $\delta=1$ the optimum is
+$\gamma_\star=\tfrac23$, and in exact arithmetic $F(0)-F(\tfrac23)=1/576$
+and $F(1)-F(\tfrac23)=1/900$.
+
+\paragraph{Both signs in one model.} Now let the noise be small and
+symmetric, $Z=c\pm\tau$, with $k=10$ and $c=\tfrac14$. Then \eqref{eq:shift}
+becomes
+\begin{equation}
+  \tilde\gamma(\tau)=1-\frac{8-\delta}{1+13\delta/4}\,\tau^2+O(\tau^4).
+  \label{eq:threshold}
+\end{equation}
+For $\delta<8$ the optimum is interior for small noise, for $\delta>8$ it
+stays at full coupling, and at $\delta=8$ higher orders decide. Here $V_0$
+has a unique minimizer, again because $t_\gamma$ is monotone, and
+$F(\cdot,\tau)\to V_0$ uniformly, so by \cref{prop:mvend} these conclusions
+are global on the bridge.
+
+Take $\delta=12$. Then $\tilde\gamma=1+\tau^2/10+O(\tau^4)$ and the
+constrained optimum stays at $1$ under small noise. At the larger noise
+level $\tau=\tfrac14$, which is $Z\in\{0,\tfrac12\}$, \eqref{eq:gammastar}
+gives $\gamma_\star=10/11$. The same symmetric model sits at full coupling
+under small noise and moves inside under larger noise.
+
+\paragraph{Why the sign can go either way.} At full coupling
+$x_1(Z)=1/\big(1+\delta[1+(k-1)Z]\big)$, which is convex in $Z$. Unbiased
+correlation noise therefore biases the expected knot allocation upward.
+Damping toward NCO also raises the knot allocation when correlations are
+positive. It reduces sensitivity to the noise and can worsen that bias, and
+the sign of $G'(1)$ is the outcome of the competition.
+
+\subsection{Less symmetric examples}
+
+\paragraph{A quartic.} Take clusters $\{1,2\}$ and $\{3,4\}$ with knots $1$
+and $3$, unit variances except $\Sigma_{33}=4$, a single nonzero
+correlation entry $\Sigma_{13}=\tfrac12$, and the estimate
+$\widehat\Sigma_{13}=Z\in\{0,1\}$ with equal probability. On the branch
+$Z=1$ the second knot exposure is $x=\kappa_2(\gamma)=(1-\gamma)/(4-\gamma)$
+and the population variance is
+$V(x)=(49x^4-7x^3+36x^2-2x+6)/\big(2(7x^2+3)^2\big)$. Its derivative has the
+sign of $P(x)=49x^4+84x^3-21x^2+48x-6$, which is increasing on
+$[0,\tfrac14]$ with $P(0)=-6$ and $P(\tfrac14)=1585/256$.
+
+So there is a unique optimum $\gamma_\star\approx0.5587$, strictly inside
+the bridge, with $F(0)-F(\tfrac12)=3/1210$ and $F(1)-F(\tfrac12)=5/1452$ in
+exact arithmetic. With small symmetric noise $Z=\tfrac12\pm\tau$ the same
+covariance has $G'(1)=31779128936/554523204167$ and
+$V_0''(1)=48136/3571279$, and \eqref{eq:shift} predicts
+$\tilde\gamma(0.05)\approx0.9894$ against a computed optimum of $0.9896$.
+
+\paragraph{Full coupling under asymmetric noise.} Take three clusters, each
+a knot and one remaining member that is uncorrelated with everything, with
 member variances $1$, $4$ and $8$. Let the knot covariance and its estimates
 be
 \begin{equation*}
@@ -545,50 +796,118 @@ gives $V_0''(1)\approx2.3949$ and
   \approx-0.0058498<0,
 \end{equation*}
 so by \cref{prop:mvend} full coupling is a strict local minimizer for all
-sufficiently small $\tau$.
-
-As a spot check, at $\tau=\tfrac1{10}$ and $\tau=\tfrac1{100}$ exact
-evaluation gives $F(\gamma,\tau)>F(1,\tau)$ for
-$\gamma\in\{0.999,\,0.99,\,0.9,\,0.5,\,0\}$. This is consistent with a
-global optimum at full coupling but does not prove one.
+sufficiently small $\tau$. As a spot check, at $\tau=\tfrac1{10}$ and
+$\tau=\tfrac1{100}$ exact evaluation gives $F(\gamma,\tau)>F(1,\tau)$ for
+$\gamma\in\{0.999,\,0.99,\,0.9,\,0.5,\,0\}$, which is consistent with a
+global optimum there but does not prove one.
 
 Neither end owns the bridge. An interior optimum is not a consequence of the
 architecture, and a statement that it is generic needs a noise model. The
 derivatives quoted in both examples are exact, computed by truncated
 bivariate jets in rational arithmetic.
 
-\section{The outer covariance}
+\section{Rank deficiency}
+\label{sec:rank}
 
-The gateway model also gives the outer covariance a simple form.
+Everything so far assumes $\Sigma\succ0$. This section allows
+$\Sigma\succeq0$.
 
-\begin{proposition}[Knot covariance plus a ridge]
-\label{prop:outer}
-Under the gateway model, let $v_i$ be any portfolios supported on their
-clusters. Write $\beta_i=\Sigma_{J_ip_i}/\sigma_{p_i}^2$ for the member
-betas, $E_i=\Sigma_{J_iJ_i}-\beta_i\beta_i^\top\sigma_{p_i}^2$ for the
-residual covariance, and $\kappa_i=v_{i,p_i}+\beta_i^\top v_{i,J_i}$ for
-the cluster portfolio's beta to its knot. Then
+A singular covariance is one of two kinds. If some null portfolio has a
+nonzero total, a fully invested portfolio of zero variance exists. If every
+null portfolio is self-financing, the redundant assets can be removed, and
+only then is the pseudoinverse formula
+$w_\star=\Sigma^\dagger\ones/\ones^\top\Sigma^\dagger\ones$ valid. The
+condition is $\ones\in\operatorname{range}(\Sigma)$. For
+$\Sigma=\big(\begin{smallmatrix}1&2\\2&4\end{smallmatrix}\big)$ the
+portfolio $(2,-1)$ has budget $1$ and variance $0$, while normalizing
+$\Sigma^\dagger\ones$ gives $(\tfrac13,\tfrac23)$ with variance $25/9$.
+
+\paragraph{Harmless redundancy breaks the recipe.} Take two clusters, each a
+knot and an independent asset, all of unit variance, and make the two knots
+duplicates. The budget vector lies in the range of $\Sigma$, the optimum is
+$w_\star=(\tfrac16,\tfrac13,\tfrac16,\tfrac13)$ in the order knot, member,
+knot, member, and $V_\star=\tfrac13$. For every $\gamma<1$ the pairs are
+$Q_i=\operatorname{diag}(1-\gamma,1)$ and $b_i=(1-\gamma,1)$, so both
+directions are $(1,1)$ and the bridge holds equal weights.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+Construction & Variance \\
+\midrule
+Global optimum & $1/3$ \\
+Bridge at every $\gamma<1$ & $3/8$ \\
+Bridge at $\gamma=1$ with each $Q_i^{-1}$ replaced by $Q_i^\dagger$ & $1/2$ \\
+\bottomrule
+\end{tabular}
+\caption{Duplicated knots.}
+\label{tab:duplicate}
+\end{table}
+
+At full conditioning each knot is completely explained by the other, and
+each local pseudoinverse discards its own knot. Together they discard a
+common return that is still useful. The singular Schur equations leave some
+weights undetermined, and choosing a minimum-norm solution separately in
+each cluster does not coordinate those choices.
+
+\Cref{prop:effective} explains the approach to this case. As a knot becomes
+redundant $r_i\to0$, so at every fixed $\gamma<1$ its effective damping
+tends to zero and all the movement is compressed into a shrinking interval
+near $\gamma=1$. The limits do not commute. With the knot covariance
+regularized to $\ones\ones^\top+\varepsilon I$,
+\begin{equation*}
+  \lim_{\varepsilon\downarrow0}\,\lim_{\gamma\uparrow1}V_0=\tfrac13,
+  \qquad
+  \lim_{\gamma\uparrow1}\,\lim_{\varepsilon\downarrow0}V_0=\tfrac38 .
+\end{equation*}
+This is more than numerical instability. The parameterization by $\gamma$
+is itself singular there.
+
+\begin{proposition}[A bridge in effective exposure]
+\label{prop:lambda}
+Let the knot covariance $S\succeq0$ have positive diagonal, let
+$\ones\in\operatorname{range}(S)$, and let every $\delta_i>0$. Put
+$h=S^\dagger\ones$ and, for $\lambda\in[0,1]$,
 \begin{equation}
-  V^\top\Sigma V \;=\; K\,\Sigma_{PP}\,K + D,
-  \qquad K=\diag(\kappa_i),
-  \quad D=\diag\!\big(v_{i,J_i}^\top E_i\,v_{i,J_i}\big).
-  \label{eq:outer}
+  \bar\kappa_i(\lambda)=(1-\lambda)\,\frac1{s_i}+\lambda\,h_i ,
+  \label{eq:lambdapath}
 \end{equation}
+keep the member parts of \cref{prop:knotsmove}, and allocate across the
+resulting cluster portfolios as before. The outer matrix
+$\bar K S\bar K+\Delta$ is positive definite, the portfolio is continuous in
+$\lambda$, it is NCO at $\lambda=0$, and it is minimum variance at
+$\lambda=1$.
 \end{proposition}
 
 \begin{proof}
-Under the gateway model $\Sigma_{J_i,l}=\beta_i\Sigma_{p_i,l}$ for every
-asset $l$ outside $I_i$. Applying this on both sides gives
-$v_i^\top\Sigma_{I_iI_l}v_l=\kappa_i\kappa_l\Sigma_{p_ip_l}$ for $i\neq l$.
-On the diagonal, the knot is uncorrelated with the member residual, so
-$v_i^\top\Sigma_{ii}v_i=\kappa_i^2\sigma_{p_i}^2+v_{i,J_i}^\top E_iv_{i,J_i}$.
+Positive definiteness follows from $\Delta\succ0$. At $\lambda=1$,
+$Sh=\ones$ gives
+$\big(\operatorname{diag}(h)\,S\,\operatorname{diag}(h)+\Delta\big)\ones=h+\delta$,
+so the outer solution is $a=\ones$ and the portfolio has knot exposures
+proportional to $h$ and member weights proportional to $E_i^{-1}(\ones-\beta_i)$,
+which is the minimum-variance portfolio of the compressed problem.
 \end{proof}
 
-The outer problem sees the knot covariance, scaled by the cluster
-portfolios' knot betas, plus their residual variances on the diagonal. The
-diagonal term raises the smallest eigenvalue of the outer covariance by at
-least the smallest residual variance. The remaining members supply a ridge, which
-is one reading of why the outer tier of NCO is stable.
+For duplicated knots $\bar\kappa_i=1-\lambda/2$, and the portfolio moves
+continuously from variance $3/8$ to $1/3$. When $S\succ0$ this path gives
+every cluster the same effective damping $\lambda$, which corresponds to
+cluster-specific parameters $\gamma_i=\lambda/\big(r_i+(1-r_i)\lambda\big)$.
+It is a different interior path with the same two ends, and we do not claim
+it performs better out of sample. It makes a design choice visible: whether
+clusters should share a nominal $\gamma$ or an effective $\lambda$.
+
+\begin{remark}[Noise around a singular covariance]
+If $\Sigma$ is singular and both $\Sigma+\tau E$ and $\Sigma-\tau E$ are
+positive semidefinite for some $\tau>0$, then $E\ker(\Sigma)=0$. For
+$v\in\ker\Sigma$ both signs force $v^\top Ev=0$, and a positive semidefinite
+matrix with $v^\top(\Sigma+\tau E)v=0$ has $(\Sigma+\tau E)v=0$. Symmetric
+additive noise must therefore preserve the structural null space. A singular
+sample estimate of a positive definite population covariance is a different
+problem, since its empirical null directions are not riskless. In
+\cref{prop:mvend} the condition $\dot w\neq0$ becomes
+$\dot w^\top\Sigma\dot w>0$.
+\end{remark}
 
 \section{Cost}
 
@@ -605,18 +924,35 @@ what is lost.
 
 \section{Closing}
 
-The contribution is deliberately small. The identity is block inversion, the
-truncation of the conditioning set follows Vecchia approximations, and the
-damping is from
-\cite{cotton2024schur}. What is added is the model under which one knot
-per cluster suffices, and the bridge from NCO to the global optimum that it
-makes cheap.
+Nested clustered optimization has been treated as belonging to a different
+family from optimization proper: a clustering heuristic that quarantines the
+instability of Markowitz rather than a relaxation of it. This paper shows
+otherwise. Under a rank-one model of cross-cluster dependence, a Schur
+relaxation places NCO and the global minimum-variance portfolio at the two
+ends of a one-parameter family of portfolios, at a cost no greater than
+NCO's own.
 
-\Cref{prop:sufficient} may also serve Schur-complementary allocation on the
-tree, where the complement against a sibling block could be taken against
-that block's knots. The whole-matrix analysis of \cite{cotton2026bridge}
-rests on a scalar reduction specific to the tree and needs a replacement
-here. We leave both, and an empirical comparison, to future work.
+The family has structure. Along it only the knots move, each by an explicit
+fraction of its journey, and the variance given up at every setting is in
+closed form. It also comes with conditions for where to sit under
+estimation error. The sign of one derivative at the minimum-variance end
+decides whether remaining at that endpoint is optimal out of sample, and a
+symmetric family exhibits both outcomes in a single model, with the optimal
+coupling exact.
+
+The separation reasserts itself when the knot covariance is rank deficient.
+There the parameterization by $\gamma$ is itself singular, and NCO and the
+optimum stay apart on it, though a path in effective exposure still joins
+the two ends. The ingredients throughout are old: block inversion, the
+truncation of a conditioning set as in Vecchia approximations, and the
+damping of \cite{cotton2024schur}.
+
+Two directions are open. \Cref{prop:sufficient} may serve
+Schur-complementary allocation on the tree, where the complement against a
+sibling block could be taken against that block's knots. The whole-matrix
+analysis of \cite{cotton2026bridge} rests on a scalar reduction specific to
+the tree and needs a replacement here. We leave both, and an empirical
+comparison, to future work.
 
 \begin{thebibliography}{99}
 

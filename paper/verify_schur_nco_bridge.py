@@ -23,6 +23,19 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_incremental_cost Phi = gamma tau^2 H with H bounded
   check_zero_direction   a direction that vanishes is dropped (deterministic regressions)
   check_sharpe_sign      fully invested Sigma^{-1}mu is max Sharpe only when its total is positive
+  check_only_knots_move  member part of d_i is constant in gamma; knot exposure in closed form
+  check_equicorrelated_knots  closed-form kappa(gamma) for equicorrelated knots
+  check_degenerate_partitions singletons or one cluster: the bridge is the GMV for every gamma
+  check_identical_clusters    knot share t/(t+delta) and the quadratic V(x)-V(x*), exact
+  check_two_thirds       gamma* = 2/3 with gaps 1/576 and 1/900; the general closed form, exact
+  check_sign_threshold   (8 - delta)/(1 + 13 delta/4) for k = 10, c = 1/4, by exact jets
+  check_compression      a cluster is its knot plus one independent asset of variance 1/delta_i
+  check_unit_betas       unit betas make the portfolio independent of gamma
+  check_effective_damping kappa_i = (1-lambda_i)/s_i + lambda_i h_i with lambda_i = gamma r_i/(1-gamma+gamma r_i)
+  check_lost_precision   V0 - V* = L/(Z(Z-L)); kappa - h in closed form; curvature exactly, via jets
+  check_gain_order       the gain from tuning gamma is G'(1)^2/(2 V0''(1)) tau^4 to leading order
+  check_rank_deficiency  duplicated knots (3/8, 1/2, 1/3), the exposure path, non-commuting limits,
+                         and noise that must preserve the null space
 """
 import numpy as np
 
@@ -660,6 +673,328 @@ def check_sharpe_sign():
             "sharpe_of_1_0": sharpe(np.array([1.0, 0.0])), "max_sharpe": float(np.sqrt(mu @ mu))}
 
 
+def check_only_knots_move(rng, trials=60):
+    """Under the gateway model the member part of d_i(gamma) is E^{-1}(u_J - beta u_p) for every
+    gamma, and the knot exposure is (u_p - gamma a)/(sigma_p^2 - gamma c)."""
+    member = exposure = 0.0
+    for _ in range(trials):
+        sigma, idx, knots, mu = _random_problem(rng)
+        for u in (np.ones(len(mu)), mu):
+            for i, I in enumerate(idx):
+                p, J = I[0], I[1:]
+                other = [k for j, k in enumerate(knots) if j != i]
+                beta = sigma[J, p] / sigma[p, p]
+                E = sigma[np.ix_(J, J)] - np.outer(beta, beta) * sigma[p, p]
+                Spp, sp = sigma[np.ix_(other, other)], sigma[p, other]
+                a, cc = sp @ np.linalg.solve(Spp, u[other]), sp @ np.linalg.solve(Spp, sp)
+                xJ = np.linalg.solve(E, u[J] - beta * u[p]) if J else np.zeros(0)
+                for g in (0.0, 0.3, 0.7, 1.0):
+                    Q, b = cheap_pair(sigma, I, other, g, u)
+                    d = np.linalg.solve(Q, b)
+                    if J:
+                        member = max(member, np.abs(d[1:] - xJ).max())
+                    exposure = max(exposure, abs(d[0] + beta @ d[1:] - (u[p] - g * a) / (sigma[p, p] - g * cc)))
+    return {"member_part": member, "knot_exposure": exposure}
+
+
+def check_equicorrelated_knots():
+    """Closed form kappa(gamma) for k unit-variance knots with common correlation rho."""
+    err = 0.0
+    for k in (2, 3, 5, 8):
+        for rho in (-0.1, 0.2, 0.6):
+            S = (1 - rho) * np.eye(k) + rho * np.ones((k, k))
+            other = list(range(1, k))
+            a = S[0, other] @ np.linalg.solve(S[np.ix_(other, other)], np.ones(k - 1))
+            cc = S[0, other] @ np.linalg.solve(S[np.ix_(other, other)], S[0, other])
+            err = max(err, abs(a - rho * (k - 1) / (1 + (k - 2) * rho)), abs(cc - rho * a))
+            for g in (0.0, 0.5, 1.0):
+                closed = (1 + (k - 2) * rho - g * rho * (k - 1)) / (1 + (k - 2) * rho - g * rho**2 * (k - 1))
+                err = max(err, abs((1 - g * a) / (1 - g * cc) - closed))
+            err = max(err, abs((1 - a) / (1 - cc) - 1 / (1 + (k - 1) * rho)))
+    return {"closed_form": err}
+
+
+def check_degenerate_partitions(rng, trials=30):
+    """Singleton clusters, or one cluster: the bridge is the minimum-variance portfolio for every
+    gamma, on any SPD covariance (no gateway model)."""
+    err = 0.0
+    for _ in range(trials):
+        n = int(rng.integers(3, 8))
+        S = random_spd(rng, n)
+        gmv = np.linalg.solve(S, np.ones(n)); gmv /= gmv.sum()
+        for idx, knots in (([[i] for i in range(n)], list(range(n))), ([list(range(n))], [0])):
+            for g in (0.0, 0.37, 1.0):
+                w = bridge_unnormalized(S, idx, knots, g)
+                err = max(err, np.abs(w / w.sum() - gmv).max())
+    return {"bridge_minus_gmv": err}
+
+
+# ---------------------------------------------------------------------------
+# Identical clusters: the one-dimensional picture
+# ---------------------------------------------------------------------------
+def _t(gam, z, k):
+    return (1 + (k - 2) * z - gam * (k - 1) * z) / (1 + (k - 2) * z - gam * (k - 1) * z * z)
+
+
+def _identical_clusters(k, z, delta):
+    """k clusters of (knot, independent asset of variance 1/delta); knot correlation z."""
+    n = 2 * k
+    S = [[Fr(0)] * n for _ in range(n)]
+    for i in range(k):
+        for j in range(k):
+            S[2 * i][2 * j] = Fr(1) if i == j else Fr(z)
+        S[2 * i + 1][2 * i + 1] = 1 / Fr(delta)
+    return S, [[2 * i, 2 * i + 1] for i in range(k)], [2 * i for i in range(k)]
+
+
+def check_identical_clusters():
+    """The knot share of the bridge portfolio is t/(t + delta); V(x) - V(x*) is the stated quadratic."""
+    share = quad = Fr(0)
+    for k, c, z, delta, gam in ((2, Fr(1, 4), Fr(1, 2), 1, Fr(1, 3)), (5, Fr(1, 10), Fr(3, 10), Fr(5, 2), Fr(4, 5)),
+                                (4, Fr(1, 5), Fr(-1, 5), Fr(7, 10), Fr(1, 2)), (10, Fr(1, 4), Fr(1, 5), 12, 1)):
+        S_hat, idx, knots = _identical_clusters(k, z, delta)
+        Sig, _, _ = _identical_clusters(k, c, delta)
+        w = bridge_exact(S_hat, idx, knots, gam)
+        x = sum(w[2 * i] for i in range(k))
+        t = _t(Fr(gam), z, k)
+        share = max(share, abs(x - t / (t + Fr(delta))))
+        L = 1 + (k - 1) * c
+        xs = 1 / (1 + Fr(delta) * L)
+        quad = max(quad, abs(_var(w, Sig) - (L * xs**2 + (1 - xs)**2 / Fr(delta)) / k - (L + 1 / Fr(delta)) / k * (x - xs)**2))
+    return {"knot_share": share, "quadratic": quad}
+
+
+def check_two_thirds():
+    """Z in {0, 2c}: gamma* = (1 + 2(k-2)c) / (2[1 + (k-3)c]) recovers the population optimum on
+    the Z = 2c branch. With k = 2, c = 1/4, delta = 1: gamma* = 2/3, gaps 1/576 and 1/900."""
+    def F(k, c, delta, gam):
+        Sig, idx, knots = _identical_clusters(k, c, delta)
+        return sum(_var(bridge_exact(_identical_clusters(k, Z, delta)[0], idx, knots, gam), Sig) for Z in (Fr(0), 2 * c)) / 2
+    k, c = 2, Fr(1, 4)
+    gs = (1 + 2 * (k - 2) * c) / (2 * (1 + (k - 3) * c))
+    out = {"gamma_star": gs, "gap0": F(k, c, 1, 0) - F(k, c, 1, gs), "gap1": F(k, c, 1, 1) - F(k, c, 1, gs),
+           "beats_grid": all(F(k, c, 1, gs) < F(k, c, 1, Fr(j, 30)) for j in range(31) if Fr(j, 30) != gs)}
+    hits = True
+    for k, c, delta in ((2, Fr(1, 4), 1), (3, Fr(1, 5), 3), (10, Fr(1, 4), 12), (6, Fr(2, 5), Fr(1, 2))):
+        g = (1 + 2 * (k - 2) * c) / (2 * (1 + (k - 3) * c))
+        L = 1 + (k - 1) * c
+        hits = hits and 0 < g < 1 and _t(g, 2 * c, k) == 1 / L
+        Sig, idx, knots = _identical_clusters(k, c, delta)
+        w = bridge_exact(_identical_clusters(k, 2 * c, delta)[0], idx, knots, g)
+        pop = bridge_exact(Sig, idx, knots, 1)          # population minimum variance
+        hits = hits and w == pop
+    out["general_formula_hits_population_optimum"] = hits
+    out["ten_clusters_delta_12"] = (1 + 2 * 8 * Fr(1, 4)) / (2 * (1 + 7 * Fr(1, 4)))
+    return out
+
+
+def check_sign_threshold():
+    """k = 10, c = 1/4, Z = c +- tau: G'(1)/V0''(1) = (8 - delta)/(1 + 13 delta/4), by exact jets
+    on the scalar reduction."""
+    k, c = 10, Fr(1, 4)
+    L = 1 + (k - 1) * c
+    out = {}
+    for delta in (Fr(4), Fr(8), Fr(12)):
+        g, z = Jet.var(1, "gamma"), Jet.var(c, "tau")
+        t = (1 + (k - 2) * z - g * (k - 1) * z) / (1 + (k - 2) * z - g * (k - 1) * z * z)
+        x = t / (t + delta)
+        V = (L * x * x + (1 - x) * (1 - x) / delta) / k
+        assert V.c[1][0] == 0                                   # endpoint flatness
+        out[str(delta)] = (V.c[1][2] / (2 * V.c[2][0]), (8 - delta) / (1 + Fr(13, 4) * delta))
+    return out
+
+
+def _assemble(Spp, idx, parts):
+    n = idx[-1][-1] + 1
+    load = np.zeros((n, len(idx)))
+    for i, I in enumerate(idx):
+        load[I[0], i] = 1.0
+        load[I[1:], i] = parts[i][0]
+    S = load @ Spp @ load.T
+    for i, I in enumerate(idx):
+        J = I[1:]
+        S[np.ix_(J, J)] += parts[i][1]
+    return S
+
+
+def check_compression(rng, trials=30):
+    """A gateway cluster acts as its knot plus one independent asset of variance 1/delta_i, for the
+    noiseless profile and under noise on the knot covariance that preserves the gateway structure."""
+    err = 0.0
+    for _ in range(trials):
+        sizes = list(rng.integers(1, 6, size=rng.integers(2, 6)))
+        sigma, idx, knots = gateway_model_cov(rng, sizes)
+        k = len(idx)
+        parts = []
+        for I in idx:
+            p, J = I[0], I[1:]
+            beta = sigma[J, p] / sigma[p, p]
+            parts.append((beta, sigma[np.ix_(J, J)] - np.outer(beta, beta) * sigma[p, p]))
+        Spp = sigma[np.ix_(knots, knots)]
+        deltas = [(1 - b) @ np.linalg.solve(E, 1 - b) for b, E in parts]
+        idx_c = [[2 * i, 2 * i + 1] for i in range(k)]
+        parts_c = [(np.zeros(1), np.array([[1 / deltas[i]]])) for i in range(k)]
+        N = rng.standard_normal((k, k)); N = (N + N.T) / 2; np.fill_diagonal(N, 0)
+        for tau in (0.0, 0.05, 0.15):
+            Sh = Spp + tau * N
+            if np.linalg.eigvalsh(Sh).min() <= 0:
+                continue
+            for gam in (0.0, 0.4, 0.8, 1.0):
+                v = []
+                for ix, pr in ((idx, parts), (idx_c, parts_c)):
+                    w = bridge_unnormalized(_assemble(Sh, ix, pr), ix, [I[0] for I in ix], gam)
+                    w = w / w.sum()
+                    v.append(w @ _assemble(Spp, ix, pr) @ w)
+                err = max(err, abs(v[0] - v[1]))
+    return {"variance_gap": err}
+
+
+def check_unit_betas(rng):
+    """Every member has unit beta to its knot: the portfolio is the same at every gamma."""
+    idx, knots = clusters([2, 3, 1, 2])
+    Spp = random_spd(rng, 4)
+    parts = [(np.ones(len(I) - 1), random_spd(rng, len(I) - 1, 0.3)) for I in idx]
+    S = _assemble(Spp, idx, parts)
+    ws = []
+    for gam in (0.0, 0.25, 0.5, 0.75, 1.0):
+        w = bridge_unnormalized(S, idx, knots, gam)
+        ws.append(w / w.sum())
+    return {"change_across_gamma": max(np.abs(w - ws[0]).max() for w in ws),
+            "weight_on_members": np.abs(np.delete(ws[0], knots)).max()}
+
+
+# ---------------------------------------------------------------------------
+# Effective damping, lost precision, rank deficiency
+# ---------------------------------------------------------------------------
+def _kappa(S, gam):
+    s = np.diag(S); nu = 1 / np.diag(np.linalg.inv(S)); h = np.linalg.solve(S, np.ones(len(S)))
+    return ((1 - gam) + gam * nu * h) / ((1 - gam) * s + gam * nu), s, nu, h
+
+
+def _compressed_variance(S_hat, S_pop, delta, kappa):
+    """Variance of the two-tier portfolio in the compressed model (knots S, member precisions delta)."""
+    K = np.diag(kappa)
+    a = np.linalg.solve(K @ S_hat @ K + np.diag(delta), kappa + delta)
+    J = (kappa + delta) @ a
+    q = K @ a / J
+    return q @ S_pop @ q + ((a / J) ** 2 * delta).sum(), J
+
+
+def check_effective_damping(rng, trials=100):
+    err = 0.0
+    for _ in range(trials):
+        S = random_spd(rng, int(rng.integers(2, 7)))
+        for gam in (0.0, 0.3, 0.7, 0.95):
+            kap, s, nu, h = _kappa(S, gam)
+            r = nu / s
+            lam = gam * r / (1 - gam + gam * r)
+            err = max(err, np.abs(kap - ((1 - lam) / s + lam * h)).max())
+    return {"kappa_vs_interpolation": err}
+
+
+def check_lost_precision(rng, trials=100):
+    """J = Z - L, V0 - V* = L/(Z(Z-L)), kappa - h in closed form (floating point), and the
+    curvature V0''(1) = 2 p'W1 p / Z^2 in exact arithmetic via jets."""
+    loss = regret = gap = 0.0
+    for _ in range(trials):
+        k = int(rng.integers(2, 7))
+        S = random_spd(rng, k); delta = rng.uniform(0.2, 3.0, size=k)
+        for gam in (0.0, 0.3, 0.7, 0.95):
+            kap, s, nu, h = _kappa(S, gam)
+            Z = h.sum() + delta.sum()
+            V, J = _compressed_variance(S, S, delta, kap)
+            W = np.linalg.inv(np.linalg.inv(S) + np.diag(kap * kap / delta))
+            L = (h - kap) @ W @ (h - kap)
+            loss = max(loss, abs(J - (Z - L)))
+            regret = max(regret, abs(V - 1 / Z - L / (Z * (Z - L))))
+            gap = max(gap, np.abs((kap - h) - (1 - gam) * (1 - s * h) / ((1 - gam) * s + gam * nu)).max())
+    # exact curvature on a rational example
+    S = [[Fr(4), Fr(1), Fr(1, 2)], [Fr(1), Fr(3), Fr(-1, 2)], [Fr(1, 2), Fr(-1, 2), Fr(2)]]
+    delta = [Fr(1, 2), Fr(2), Fr(3, 4)]
+    k = 3
+    solve = lambda A, b: _solve_generic(A, b, Fr, lambda z: z != 0)
+    h = solve(S, [1] * k)
+    Sinv = [solve(S, [1 if i == j else 0 for i in range(k)]) for j in range(k)]
+    nu = [1 / Sinv[i][i] for i in range(k)]
+    s = [S[i][i] for i in range(k)]
+    Z = sum(h) + sum(delta)
+    pvec = [(s[i] * h[i] - 1) / nu[i] for i in range(k)]
+    A1 = [[Sinv[j][i] + (h[i] ** 2 / delta[i] if i == j else 0) for j in range(k)] for i in range(k)]
+    claim = 2 * sum(pi * xi for pi, xi in zip(pvec, solve(A1, pvec))) / Z ** 2
+    g = Jet.var(1, "gamma")
+    jsolve = lambda A, b: _solve_generic(A, b, Jet.of, lambda z: z.c[0][0] != 0)
+    kap = [((1 - g) + g * nu[i] * h[i]) / ((1 - g) * s[i] + g * nu[i]) for i in range(k)]
+    M = [[kap[i] * S[i][j] * kap[j] + (delta[i] if i == j else 0) for j in range(k)] for i in range(k)]
+    b = [kap[i] + delta[i] for i in range(k)]
+    a = jsolve(M, b)
+    J = sum((bi * ai for bi, ai in zip(b, a)), Jet())
+    V0 = 1 / J
+    return {"J_vs_Z_minus_L": loss, "regret": regret, "kappa_minus_h": gap,
+            "curvature_exact_match": 2 * V0.c[2][0] == claim, "V0_prime_1": V0.c[1][0]}
+
+
+def check_gain_order():
+    """F(1, tau) - min F  ~  G'(1)^2 / (2 V0''(1)) tau^4, identical clusters with k = 10, c = 1/4, delta = 4."""
+    k, c, delta = 10, 0.25, 4.0
+    L = 1 + (k - 1) * c
+    Vx = lambda x: (L * x * x + (1 - x) ** 2 / delta) / k
+    def F(gam, tau):
+        return 0.5 * sum(Vx(_t(gam, z, k) / (_t(gam, z, k) + delta)) for z in (c + tau, c - tau))
+    g, z = Jet.var(1, "gamma"), Jet.var(Fr(1, 4), "tau")
+    t = (1 + (k - 2) * z - g * (k - 1) * z) / (1 + (k - 2) * z - g * (k - 1) * z * z)
+    x = t / (t + Fr(4))
+    V = (Fr(L) * x * x + (1 - x) * (1 - x) / Fr(4)) / k
+    pred = float(V.c[1][2]) ** 2 / (2 * float(2 * V.c[2][0]))
+    ratios = []
+    for tau in (0.02, 0.04):
+        gs = np.linspace(0.9, 1.0, 200001)
+        ratios.append(float((F(1.0, tau) - F(gs, tau).min()) / (pred * tau ** 4)))
+    return {"gain_over_prediction": ratios}
+
+
+def check_rank_deficiency(rng):
+    """Duplicated knots, the exposure path, non-commuting limits, and null-space-preserving noise."""
+    out = {}
+    S4 = [[1, 0, 1, 0], [0, 1, 0, 0], [1, 0, 1, 0], [0, 0, 0, 1]]
+    idx, knots = [[0, 1], [2, 3]], [0, 2]
+    out["bridge_below_one"] = {str(gq): _var(bridge_exact(S4, idx, knots, gq), S4) for gq in (Fr(0), Fr(1, 2), Fr(99, 100))}
+    Sn = np.array(S4, float)
+    D = np.zeros((4, 2))
+    for i, (I, p) in enumerate((([0, 1], 2), ([2, 3], 0))):
+        Q = Sn[np.ix_(I, I)] - np.outer(Sn[I, p], Sn[I, p]) / Sn[p, p]
+        D[I, i] = np.linalg.pinv(Q) @ (np.ones(2) - Sn[I, p] / Sn[p, p])
+    w = D @ np.linalg.solve(D.T @ Sn @ D, D.T @ np.ones(4)); w /= w.sum()
+    out["local_pinv_endpoint"] = float(w @ Sn @ w)
+    S2, d2 = np.ones((2, 2)), np.ones(2)
+    h = np.linalg.pinv(S2) @ np.ones(2)
+    path = [_compressed_variance(S2, S2, d2, (1 - lam) + lam * h)[0] for lam in np.linspace(0, 1, 21)]
+    out["lambda_path_ends"] = (float(path[0]), float(path[-1]))
+    out["lambda_path_decreasing"] = bool(np.all(np.diff(path) < 0))
+    out["eps_then_gamma"] = float(_compressed_variance(S2 + 1e-6 * np.eye(2), S2, d2, _kappa(S2 + 1e-6 * np.eye(2), 1.0)[0])[0])
+    out["gamma_then_eps"] = float(_compressed_variance(S2 + 1e-9 * np.eye(2), S2, d2, _kappa(S2 + 1e-9 * np.eye(2), 0.999)[0])[0])
+    end = 0.0
+    for _ in range(30):
+        k = int(rng.integers(3, 7)); rk = int(rng.integers(1, k))
+        B = np.column_stack([rng.standard_normal((k, rk - 1)), np.ones(k)])
+        S = B @ B.T                                           # singular, with 1 in its range
+        assert np.linalg.matrix_rank(S) < k and np.allclose(S @ np.linalg.pinv(S) @ np.ones(k), np.ones(k))
+        delta = rng.uniform(0.3, 2.0, size=k)
+        hh = np.linalg.pinv(S) @ np.ones(k)
+        end = max(end, abs(_compressed_variance(S, S, delta, hh)[0] - 1 / (hh.sum() + delta.sum())))
+    out["lambda_one_is_minvar"] = end
+    # noise around a singular covariance
+    B = rng.standard_normal((5, 3)); Sig = B @ B.T
+    U = np.linalg.svd(Sig)[0]; R, Nn = U[:, :3], U[:, 3:]
+    X = rng.standard_normal((3, 3)); X = (X + X.T) / 2; X /= np.abs(np.linalg.eigvalsh(X)).max()
+    E_ok = R @ X @ R.T                                   # supported on range(Sigma): E ker(Sigma) = 0
+    E_bad = E_ok + (Nn[:, :1] @ R[:, :1].T + R[:, :1] @ Nn[:, :1].T)   # couples the kernel to the range
+    tau = 0.2 * np.linalg.eigvalsh(Sig)[2]               # a fifth of the smallest nonzero eigenvalue
+    mins = lambda E: min(np.linalg.eigvalsh(Sig + sgn * tau * E).min() for sgn in (1, -1))
+    out["noise"] = {"preserving_min_eig": float(mins(E_ok)), "preserving_E_ker": float(np.abs(E_ok @ Nn).max()),
+                    "violating_min_eig": float(mins(E_bad))}
+    return out
+
+
 def main():
     rng = np.random.default_rng(0)
     r = check_sufficiency(rng); print("Prop 1 sufficiency        ", r); assert r["pair"] < TOL
@@ -710,6 +1045,32 @@ def main():
     assert r["numpy_error"] < 1e-12 and r["exact_matches"]
     r = check_sharpe_sign(); print("Sharpe sign               ", r)
     assert r["total"] < 0 and abs(r["sharpe_fully_invested"] + r["max_sharpe"]) < 1e-12 and r["sharpe_of_1_0"] > 0
+    r = check_only_knots_move(rng); print("only the knots move       ", r)
+    assert r["member_part"] < 1e-9 and r["knot_exposure"] < 1e-9
+    r = check_equicorrelated_knots(); print("equicorrelated knots      ", r); assert r["closed_form"] < 1e-12
+    r = check_degenerate_partitions(rng); print("degenerate partitions     ", r); assert r["bridge_minus_gmv"] < 1e-10
+    r = check_identical_clusters(); print("identical clusters        ", {a: str(b) for a, b in r.items()})
+    assert r["knot_share"] == 0 and r["quadratic"] == 0
+    r = check_two_thirds(); print("two-thirds example        ", {a: str(b) for a, b in r.items()})
+    assert r["gamma_star"] == Fr(2, 3) and r["gap0"] == Fr(1, 576) and r["gap1"] == Fr(1, 900)
+    assert r["beats_grid"] and r["general_formula_hits_population_optimum"] and r["ten_clusters_delta_12"] == Fr(10, 11)
+    r = check_sign_threshold(); print("sign threshold            ", {a: tuple(map(str, b)) for a, b in r.items()})
+    assert all(got == want for got, want in r.values())
+    assert r["4"][0] > 0 and r["8"][0] == 0 and r["12"][0] == Fr(-1, 10)
+    r = check_compression(rng); print("cluster compression       ", r); assert r["variance_gap"] < 1e-10
+    r = check_unit_betas(rng); print("unit betas                ", r)
+    assert r["change_across_gamma"] < 1e-12 and r["weight_on_members"] < 1e-12
+    r = check_effective_damping(rng); print("effective damping         ", r); assert r["kappa_vs_interpolation"] < 1e-12
+    r = check_lost_precision(rng); print("lost precision            ", {a: (str(b) if isinstance(b, Fr) else b) for a, b in r.items()})
+    assert r["J_vs_Z_minus_L"] < 1e-10 and r["regret"] < 1e-12 and r["kappa_minus_h"] < 1e-12
+    assert r["curvature_exact_match"] and r["V0_prime_1"] == 0
+    r = check_gain_order(); print("fourth-order gain         ", r)
+    assert abs(r["gain_over_prediction"][0] - 1) < 0.06 and r["gain_over_prediction"][0] < r["gain_over_prediction"][1]
+    r = check_rank_deficiency(rng); print("rank deficiency           ", {a: ({x: str(y) for x, y in b.items()} if a == "bridge_below_one" else b) for a, b in r.items()})
+    assert all(v == Fr(3, 8) for v in r["bridge_below_one"].values()) and abs(r["local_pinv_endpoint"] - 0.5) < 1e-12
+    assert abs(r["lambda_path_ends"][0] - 3 / 8) < 1e-12 and abs(r["lambda_path_ends"][1] - 1 / 3) < 1e-12 and r["lambda_path_decreasing"]
+    assert abs(r["eps_then_gamma"] - 1 / 3) < 1e-5 and abs(r["gamma_then_eps"] - 3 / 8) < 1e-5 and r["lambda_one_is_minvar"] < 1e-10
+    assert r["noise"]["preserving_min_eig"] > -1e-12 and r["noise"]["preserving_E_ker"] < 1e-12 and r["noise"]["violating_min_eig"] < -1e-6
     print("certificate ok")
 
 
