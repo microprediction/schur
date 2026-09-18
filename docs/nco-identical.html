@@ -92,6 +92,16 @@
       <button id="modeTwo" class="on">two-point estimate: 0 or 2c</button>
       <button id="modeSym">small symmetric noise: c &plusmn; &tau;</button>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div><canvas id="hm0" height="220"></canvas></div>
+      <div><canvas id="hm1" height="220"></canvas></div>
+      <div><canvas id="hm2" height="220"></canvas></div>
+    </div>
+    <div class="readout"><b>The covariances.</b> Left, the true correlation:
+    the representatives K1&hellip;Kk are correlated at c, the independent
+    assets (m) are not correlated with anything. Middle and right, the two
+    estimates the portfolio might be built from. Only the block of
+    representatives differs between them.</div>
     <canvas id="chartX" width="820" height="240"></canvas>
     <div class="readout"><b>What the portfolio does.</b> The weight x that the
     bridge puts on the representatives, against the dial &gamma;, on each of the
@@ -158,6 +168,11 @@ function draw(){
   const names=mode==='two'?['estimate 0','estimate 2c']:['estimate c − τ','estimate c + τ'];
   const gs=Array.from({length:401},(_,i)=>i/400);
   const xs=N.xStar(k,c,d);
+  const corr=z=>{const n=2*k,M=Array.from({length:n},()=>new Array(n).fill(0)); for(let i=0;i<n;i++){M[i][i]=1;} for(let i=0;i<k;i++)for(let j=0;j<k;j++)if(i!==j)M[2*i][2*j]=z; return M;};
+  const clusters=Array.from({length:k},(_,i)=>[2*i,2*i+1]), knots=clusters.map(I=>I[0]);
+  N.heatmap('hm0',corr(c),{title:'true correlation, c = '+c.toFixed(2),clusters:clusters,knots:knots,name:'ρ',height:220});
+  N.heatmap('hm1',corr(zs[0]),{title:names[0]+': z = '+zs[0].toFixed(2),clusters:clusters,knots:knots,name:'ρ̂',height:220});
+  N.heatmap('hm2',corr(zs[1]),{title:names[1]+': z = '+zs[1].toFixed(2),clusters:clusters,knots:knots,name:'ρ̂',height:220});
   N.lineChart('chartX',{series:zs.map((z,j)=>({name:names[j],points:gs.map(g=>[g,N.x_of(g,z,k,d)])})),
     title:'weight on the representatives, x, against the dial γ',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',
     hlines:[{y:xs,label:'ideal x⋆ = '+xs.toFixed(4),color:'#999'}],height:240});

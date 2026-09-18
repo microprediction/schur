@@ -89,6 +89,12 @@
     <div class="controls">
       <label for="leps">log&#8321;&#8320; &epsilon; (how nearly the two representatives coincide)</label><input type="range" id="leps" min="-6" max="0" step="0.25" value="-2" /><span class="val" id="lepsVal">-2.00</span>
     </div>
+    <canvas id="barsDup" width="820" height="230"></canvas>
+    <div class="readout"><b>The weights.</b> The four assets are K1, its
+    independent partner, K2, its independent partner. NCO holds a quarter of
+    each. The optimum holds a sixth of each representative and a third of each
+    independent asset. Watch how late in the dial the bridge leaves the NCO
+    weights when &epsilon; is small.</div>
     <canvas id="chartDup" width="820" height="300"></canvas>
     <div class="readout" id="readDup"></div>
   </div>
@@ -117,6 +123,9 @@ function draw(){
     title:'fraction of the journey from NCO to minimum variance, λ, against the dial γ',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',hlines:[{y:0.5,label:'half way',color:'#999'}],height:280});
   const le=+$('leps').value, eps=Math.pow(10,le); $('lepsVal').textContent=le.toFixed(2);
   const gpts=Array.from({length:801},(_,i)=>{const g=i/800;return [g,N.duplicatedKnotsV0(g,eps)];});
+  const Sig4=[[1+eps,0,1,0],[0,1,0,0],[1,0,1+eps,0],[0,0,0,1]], cl4=[[0,1],[2,3]], kn4=[0,2];
+  N.barChart('barsDup',{title:'portfolio weights at four settings of the dial, ε = 10^'+le.toFixed(2),categories:['K1','m','K2','m'],clusterOf:[0,0,1,1],
+    groups:[0,0.9,0.99,1].map(g=>({name:'γ = '+g,values:N.bridge(Sig4,cl4,kn4,g).w})),height:230});
   const lpts=Array.from({length:201},(_,i)=>{const l=i/200;return [l,N.duplicatedKnotsLambdaPath(l,eps)];});
   const v0=gpts[0][1], v1=gpts[gpts.length-1][1];
   N.lineChart('chartDup',{series:[{name:'bridge, against its dial γ',points:gpts},{name:'alternative dial λ',points:lpts,dash:[6,4]}],

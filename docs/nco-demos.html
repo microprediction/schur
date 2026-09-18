@@ -25,7 +25,7 @@
 </header>
 <main>
   <h1>Where to sit on the NCO bridge: the analytic conditions, checked live</h1>
-  <p class="subtitle">Three pages, each stating a closed-form condition from
+  <p class="subtitle">Four pages: one Monte Carlo experiment, and three that each state a closed-form condition from
   <a href="./schur-nco-bridge.pdf"><em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em></a> and then computing it in front of you.</p>
 
   <p class="lead">The paper is about a dial. Assets are grouped, and each group
@@ -44,6 +44,13 @@
   evaluates the condition live so you can see it hold.</p>
 
   <ul class="demo-list">
+    <li><a href="./nco-montecarlo.html">The bridge by Monte Carlo: a random
+      market, a noisy estimate, and the out-of-sample curve</a>
+      <div class="claim">The true correlation matrix and a sample estimate of
+      it side by side, the algorithm run on hundreds of such estimates, and
+      the average out-of-sample variance against the dial with its interior
+      minimum. Then the portfolios themselves as bars. No formulas; the
+      algorithm on data.</div></li>
     <li><a href="./nco-identical.html">The best dial in closed form, and the sign
       that decides whether small noise moves it</a>
       <div class="claim">When every group is the same, the only decision is how
