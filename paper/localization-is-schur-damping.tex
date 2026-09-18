@@ -1,0 +1,221 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}{-1em}%
+  {\normalfont\normalsize\itshape}}
+\makeatother
+
+\newtheorem{proposition}{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\ones}{\mathbf{1}}
+\DeclareMathOperator{\tr}{tr}
+
+\title{Covariance Localization Is Schur Damping,\\
+and Its Optimal Strength Is a Sampling-Error Correction}
+\author{Peter Cotton\thanks{Microprediction.
+Email: \texttt{peter.cotton@microprediction.com}. A companion
+verification script is \texttt{paper/verify\_localization.py} at
+\texttt{github.com/microprediction/schur}.}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Ensemble Kalman filters damp the cross-covariances of a small-ensemble
+forecast covariance by an elementwise product with a distance taper. We
+observe that a taper which is constant on blocks is the Schur-complementary
+damping of \cite{cotton2024schur}: the localized covariance is positive
+semidefinite, its conditional covariance of the unobserved block is the
+damped Schur complement $A-\gamma BD^{-1}B^\top$, and the localized gain is
+$\sqrt{\gamma}$ times the optimal gain. Under sampling error in the
+cross-covariance the expected analysis error is an exact quadratic in
+$\sqrt\gamma$, so the optimal coupling is strictly interior for every noise
+level and has the closed form of a signal-to-noise shrinkage of the gain.
+\end{abstract}
+
+\section{Setting}
+
+Partition a state into an unobserved block and an observed block, with
+forecast error covariance
+$\Sigma=\left(\begin{smallmatrix}A&B\\B^\top&D\end{smallmatrix}\right)\succ0$.
+Observations of the second block carry noise of covariance $R$, so the
+innovation has covariance $S=D+R$. The optimal gain for the unobserved block
+is $K_\star=BS^{-1}$ and its analysis error covariance is $A-BS^{-1}B^\top$.
+With $R=0$ this is the Schur complement of $A$ in $\Sigma$.
+
+An ensemble Kalman filter \cite{evensen1994} replaces $\Sigma$ by a sample
+covariance from a small ensemble. Because the sample cross-covariances are
+noisy, the filter localizes: it multiplies the sample covariance elementwise
+by a taper $C$ that decays with distance
+\cite{houtekamer2001,hamill2001,gaspari1999}. The product $\Sigma\circ C$
+is positive semidefinite whenever $C$ is, by the Schur product theorem. The
+name is Schur's, but the operation is the elementwise product, and the
+strength of localization is chosen empirically.
+
+\section{A block-constant taper is Schur damping}
+
+Fix $\gamma\in[0,1]$ and let $C_\gamma$ equal $1$ on the two diagonal blocks
+and $\sqrt\gamma$ on the two off-diagonal blocks.
+
+\begin{proposition}[Block taper]
+\label{prop:taper}
+$C_\gamma$ is positive semidefinite, so $\Sigma\circ C_\gamma\succeq0$. The
+conditional covariance of the unobserved block in $\Sigma\circ C_\gamma$ is
+the damped Schur complement
+\begin{equation}
+  A-\gamma\,BD^{-1}B^\top
+  \label{eq:damped}
+\end{equation}
+of \cite{cotton2024schur}, and the localized gain is $\sqrt\gamma\,K_\star$.
+\end{proposition}
+
+\begin{proof}
+$C_\gamma=\sqrt\gamma\,\ones\ones^\top+(1-\sqrt\gamma)\,
+(\ones_A\ones_A^\top+\ones_D\ones_D^\top)$ is a nonnegative combination of
+rank-one positive semidefinite matrices. The tapered matrix has blocks $A$,
+$\sqrt\gamma B$ and $D$, so its Schur complement is
+$A-\sqrt\gamma B\,D^{-1}\sqrt\gamma B^\top$, and its gain is
+$\sqrt\gamma\,BS^{-1}$.
+\end{proof}
+
+So a block-constant localization is the coupling dial of Schur-complementary
+allocation. No localization is $\gamma=1$ and complete localization is
+$\gamma=0$, the ends of the bridge in \cite{cotton2024schur,cotton2026bridge}.
+Distance tapers vary within blocks and are not of this form; the block case
+is the one in which the complement description is exact.
+
+\section{The optimal coupling under sampling error}
+
+Let the cross-covariance be estimated with error, $\widehat B=B+\tau E$,
+where $E$ has mean zero, a law unchanged by $E\mapsto-E$, and is
+independent of the forecast and observation errors. Take $S$ as known. The
+localized filter applies the gain $s\,\widehat BS^{-1}$ with $s=\sqrt\gamma$.
+
+\begin{proposition}[Exact expected analysis error]
+\label{prop:optimal}
+The expected analysis error covariance of the unobserved block is
+\begin{equation}
+  F(s)=A-(2s-s^2)\,Q+s^2\tau^2\,G,
+  \qquad Q=BS^{-1}B^\top,\quad G=\E\big[ES^{-1}E^\top\big].
+  \label{eq:F}
+\end{equation}
+Its trace is minimized at
+\begin{equation}
+  s_\star=\frac{\tr Q}{\tr Q+\tau^2\tr G},
+  \qquad
+  \gamma_\star=s_\star^2 .
+  \label{eq:sstar}
+\end{equation}
+If $\tr G>0$ then $\gamma_\star<1$ for every $\tau>0$.
+\end{proposition}
+
+\begin{proof}
+With gain $K$ the analysis error covariance is
+$A-KB^\top-BK^\top+KSK^\top$. Put $K=s(B+\tau E)S^{-1}$ and take
+expectations. The terms linear in $E$ vanish by sign symmetry, the cross
+terms vanish by independence, and $\E[KSK^\top]=s^2(Q+\tau^2G)$. The trace
+of \eqref{eq:F} is a convex quadratic in $s$ with minimizer
+\eqref{eq:sstar}.
+\end{proof}
+
+The optimal gain is the sample gain shrunk by $s_\star$, the ratio of the
+variance the true gain removes to that quantity plus the variance the
+sampling error adds. This is a sampling-error correction in the sense of
+\cite{anderson2012}, applied uniformly to a block rather than entry by
+entry. The Schur coupling is its square. With independent standard normal
+entries in $E$, $G=\tr(S^{-1})\,I$.
+
+\begin{remark}[Contrast with the portfolio bridge]
+On the portfolio bridge the full-coupling end can be the out-of-sample
+optimum or not, according to the sign of one derivative there
+\cite{cotton2026bridge,cotton2026nco}. Here the optimum is interior for
+every noise level. The reason is that the analysis mean is linear in the
+gain and there is no budget constraint, so the objective is an exact
+quadratic in $s$, and the companion vector of the allocation problem has no
+counterpart.
+\end{remark}
+
+\begin{remark}[Scope]
+Taking $S$ as known and $E$ independent of the errors are simplifications.
+In an ensemble filter the sampling errors of $\widehat B$ and $\widehat D$
+come from the same ensemble and are correlated with each other and with the
+forecast errors. \Cref{prop:taper} is exact regardless. \Cref{prop:optimal}
+is the leading-order model of the trade-off, and the quantities in
+\eqref{eq:sstar} are estimable from the ensemble. We have not found the
+complement formulation in the data assimilation literature; the nearest
+relatives are the sampling-error corrections of \cite{anderson2007,anderson2012}.
+\end{remark}
+
+\begin{thebibliography}{99}
+
+\bibitem{cotton2024schur}
+P.~Cotton,
+\emph{Schur complementary allocation: a unification of hierarchical risk
+parity and minimum variance portfolios},
+arXiv:2411.05807, 2024.
+
+\bibitem{evensen1994}
+G.~Evensen,
+\emph{Sequential data assimilation with a nonlinear quasi-geostrophic model
+using Monte Carlo methods to forecast error statistics},
+Journal of Geophysical Research \textbf{99}(C5) (1994), 10143--10162.
+
+\bibitem{houtekamer2001}
+P.~L.~Houtekamer and H.~L.~Mitchell,
+\emph{A sequential ensemble Kalman filter for atmospheric data assimilation},
+Monthly Weather Review \textbf{129}(1) (2001), 123--137.
+
+\bibitem{hamill2001}
+T.~M.~Hamill, J.~S.~Whitaker, and C.~Snyder,
+\emph{Distance-dependent filtering of background error covariance estimates
+in an ensemble Kalman filter},
+Monthly Weather Review \textbf{129}(11) (2001), 2776--2790.
+
+\bibitem{gaspari1999}
+G.~Gaspari and S.~E.~Cohn,
+\emph{Construction of correlation functions in two and three dimensions},
+Quarterly Journal of the Royal Meteorological Society \textbf{125}(554)
+(1999), 723--757.
+
+\bibitem{cotton2026bridge}
+P.~Cotton,
+\emph{When the out-of-sample-optimal Schur portfolio lies between HRP and
+minimum variance}, working paper, 2026.
+\url{https://schur.microprediction.org/neither-end-of-the-bridge.pdf}
+
+\bibitem{cotton2026nco}
+P.~Cotton,
+\emph{Nested clustered optimization is one end of a Schur bridge, and the
+interior is sometimes provably better}, working paper, 2026.
+\url{https://schur.microprediction.org/schur-nco-bridge.pdf}
+
+\bibitem{anderson2007}
+J.~L.~Anderson,
+\emph{Exploring the need for localization in ensemble data assimilation
+using a hierarchical ensemble filter},
+Physica D \textbf{230} (2007), 99--111.
+
+\bibitem{anderson2012}
+J.~L.~Anderson,
+\emph{Localization and sampling error correction in ensemble Kalman filter
+data assimilation},
+Monthly Weather Review \textbf{140}(7) (2012), 2359--2371.
+
+\end{thebibliography}
+
+\end{document}
