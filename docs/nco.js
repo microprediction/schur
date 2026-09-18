@@ -209,7 +209,7 @@
       cx.stroke(); cx.setLineDash([]);
     });
     /* legend */
-    if (series.length > 1) {
+    if (series.length > 1 && opts.legend !== false) {
       let lx = padL + 8; const ly = padT + 12;
       cx.font = '11px sans-serif'; cx.textAlign = 'left';
       series.forEach((s, i) => { if (!s.name || !s.name.trim()) return; const col = s.color || PALETTE[i % PALETTE.length]; cx.fillStyle = col; cx.fillRect(lx, ly - 5, 14, 3); cx.fillStyle = '#333'; cx.fillText(s.name, lx + 18, ly); lx += 18 + cx.measureText(s.name).width + 16; });
