@@ -190,6 +190,98 @@
     return { computed: compressedVariance(S, S, delta, kap) - 1 / Z, formula: L / (Z * (Z - L)) };
   }
 
+  /* ---------- sampling, heatmaps and bar charts ---------- */
+  function cholesky(A) {
+    const n = A.length, L = Array.from({ length: n }, () => new Array(n).fill(0));
+    for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) {
+      let s = A[i][j]; for (let k = 0; k < j; k++) s -= L[i][k] * L[j][k];
+      L[i][j] = i === j ? Math.sqrt(Math.max(s, 1e-14)) : s / L[j][j];
+    }
+    return L;
+  }
+  /* sample covariance of T Gaussian draws from Sigma */
+  function sampleCovariance(Sigma, T, rnd) {
+    const n = Sigma.length, L = cholesky(Sigma), X = [];
+    for (let t = 0; t < T; t++) { const z = Array.from({ length: n }, () => gauss(rnd)); X.push(L.map(row => dot(row, z))); }
+    const mean = X[0].map((_, j) => X.reduce((s, x) => s + x[j], 0) / T);
+    const S = Array.from({ length: n }, () => new Array(n).fill(0));
+    X.forEach(x => { for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) S[i][j] += (x[i] - mean[i]) * (x[j] - mean[j]) / (T - 1); });
+    return S;
+  }
+  const correlation = S => S.map((row, i) => row.map((v, j) => v / Math.sqrt(S[i][i] * S[j][j])));
+
+  /* diverging blue-white-red for a value in [-1, 1] */
+  function divergingColor(v) {
+    const t = Math.max(-1, Math.min(1, v));
+    const lerp = (a, b, u) => Math.round(a + (b - a) * u);
+    const mid = [247, 247, 247], neg = [33, 102, 172], pos = [178, 24, 43];
+    const c = t < 0 ? [0, 1, 2].map(i => lerp(mid[i], neg[i], -t)) : [0, 1, 2].map(i => lerp(mid[i], pos[i], t));
+    return 'rgb(' + c.join(',') + ')';
+  }
+  /* heatmap of a square matrix with cluster blocks outlined and knots marked */
+  function heatmap(canvasId, M, opts) {
+    if (typeof document === 'undefined') return;
+    const c = document.getElementById(canvasId), cx = c.getContext('2d');
+    const dpr = window.devicePixelRatio || 1, W = c.clientWidth || 300, n = M.length;
+    const padT = 22, padL = 34, padB = 8, size = Math.min(W - padL - 8, (opts.height || 300) - padT - padB), cell = size / n;
+    const H = padT + size + padB;
+    c.width = W * dpr; c.height = H * dpr; c.style.height = H + 'px'; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.clearRect(0, 0, W, H);
+    cx.fillStyle = '#666'; cx.font = '11px sans-serif'; cx.textAlign = 'left'; cx.fillText(opts.title || '', padL, 14);
+    const vmax = opts.vmax || 1;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      cx.fillStyle = divergingColor(M[i][j] / vmax);
+      cx.fillRect(padL + j * cell, padT + i * cell, Math.ceil(cell), Math.ceil(cell));
+    }
+    if (opts.clusters) {
+      cx.strokeStyle = '#222'; cx.lineWidth = 1.5;
+      opts.clusters.forEach(I => { const a = Math.min(...I), b = Math.max(...I) + 1; cx.strokeRect(padL + a * cell, padT + a * cell, (b - a) * cell, (b - a) * cell); });
+    }
+    if (opts.knots) {
+      cx.fillStyle = '#222'; cx.font = 'bold 10px sans-serif'; cx.textAlign = 'right';
+      for (let i = 0; i < n; i++) cx.fillText(opts.knots.includes(i) ? 'K' + (opts.knots.indexOf(i) + 1) : 'm', padL - 4, padT + (i + 0.5) * cell + 3);
+    }
+    if (opts.values && cell > 22) {
+      cx.font = '10px sans-serif'; cx.textAlign = 'center';
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { cx.fillStyle = Math.abs(M[i][j] / vmax) > 0.6 ? '#fff' : '#222'; cx.fillText(M[i][j].toFixed(2), padL + (j + 0.5) * cell, padT + (i + 0.5) * cell + 3); }
+    }
+    let tip = c.parentNode.querySelector('.nco-tip-' + canvasId);
+    if (!tip) { tip = document.createElement('div'); tip.className = 'nco-tip-' + canvasId; tip.style.cssText = 'position:absolute;pointer-events:none;background:#fff;border:1px solid #ddd;border-radius:5px;padding:5px 8px;font-size:12px;color:#333;display:none;white-space:nowrap'; c.parentNode.style.position = 'relative'; c.parentNode.appendChild(tip); }
+    c.onmousemove = ev => { const r = c.getBoundingClientRect(), i = Math.floor((ev.clientY - r.top - padT) / cell), j = Math.floor((ev.clientX - r.left - padL) / cell);
+      if (i < 0 || j < 0 || i >= n || j >= n) { tip.style.display = 'none'; return; }
+      tip.innerHTML = (opts.name || 'entry') + ' [' + (i + 1) + ', ' + (j + 1) + '] = <b>' + M[i][j].toFixed(4) + '</b>'; tip.style.display = 'block';
+      tip.style.left = (ev.clientX - r.left + 12) + 'px'; tip.style.top = (ev.clientY - r.top - 28) + 'px'; };
+    c.onmouseleave = () => { tip.style.display = 'none'; };
+  }
+  /* grouped bars: groups = [{name, values:[..]}] over the same categories; categories colored by cluster */
+  function barChart(canvasId, opts) {
+    if (typeof document === 'undefined') return;
+    const c = document.getElementById(canvasId), cx = c.getContext('2d');
+    const dpr = window.devicePixelRatio || 1, W = c.clientWidth || 820, H = opts.height || 260;
+    c.width = W * dpr; c.height = H * dpr; c.style.height = H + 'px'; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cx.clearRect(0, 0, W, H);
+    const padL = 48, padR = 12, padT = 28, padB = 36, groups = opts.groups, m = opts.categories.length, g = groups.length;
+    const all = groups.flatMap(s => s.values); let ymin = Math.min(0, ...all), ymax = Math.max(0, ...all); const pad = (ymax - ymin) * 0.08; ymin -= pad; ymax += pad;
+    const Y = y => H - padB - (y - ymin) / (ymax - ymin) * (H - padB - padT);
+    const slot = (W - padL - padR) / m, bw = Math.max(3, (slot - 6) / g - 2);
+    cx.strokeStyle = '#ececec'; niceTicks(ymin, ymax, 5).forEach(v => { cx.beginPath(); cx.moveTo(padL, Y(v)); cx.lineTo(W - padR, Y(v)); cx.stroke(); cx.fillStyle = '#777'; cx.font = '11px sans-serif'; cx.textAlign = 'right'; cx.fillText(fmt(v), padL - 6, Y(v) + 4); });
+    cx.strokeStyle = '#999'; cx.beginPath(); cx.moveTo(padL, Y(0)); cx.lineTo(W - padR, Y(0)); cx.stroke();
+    cx.fillStyle = '#666'; cx.textAlign = 'left'; cx.fillText(opts.title || '', padL, 14);
+    groups.forEach((s, k) => s.values.forEach((v, i) => {
+      const x = padL + i * slot + 3 + k * (bw + 2);
+      cx.fillStyle = s.color || PALETTE[k % PALETTE.length]; cx.globalAlpha = opts.alpha ? opts.alpha[k] : 1;
+      const y0 = Y(0), y1 = Y(v); cx.fillRect(x, Math.min(y0, y1), bw, Math.abs(y1 - y0)); cx.globalAlpha = 1;
+    }));
+    cx.fillStyle = '#333'; cx.font = '10.5px sans-serif'; cx.textAlign = 'center';
+    opts.categories.forEach((name, i) => { cx.fillText(name, padL + i * slot + slot / 2, H - padB + 14); });
+    if (opts.clusterOf) { /* bracket clusters under the axis */
+      cx.strokeStyle = '#bbb'; cx.fillStyle = '#777'; let start = 0;
+      for (let i = 1; i <= m; i++) if (i === m || opts.clusterOf[i] !== opts.clusterOf[start]) { const x0 = padL + start * slot + 2, x1 = padL + i * slot - 2; cx.beginPath(); cx.moveTo(x0, H - padB + 20); cx.lineTo(x1, H - padB + 20); cx.stroke(); cx.textAlign = 'center'; cx.fillText('group ' + (opts.clusterOf[start] + 1), (x0 + x1) / 2, H - padB + 32); start = i; }
+    }
+    let lx = padL + 8; cx.font = '11px sans-serif'; cx.textAlign = 'left';
+    groups.forEach((s, k) => { cx.fillStyle = s.color || PALETTE[k % PALETTE.length]; cx.fillRect(lx, padT - 8, 12, 8); cx.fillStyle = '#333'; cx.fillText(s.name, lx + 16, padT); lx += 16 + cx.measureText(s.name).width + 16; });
+  }
+
   /* ---------- a small line chart with legend, crosshair and tooltip ---------- */
   const PALETTE = ['#4a3aff', '#ef6c00', '#0f8b6e', '#c0392b'];   /* validated, light surface */
   function lineChart(canvasId, opts) {
@@ -220,7 +312,7 @@
     if (opts.xlabel) { cx.textAlign = 'center'; cx.fillText(opts.xlabel, (padL + W - padR) / 2, H - 4); }
     /* reference lines */
     (opts.vlines || []).forEach(v => { cx.strokeStyle = v.color || '#999'; cx.setLineDash([4, 4]); cx.beginPath(); cx.moveTo(X(v.x), padT); cx.lineTo(X(v.x), H - padB); cx.stroke(); cx.setLineDash([]);
-      cx.fillStyle = v.color || '#999'; const right = X(v.x) > W - padR - 150; cx.textAlign = right ? 'right' : 'left'; cx.fillText(v.label || '', X(v.x) + (right ? -4 : 4), padT + 12); });
+      cx.fillStyle = v.color || '#999'; const right = X(v.x) > W - padR - 150; cx.textAlign = right ? 'right' : 'left'; cx.fillText(v.label || '', X(v.x) + (right ? -4 : 4), H - padB - 6); });
     (opts.hlines || []).forEach(v => { cx.strokeStyle = v.color || '#999'; cx.setLineDash([4, 4]); cx.beginPath(); cx.moveTo(padL, Y(v.y)); cx.lineTo(W - padR, Y(v.y)); cx.stroke(); cx.setLineDash([]);
       cx.fillStyle = v.color || '#999'; cx.textAlign = 'right'; cx.fillText(v.label || '', W - padR - 4, Y(v.y) - 4); });
     /* series */
@@ -271,6 +363,7 @@
     t_of, x_of, V_of, xStar, gammaStarTwoPoint, F_twoPoint, F_symmetric, shiftCoefficient, argmin,
     lambda_of, kappas, compressedVariance, duplicatedKnotsV0, duplicatedKnotsLambdaPath, lostPrecision,
     clusterDirection, symmetricNoiseTauMax, estimateAdmissible,
+    cholesky, sampleCovariance, correlation, heatmap, barChart, divergingColor,
     lineChart, PALETTE, fmt };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NCO = api;
 })(typeof window !== 'undefined' ? window : globalThis);
