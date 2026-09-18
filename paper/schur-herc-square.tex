@@ -1,0 +1,743 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise]{cleveref}
+
+% Run-in headings italic, never bold.
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}{-1em}%
+  {\normalfont\normalsize\itshape}}
+\makeatother
+
+\title{Hierarchical Equal Risk Contribution Is a Corner of a Schur Square,\\
+and Two Dials Lead to Minimum Variance}
+\author{Peter Cotton\thanks{Microprediction.
+Email: \texttt{peter.cotton@microprediction.com}. A companion
+verification script is \texttt{paper/verify\_herc\_square.py}
+at \texttt{github.com/microprediction/schur}. Every numerical claim in
+this paper is checked there in exact rational arithmetic.}}
+\date{September 18, 2026}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ones}{\mathbf{1}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Var}{Var}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Hierarchical equal risk contribution cuts a dendrogram into clusters,
+holds the inverse-variance portfolio inside each cluster, and budgets
+across clusters by inverse cluster variance. We show that its budget rule
+is already the one the global minimum-variance portfolio uses, and that
+what it lacks is conditioning in two places: each cluster on the other
+clusters, and each asset on its cluster mates. Damping the two Schur
+complements by $\gamma$ and $\eta$ gives a square with the method at one
+corner and the global optimum at the opposite corner. The inner dial has a
+closed form that interpolates the naive inverse-variance quantities and
+Stevens' regression quantities, keeps every weight positive up to an
+explicit frontier, and on an equicorrelated cluster traces the straight
+segment from inverse variance to the cluster's minimum-variance portfolio.
+Under estimation error the best point can be strictly inside the square,
+and we give the two-dial local theorem at the minimum-variance corner, a
+sign criterion for the inner dial with both signs realized, and exact
+examples, including one whose optimum is $\eta=3/5$ with gaps $1/45$ and
+$1/20$ to the two ends.
+\end{abstract}
+
+\section{Introduction}
+
+Hierarchical equal risk contribution, HERC \cite{raffinot2018}, is a
+two-level rule. A dendrogram is cut into $k$ clusters. Inside each cluster
+the weights are inverse variance. Across clusters the budgets follow the
+inverse of each cluster's risk. The method is widely implemented
+\cite{riskfolio,skfolio,mlfinlab} and widely tested
+\cite{trucios2026,huang2022,sjostrand2020}, with results that are mixed and
+that no theory has explained.
+
+Block inversion gives the global minimum-variance portfolio the same
+two-level shape. Each cluster's block of $\Sigma^{-1}\ones$ is a
+minimum-variance direction on the cluster's covariance conditional on
+everything else, and the cluster totals are whatever those directions sum
+to \cite{cotton2024schur}. Written as a budget rule, the total is the
+inverse of the cluster's conditional minimum variance. That is HERC's rule.
+
+So HERC's across-cluster step is not the approximation. The approximations
+are that its inside step reads a diagonal, and that neither step reads
+anything outside the cluster. Both are the omission of a Schur complement.
+Damping the two complements by separate parameters gives a square. HERC
+sits at $(\gamma,\eta)=(0,0)$ and the global minimum-variance portfolio at
+$(1,1)$.
+
+The inner dial is new and simple. A single asset conditioned on its cluster
+mates is Stevens' regression identity \cite{stevens1998}, and damping it
+gives a weight whose numerator and denominator are each linear in $\eta$
+between the naive quantity and the regression quantity. The whole inner
+dial costs one inverse per cluster. The outer dial is the flat bridge of
+\cite{cotton2026nco}, with the outer optimizer replaced by HERC's inverse
+fitness.
+
+\Cref{sec:where} asks where to sit when the covariance is estimated. The
+inner dial on an equicorrelated cluster reduces to one scalar, which gives
+exact interior optima and a sign criterion at the full-coupling end. At the
+minimum-variance corner the two-dial local theorem says which dials move
+inside and by how much, and exact examples show both dials moving, and one
+moving while the other stays.
+
+Everything exact here concerns the unconstrained, fully invested,
+long-short problem, as in \cite{cotton2024schur,cotton2026bridge}. HERC is
+long-only by construction, and \cref{prop:frontier} says exactly how far
+the inner dial can be turned before that is lost.
+
+\section{The method}
+
+Let $\Sigma\succ0$ be the covariance of $n$ assets and let $C_1,\dots,C_k$
+be the clusters at which HERC cuts its dendrogram. For an index set $C$
+write $\Sigma_{CC}$ for its block, $-C$ for its complement, and $\sigma_i^2$
+for $\Sigma_{ii}$.
+
+HERC holds inside cluster $C$ the inverse-variance portfolio
+$v_C\propto\diag(\Sigma_{CC})^{-1}\ones$, normalized to $\ones^\top v_C=1$,
+and measures the cluster's risk by that portfolio's variance,
+$\nu_C=v_C^\top\Sigma_{CC}v_C$. It then budgets across clusters top down
+along the dendrogram.
+
+\paragraph{The split rule.} Raffinot writes the share of the first child at
+a split as $\mathrm{RC}_1/(\mathrm{RC}_1+\mathrm{RC}_2)$, ``where
+$\mathrm{RC}_1$ is the risk contribution of the first cluster''
+\cite{raffinot2018}, and does not define $\mathrm{RC}$. Read as a risk, the
+formula gives the riskier child more. Read as an inverse risk, a precision,
+it gives the riskier child less, which is the intent, and Palomar's
+textbook makes the same reading in recovering the inverse-variance split
+\cite{palomar2025}. We take $\mathrm{RC}$ of a child to be the sum of the
+precisions $1/\nu_C$ of the final clusters it contains.
+
+\begin{proposition}[The dendrogram telescopes]
+\label{prop:telescope}
+With additive precisions, top-down division along any dendrogram gives
+final cluster $C$ the budget $a_C\propto1/\nu_C$. The tree affects the
+allocation only through the choice of clusters.
+\end{proposition}
+
+\begin{proof}
+At a node with children $L$ and $R$ and precisions $P_L=\sum_{C\subseteq L}1/\nu_C$
+and $P_R$, the child $L$ receives the fraction $P_L/(P_L+P_R)$ of the node's
+budget. Along the path from the root to $C$ the fractions telescope to
+$(1/\nu_C)/P_{\mathrm{root}}$.
+\end{proof}
+
+So HERC with variance is the flat two-level rule
+\begin{equation}
+  w \;\propto\; \sum_{C}\frac{v_C}{\nu_C},
+  \qquad v_C\propto\diag(\Sigma_{CC})^{-1}\ones,\quad
+  \nu_C=v_C^\top\Sigma_{CC}v_C .
+  \label{eq:herc}
+\end{equation}
+In words: hold inverse variance inside each cluster, and give each cluster
+capital in proportion to the inverse variance of what it holds.
+
+\begin{remark}[The reference implementations]
+The libraries \cite{riskfolio,skfolio,mlfinlab} implement the split as one
+minus the ratio of the children's risks, with the risk of a child taken as
+the sum of the variances $\nu_C$ of its final clusters. For two clusters
+this agrees with \eqref{eq:herc}. For three or more it does not, because
+sums of variances do not telescope, and the allocation then depends on the
+shape of the dendrogram above the cut. The verification script exhibits
+both facts. We analyze \eqref{eq:herc}.
+\end{remark}
+
+\section{Block inversion}
+
+Fix a vector $u$ and a cluster $C$. Block inversion of $\Sigma$ on the
+partition $(C,-C)$ gives \cite[App.~A]{cotton2024schur}
+\begin{equation}
+  \big(\Sigma^{-1}u\big)_{C}
+  \;=\; \big(\Sigma^{c}_{C}\big)^{-1} b_C,
+  \qquad
+  \Sigma^{c}_{C} = \Sigma_{CC}-\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}\Sigma_{-C,C},
+  \quad
+  b_C = u_{C}-\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}u_{-C} .
+  \label{eq:blockinv}
+\end{equation}
+The complement is the covariance of $C$ conditional on the other assets and
+$b_C$ is the companion vector. For positive definite $Q$ and a vector $b$
+the constrained problem of minimizing $x^\top Qx$ subject to $b^\top x=1$
+has solution and attained variance
+\begin{equation}
+  v(Q,b)=\frac{Q^{-1}b}{b^\top Q^{-1}b},
+  \qquad
+  \nu(Q,b)=\frac{1}{b^\top Q^{-1}b},
+  \qquad\text{so}\qquad
+  Q^{-1}b=\frac{v(Q,b)}{\nu(Q,b)} .
+  \label{eq:fitness}
+\end{equation}
+The unnormalized direction is the normalized portfolio divided by its
+variance.
+
+Apply this to \eqref{eq:blockinv} with $u=\ones$. The global
+minimum-variance portfolio is $\sum_C v_C/\nu_C$ with
+$v_C=v(\Sigma^c_C,b_C)$ and $\nu_C=\nu(\Sigma^c_C,b_C)$, which is
+\eqref{eq:herc} with two substitutions undone. HERC replaces the
+conditional pair $(\Sigma^c_C,b_C)$ by the raw pair $(\Sigma_{CC},\ones)$,
+and it replaces the minimum-variance portfolio of that pair by the
+inverse-variance portfolio. The budget rule is untouched.
+
+Noguer i Alonso lists three substitutions that turn the exact bisection
+identity into hierarchical risk parity \cite{lopezdeprado2016,noguer2026}. HERC makes the
+first two, the raw block for the complement and $\ones$ for $b$, together
+with the diagonal for the block inside each cluster. It does not make the
+third, because its inter-cluster budget is the exact one.
+
+\paragraph{One asset at a time.} Take $C=\{i\}$ in \eqref{eq:blockinv} with
+$u=\ones$. Then $\Sigma^c_{\{i\}}$ is the residual variance of asset $i$
+regressed on all the others and $b_{\{i\}}$ is one minus the sum of the
+regression coefficients. This is Stevens' identity \cite{stevens1998},
+\begin{equation}
+  \big(\Sigma^{-1}\ones\big)_i
+  \;=\;\frac{1-\sum_{j\ne i}\beta_{ij}}{\sigma_i^2\,(1-R_i^2)} ,
+  \label{eq:stevens}
+\end{equation}
+with $R_i^2$ the multiple correlation and $\beta_{ij}$ the hedge
+coefficients. The inverse-variance portfolio is the same expression with
+the hedges set to zero. Inside a cluster, HERC is therefore Stevens with
+the regression switched off.
+
+\section{The square}
+\label{sec:square}
+
+Two Schur complements are missing from \eqref{eq:herc}: that of a cluster
+against the other clusters, and that of an asset against its cluster
+mates. Damp each.
+
+\begin{definition}[The two dials]
+For $\gamma\in[0,1]$ the \emph{cluster pair} of $C$ is
+\begin{equation}
+  Q_C(\gamma)=\Sigma_{CC}-\gamma\,\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}\Sigma_{-C,C},
+  \qquad
+  b_C(\gamma)=u_C-\gamma\,\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}u_{-C} .
+  \label{eq:outer}
+\end{equation}
+For $\eta\in[0,1]$ and a pair $(Q,b)$ on $C$, the \emph{leaf direction}
+$z(Q,b,\eta)$ has entries
+\begin{equation}
+  z_i=\frac{b_i-\eta\,Q_{i,-i}Q_{-i,-i}^{-1}b_{-i}}
+           {Q_{ii}-\eta\,Q_{i,-i}Q_{-i,-i}^{-1}Q_{-i,i}},
+  \qquad i\in C,
+  \label{eq:inner}
+\end{equation}
+where $-i$ now means $C\setminus\{i\}$. The portfolio at $(\gamma,\eta)$ is
+\begin{equation}
+  w_{\gamma\eta}\;\propto\;\sum_C\frac{v_C}{\nu_C},
+  \qquad
+  v_C=\frac{z_C}{b_C^\top z_C},\quad
+  \nu_C=v_C^\top Q_C v_C,\quad
+  z_C=z\big(Q_C(\gamma),b_C(\gamma),\eta\big).
+  \label{eq:square}
+\end{equation}
+\end{definition}
+
+The dial $\gamma$ conditions a cluster on the outside world. The dial
+$\eta$ conditions an asset on its cluster mates. The budget rule is HERC's
+own, the inverse variance of what the cluster holds, measured on the
+cluster's pair. We take $u=\ones$ unless said otherwise.
+
+\begin{proposition}[The four corners]
+\label{prop:corners}
+\leavevmode
+\begin{enumerate}
+\item $(0,0)$ is HERC, \eqref{eq:herc}.
+\item $(1,1)$ is the global direction $\Sigma^{-1}u$, so with $u=\ones$
+  the global minimum-variance portfolio.
+\item $(0,1)$ holds the minimum-variance portfolio of each cluster's own
+  block and budgets by inverse cluster minimum variance.
+\item $(1,0)$ holds the inverse-variance portfolio of each cluster's
+  conditional pair, with the companion vector in the numerator, and budgets
+  by its inverse variance on the pair.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+At $\eta=0$ the leaf direction is $z_i=b_i/Q_{ii}$, which at $\gamma=0$ is
+$1/\sigma_i^2$. At $\eta=1$ the leaf direction is the block inversion
+\eqref{eq:blockinv} of the pair $(Q,b)$ on the partition
+$(\{i\},C\setminus\{i\})$, so $z=Q^{-1}b$, and by \eqref{eq:fitness}
+$v_C/\nu_C=Q^{-1}b$. At $\gamma=1$ the pair is $(\Sigma^c_C,b_C)$ and
+$Q^{-1}b=(\Sigma^{-1}u)_C$ by \eqref{eq:blockinv}. The remaining corners
+read off the definitions.
+\end{proof}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+corner & inside a cluster & across clusters \\
+\midrule
+$(0,0)$ HERC & inverse variance on $\Sigma_{CC}$ & inverse variance of the holding \\
+$(0,1)$ & minimum variance on $\Sigma_{CC}$ & inverse minimum variance \\
+$(1,0)$ & inverse variance on the conditional pair & inverse variance of the holding \\
+$(1,1)$ global & minimum variance on the conditional pair & inverse conditional minimum variance \\
+\bottomrule
+\end{tabular}
+\caption{The four corners with $u=\ones$. The across-cluster rule is the
+same at every corner; only what it measures changes.}
+\label{tab:corners}
+\end{table}
+
+The corner $(0,1)$ is a cluster-then-optimize rule with inverse-variance
+budgets, of the kind used in \cite{arevalo2019} with a different inner
+objective. The
+corner $(1,0)$ has no name. Along the edge $\eta=1$ the square is the flat
+bridge of \cite{cotton2026nco} with the outer optimizer replaced by
+HERC's inverse fitness; the two agree at $\gamma=1$ and differ inside.
+
+\begin{remark}[Cheaper conditioning sets]
+The pair \eqref{eq:outer} conditions on all $n-|C|$ other assets, which is
+the inverse a two-level method exists to avoid. Two devices from earlier
+work apply unchanged. Conditioning composed top down along the dendrogram,
+with each block conditioned on its sibling as in \cite{cotton2024schur},
+reaches the same pair at $\gamma=1$ because Schur complements compose, and
+the script checks this on an unbalanced tree. Conditioning on one knot per
+other cluster, as in \cite{cotton2026nco}, is exact under the gateway model
+stated there. The tree device inverts sibling blocks, and the knot device
+inverts only cluster blocks and one $k\times k$ matrix.
+\end{remark}
+
+\begin{remark}[Other companion vectors]
+\label{rem:companion}
+\Cref{prop:corners} holds for any $u$. With $u=\sigma$, the vector of
+volatilities, the corner $(1,1)$ is the most diversified portfolio
+$\Sigma^{-1}\sigma$ \cite{choueifaty2008}, and the corner $(0,0)$ holds the
+inverse-volatility portfolio inside each cluster with the cash budget of
+cluster $C$ proportional to $\mathrm{DR}_C^2/\bar\sigma_C$, where
+$\mathrm{DR}_C$ is the diversification ratio of the holding and
+$\bar\sigma_C$ its average volatility. HERC with volatility as the risk
+measure, as implemented in \cite{riskfolio}, holds the same inside
+portfolio but budgets by $\mathrm{DR}_C/\bar\sigma_C$. It is not a corner
+of this square, and the diversification ratio enters squared in the rule
+that is. With $u=\mu$ the corner $(1,1)$ is the tangency direction, and
+$(0,0)$ holds $\mu_i/\sigma_i^2$ inside each cluster with budgets
+proportional to the squared Sharpe ratio of the holding divided by its
+mean.
+\end{remark}
+
+\section{The inner dial}
+\label{sec:inner}
+
+The leaf direction \eqref{eq:inner} looks like $|C|$ solves of size
+$|C|-1$. It is one solve.
+
+\begin{proposition}[Closed form]
+\label{prop:closed}
+Let $q_i=1/(Q^{-1})_{ii}$ and $s_i=(Q^{-1}b)_i/(Q^{-1})_{ii}$. Then
+\begin{equation}
+  z_i(\eta)=\frac{(1-\eta)\,b_i+\eta\,s_i}{(1-\eta)\,Q_{ii}+\eta\,q_i} .
+  \label{eq:closed}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Block inversion on $(\{i\},-i)$ gives
+$Q_{ii}-Q_{i,-i}Q_{-i,-i}^{-1}Q_{-i,i}=1/(Q^{-1})_{ii}$ and
+$b_i-Q_{i,-i}Q_{-i,-i}^{-1}b_{-i}=(Q^{-1}b)_i/(Q^{-1})_{ii}$. Both
+expressions in \eqref{eq:inner} are affine in $\eta$ between their values
+at $0$ and $1$.
+\end{proof}
+
+At $\eta=1$ the weight is $(Q^{-1}b)_i$, and with $b=\ones$ the numbers
+$q_i$ and $s_i$ are Stevens' residual variance and one minus the hedge sum
+\eqref{eq:stevens}. The dial interpolates both the numerator and the
+denominator of Stevens' formula linearly. The denominator is a convex
+combination of two positive numbers, so it never vanishes.
+
+\begin{proposition}[Long-only frontier]
+\label{prop:frontier}
+Let $b>0$ entrywise. The leaf direction $z(\eta)$ is nonnegative in every
+entry if and only if $\eta\le\eta_+$, where
+\begin{equation}
+  \eta_+=\min_{i:\,s_i<0}\frac{b_i}{b_i-s_i},
+  \label{eq:frontier}
+\end{equation}
+and $\eta_+=1$ when no $s_i$ is negative. The first short appears at the
+asset whose hedge sum first exceeds its companion entry.
+\end{proposition}
+
+\begin{proof}
+The denominator in \eqref{eq:closed} is positive. The numerator is affine
+in $\eta$, equals $b_i>0$ at $\eta=0$, and is negative at $\eta=1$ exactly
+when $s_i<0$, crossing zero at $\eta=b_i/(b_i-s_i)$.
+\end{proof}
+
+HERC is long-only by construction and the global minimum-variance portfolio
+is not. The frontier says how much of the inside conditioning can be
+restored before that changes, cluster by cluster, at the cost of the
+inverse already computed.
+
+\paragraph{The equicorrelated cluster.} Let cluster $C$ have $m$ assets
+with volatilities $\sigma_i$ and a common correlation $\rho$, and let
+$\gamma=0$ so the pair is $(\Sigma_{CC},\ones)$. Write
+$\kappa=\rho/(1+(m-2)\rho)$ for the regression coefficient of one
+standardized asset on another, and $s_{-i}=\sum_{j\ne i}1/\sigma_j$.
+
+\begin{proposition}[A straight segment]
+\label{prop:segment}
+On an equicorrelated cluster,
+\begin{equation}
+  z_i(\eta)\;\propto\;\frac{1-\eta\,\kappa\,\sigma_i s_{-i}}{\sigma_i^2},
+  \label{eq:equi}
+\end{equation}
+with a factor common to all $i$. The normalized holding lies on the
+straight segment from the inverse-variance portfolio $v_0$ to the
+cluster's minimum-variance portfolio $v_\star$,
+\begin{equation}
+  v(\eta)=v_\star+\big(1-\theta(\eta\kappa)\big)(v_0-v_\star),
+  \qquad
+  \theta(t)=\frac{t\,(\alpha-\kappa\beta)}{\kappa\,(\alpha-t\beta)},
+  \label{eq:theta}
+\end{equation}
+where $\alpha=\sum_i\sigma_i^{-2}$ and $\beta=\sum_i s_{-i}/\sigma_i$, so
+that $\beta=(\sum_i\sigma_i^{-1})^2-\alpha$. The long-only frontier is
+$\eta_+=\min_i 1/(\kappa\sigma_i s_{-i})$.
+\end{proposition}
+
+\begin{proof}
+In the equicorrelated model every asset has the same multiple correlation
+on the rest, so the denominators in \eqref{eq:inner} share one factor, and
+the hedge sum of asset $i$ is $\kappa\sigma_i s_{-i}$. So the unnormalized
+weight is $a_i-t\,c_i$ with $t=\eta\kappa$, $a_i=\sigma_i^{-2}$ and
+$c_i=s_{-i}/\sigma_i$. Two normalized vectors of this form differ by a
+multiple of the fixed vector $a\beta-c\alpha$, which gives the segment,
+and $t=\kappa$ is the minimum-variance end. The frontier is
+\eqref{eq:frontier} with $b=\ones$ and $s_i=1-\kappa\sigma_i s_{-i}$.
+\end{proof}
+
+In words: on an equicorrelated cluster, the inner dial is linear shrinkage
+between the two familiar portfolios, with the mixing weight
+\eqref{eq:theta} a fixed function of the estimated correlation. With equal
+volatilities the two ends coincide and the dial does nothing.
+
+\paragraph{The cut.} With one cluster, $\gamma$ is idle and the square is
+the inner dial applied to all of $\Sigma$, from inverse variance to global
+minimum variance. With $n$ singleton clusters, $\eta$ is idle and the pair
+of $\{i\}$ is Stevens' pair, so the outer dial traces the same path. HERC
+is the inverse-variance portfolio at both extremes of the cut, and departs
+from it only through the budgets \eqref{eq:herc} at intermediate cuts.
+The dendrogram chooses where on that path the two dials separate.
+
+\section{Where to sit}
+\label{sec:where}
+
+Let $\widehat\Sigma_\tau=\Sigma+\tau E$ be an estimate, where $E$ is a
+random symmetric matrix whose law is unchanged by $E\mapsto-E$, and
+$\widehat\Sigma_\tau\succ0$ on the range of $\tau$ considered. The clusters
+are held fixed. Every quantity in \eqref{eq:square} is computed from
+$\widehat\Sigma_\tau$ and normalized by $\ones^\top w=1$. Define
+\begin{equation}
+  F(\gamma,\eta,\tau)=\mathbb{E}\big[w_{\gamma\eta}(\widehat\Sigma_\tau)^\top
+  \,\Sigma\,w_{\gamma\eta}(\widehat\Sigma_\tau)\big],
+  \qquad V_0=F(\cdot,\cdot,0),
+  \qquad G=\tfrac12\,\partial_\tau^2F(\cdot,\cdot,0),
+  \label{eq:F}
+\end{equation}
+and assume the expansion $F=V_0+\tau^2G+O(\tau^4)$ holds in $C^2$ in the
+dials, as in \cite{cotton2026nco}.
+
+\begin{lemma}[The HERC edge is blind]
+\label{lem:blind}
+For every $\eta$, the portfolio $w_{0\eta}$ depends on
+$\widehat\Sigma_\tau$ only through its diagonal blocks
+$\widehat\Sigma_{CC}$.
+\end{lemma}
+
+\begin{proof}
+At $\gamma=0$ the pair of $C$ is $(\widehat\Sigma_{CC},\ones)$, the leaf
+direction and the fitness read only the pair, and the budget rule reads
+only the fitnesses.
+\end{proof}
+
+So under noise supported off the diagonal blocks, $F(0,\eta,\tau)=V_0(0,\eta)$
+exactly, and the argument of \cite{cotton2026bridge} transfers: the cost of
+turning $\gamma$ away from zero is of order $\gamma\tau^2$, and at any
+$\eta$ with $\partial_\gamma V_0(0,\eta)<0$ the point $(0,\eta)$ is
+strictly suboptimal for small $\tau$. Under whole-matrix noise the edge is itself
+noisy and the comparison is between noise costs, as discussed there.
+
+\begin{proposition}[The minimum-variance corner, two dials]
+\label{prop:corner}
+Let $J=[\partial_\gamma w,\ \partial_\eta w]$ at $(1,1,0)$ and suppose its
+columns are linearly independent. Then $\nabla V_0(1,1)=0$, the Hessian is
+$H=2J^\top\Sigma J\succ0$, and for all sufficiently small $\tau$ the map
+$F(\cdot,\cdot,\tau)$ has a unique stationary point near $(1,1)$, a strict
+local minimizer, at
+\begin{equation}
+  (\tilde\gamma,\tilde\eta)=(1,1)-H^{-1}\nabla G(1,1)\,\tau^2+O(\tau^4).
+  \label{eq:shift}
+\end{equation}
+If both components of $H^{-1}\nabla G(1,1)$ are positive the local
+minimizer is strictly inside the square for small $\tau>0$. If one is
+negative the stationary point lies outside the square, the constrained
+minimizer lies on one of the two edges through the corner, and its position
+along an edge is given by the one-dial formula with the edge's own second
+derivatives.
+\end{proposition}
+
+\begin{proof}
+Since $\ones^\top w=1$, every derivative of $w$ in the dials has zero sum.
+By \cref{prop:corners}, $\Sigma w_{11}\propto\ones$, so first derivatives
+of $V_0$ vanish and in the second derivatives the terms containing second
+derivatives of $w$ vanish, leaving $2J^\top\Sigma J$. The implicit function
+theorem applied to $\nabla_{\gamma\eta}F=0$ at $(1,1,0)$ gives
+\eqref{eq:shift} and strict convexity on a neighbourhood not depending on
+$\tau$. The edge statement is the one-dial case of the same argument.
+\end{proof}
+
+The displacement is of second order in the noise and the gain from making
+it is of fourth order, as in \cite{cotton2026nco}. The structure of the
+square does not fix the signs; both occur below.
+
+\subsection{The inner dial, exactly}
+
+Let $\gamma=0$ and take a single equicorrelated cluster as in
+\cref{prop:segment}, with the volatilities known and the correlation
+estimated, $\widehat\rho=\rho+\tau Z$ for a symmetric $Z$. Then the recipe
+holds $v(\eta)$ at $t=\eta\,\kappa(\widehat\rho)$, while the true portfolio
+that minimizes variance is at $t=\kappa(\rho)$. By \eqref{eq:theta} and the
+segment,
+\begin{equation}
+  F(\eta,\tau)=V_\star+\Delta\;\mathbb{E}\Big[\big(1-\theta(\eta\,\kappa(\widehat\rho))\big)^2\Big],
+  \qquad
+  1-\theta(t)=\frac{(\kappa-t)\,\alpha}{\kappa\,(\alpha-t\beta)},
+  \label{eq:Fleaf}
+\end{equation}
+where $V_\star$ is the cluster's minimum variance and
+$\Delta=V(v_0)-V_\star$ is the excess variance of inverse variance over it.
+The inner dial's noise problem is one scalar, and nothing else about the
+cluster enters.
+
+\paragraph{An exact interior optimum.} Let the estimate be
+$\widehat\rho\in\{0,2\rho\}$ with equal probability. On the branch
+$\widehat\rho=0$ the dial does nothing. On the branch $\widehat\rho=2\rho$
+the choice
+\begin{equation}
+  \eta_\star=\frac{\kappa(\rho)}{\kappa(2\rho)}
+  =\frac{1+2(m-2)\rho}{2\,\big(1+(m-2)\rho\big)}
+  \label{eq:etastar}
+\end{equation}
+puts $t$ at $\kappa(\rho)$ and hence $\theta=1$, the population optimum.
+One branch is constant and the other attains its minimum, uniquely because
+$\theta$ is strictly monotone in $t$. So $\eta_\star$ is the unique global
+optimum, strictly inside, independent of the volatilities. With three
+assets of volatilities $(1,2,2)$ and $\rho=\tfrac14$ the optimum is
+$\eta_\star=\tfrac35$, and in exact arithmetic
+$F(0)-F(\tfrac35)=\tfrac1{45}$ and $F(1)-F(\tfrac35)=\tfrac1{20}$.
+
+\begin{proposition}[Sign at the full-coupling end]
+\label{prop:sign}
+Let $\widehat\rho=\rho\pm\tau$ with equal probability, $q=(m-2)\rho$, and
+$r=\beta/\alpha$. Then $\partial_\eta F(1,\tau)$ has the sign of
+\begin{equation}
+  \alpha\,(1-q)+\kappa\beta\,(2+q),
+  \qquad\text{equivalently}\qquad
+  q^2-1<r\,\rho\,(2+q),
+  \label{eq:crit}
+\end{equation}
+for all sufficiently small $\tau$, and the optimum is interior when this
+holds and stays at $\eta=1$ when the reverse strict inequality holds. The
+interior optimum sits at
+\begin{equation}
+  \tilde\eta=1-\frac{\alpha(1-q)+\kappa\beta(2+q)}{\rho^2(1+q)^2(\alpha-\kappa\beta)}\,\tau^2+O(\tau^4).
+  \label{eq:etatilde}
+\end{equation}
+These statements are global on $[0,1]$, since $V_0$ has the unique
+minimizer $\eta=1$ and $F(\cdot,\tau)\to V_0$ uniformly.
+\end{proposition}
+
+\begin{proof}
+Differentiate \eqref{eq:Fleaf} at $\eta=1$:
+$\partial_\eta F(1,\tau)=2\Delta\alpha^2(\alpha-\kappa\beta)\kappa^{-2}\,
+\mathbb{E}[\varphi(\kappa(\widehat\rho))]$ with
+$\varphi(x)=x(x-\kappa)/(\alpha-x\beta)^3$. Expand
+$\mathbb{E}[\varphi(\kappa(\rho\pm\tau))]$ to second order using
+$\varphi(\kappa)=0$, $\varphi'(\kappa)=\kappa/(\alpha-\kappa\beta)^3$,
+$\varphi''(\kappa)=2(\alpha+2\kappa\beta)/(\alpha-\kappa\beta)^4$,
+$\kappa'=(1+q)^{-2}$ and $\kappa\kappa''=-2q(1+q)^{-4}$. The bracket
+collects to $[\alpha(1-q)+\kappa\beta(2+q)]/(1+q)^4$ over
+$(\alpha-\kappa\beta)^4$. Dividing by $V_0''(1)=2\Delta\alpha^2/(\alpha-\kappa\beta)^2$
+gives \eqref{eq:etatilde}. Multiplying \eqref{eq:crit} by
+$(1+q)/\alpha$ gives the second form.
+\end{proof}
+
+In words: the dial should stop short of full coupling unless the cluster is
+both large and highly correlated, with $(m-2)\rho$ well above one, and its
+precision is concentrated in one asset, so that $r$ is small. Equal
+volatilities give $r=m-1$, which always satisfies \eqref{eq:crit}, but there
+the two ends coincide. The script confirms both signs: volatilities
+$(1,2,3,5)$ with $\rho=\tfrac1{10}$ move inside, and volatilities
+$(1,20,30,50)$ with $\rho=\tfrac9{10}$ stay at full coupling.
+
+\paragraph{Why the sign can go either way.} The mixing weight
+$\theta(\eta\kappa(\widehat\rho))$ is a nonlinear function of the estimated
+correlation, so symmetric noise in $\widehat\rho$ shifts its mean as well as
+spreading it, and the direction of the shift depends on the cluster.
+Damping by $\eta$ shrinks the spread, which always helps, and moves the
+mean, which helps or hurts according to that direction. The sign of
+\eqref{eq:crit} is the outcome of the competition.
+
+\subsection{Both dials}
+
+Take two clusters of two assets. Each has a unit-variance knot $p$ and a
+member $m$ of volatility $s$ correlated $r$ with its knot, the knots have
+correlation $c$, and the members' cross-cluster covariance passes through
+the knots, so that $\mathrm{Cov}(m_1,p_2)=r_1s_1c$ and
+$\mathrm{Cov}(m_1,m_2)=r_1s_1r_2s_2c$. Let all three correlations be
+estimated as $r_1\pm\tau$, $r_2\pm\tau$, $c\pm\tau$ independently. The
+verification script computes the derivatives in \cref{prop:corner} as
+truncated power series with rational coefficients, so \eqref{eq:shift} is
+exact.
+
+With $(r_1,r_2,c,s_1,s_2)=(\tfrac14,\tfrac12,\tfrac12,2,3)$ both shifts
+are negative, about $-29.9\,\tau^2$ in $\gamma$ and $-11.8\,\tau^2$ in
+$\eta$, so the optimum is strictly inside the square. With
+$(\tfrac14,\tfrac12,\tfrac14,\tfrac12,3)$ the $\gamma$ shift is positive,
+about $+15.1\,\tau^2$, and the $\eta$ shift negative, so the optimum sits
+on the edge $\gamma=1$ at $\eta\approx1-16.6\,\tau^2$ by the edge formula.
+At $\tau=\tfrac1{40}$ the predicted point beats the corner in both
+examples in exact arithmetic. Noise in the cross-cluster correlation alone
+still moves $\eta$, through the mixed term of $G$, so the two dials are not
+separable in general.
+
+\section{Cost}
+
+At $\gamma=0$ the square costs one inverse of each cluster block, from
+which \eqref{eq:closed} gives the whole inner dial and the fitness. The
+outer dial costs the conditioning. With the knot device of
+\cref{sec:square} nothing larger than a cluster or the number of clusters
+is inverted at any point of the square, the budget of the bridge in
+\cite{cotton2026nco}. HERC itself inverts nothing, and the edge $\gamma=0$
+adds one inverse per cluster to it.
+
+\section{Closing}
+
+Until now HERC has been placed with the heuristic methods, as a variant of
+hierarchical risk parity that budgets by risk contribution. Its budget rule
+is the global minimum-variance rule. What separates it from the optimum is
+conditioning, omitted twice, and each omission is a Schur complement that
+can be restored by degrees. The dendrogram it builds is used, in the
+precision reading of its own split formula, only to choose the clusters.
+
+Two things are new in the inner dial. Stevens' identity becomes a
+one-parameter path with a closed form, a long-only frontier, and, on an
+equicorrelated cluster, a straight segment whose noise problem is one
+scalar. And that scalar decides, in closed form, whether estimation error
+should stop the path short of the cluster's minimum-variance portfolio.
+
+Open directions are the analogues of those in \cite{cotton2026nco}: lost
+precision and effective damping for the outer dial under a gateway model,
+global statements for the joint problem, and the non-quadratic risk
+measures HERC also admits, for which no fitness identity of the form
+\eqref{eq:fitness} exists and the square has no exact far corner.
+
+\begin{thebibliography}{99}
+
+\bibitem{raffinot2018}
+T. Raffinot.
+The hierarchical equal risk contribution portfolio.
+SSRN 3237540, 2018.
+
+\bibitem{lopezdeprado2016}
+M. L\'opez de Prado.
+Building diversified portfolios that outperform out of sample.
+\emph{Journal of Portfolio Management}, 42(4):59--69, 2016.
+
+\bibitem{cotton2024schur}
+P. Cotton.
+Schur complementary allocation: a unification of hierarchical risk parity
+and minimum variance portfolios.
+arXiv:2411.05807, 2024.
+
+\bibitem{cotton2026bridge}
+P. Cotton.
+When the out-of-sample-optimal Schur portfolio lies between HRP and
+minimum variance.
+Working paper, 2026.
+\url{https://schur.microprediction.org/neither-end-of-the-bridge.pdf}
+
+\bibitem{cotton2026nco}
+P. Cotton.
+Nested clustered optimization is one end of a Schur bridge, and the
+interior is sometimes provably better.
+SSRN 7480738, 2026.
+
+\bibitem{stevens1998}
+G. V. G. Stevens.
+On the inverse of the covariance matrix in portfolio analysis.
+\emph{Journal of Finance}, 53(5):1821--1827, 1998.
+
+\bibitem{noguer2026}
+M. Noguer i Alonso.
+The mathematics of heuristic portfolio optimization.
+arXiv:2606.12612, 2026.
+
+\bibitem{palomar2025}
+D. P. Palomar.
+\emph{Portfolio Optimization: Theory and Application}.
+Cambridge University Press, 2025. Section 12.3.
+
+\bibitem{choueifaty2008}
+Y. Choueifaty and Y. Coignard.
+Toward maximum diversification.
+\emph{Journal of Portfolio Management}, 35(1):40--51, 2008.
+
+\bibitem{arevalo2019}
+R. Ar\'evalo, J. Le\'on, and G. Hern\'andez.
+Portfolio selection based on hierarchical clustering and inverse-variance
+weighting.
+In \emph{Computational Science, ICCS 2019}, LNCS 11538, 2019.
+
+\bibitem{trucios2026}
+C. Truc\'ios.
+Hierarchical risk clustering versus traditional risk-based portfolios: an
+empirical out-of-sample comparison.
+\emph{Empirical Economics}, 2026.
+
+\bibitem{huang2022}
+Y. Huang and X. Gao.
+Evaluating hierarchical equal risk contribution portfolios in the Chinese
+stock market.
+\emph{Journal of Mathematical Finance}, 12:179--195, 2022.
+
+\bibitem{sjostrand2020}
+D. Sj\"ostrand and N. Behnejad.
+Exploration of hierarchical clustering in long-only risk-based portfolio
+optimization.
+Master's thesis, Copenhagen Business School, 2020.
+
+\bibitem{riskfolio}
+D. Cajas.
+Riskfolio-Lib. \texttt{github.com/dcajasn/Riskfolio-Lib}, 2020--2026.
+
+\bibitem{skfolio}
+H. Delatte and C. Nicolini.
+skfolio. \texttt{github.com/skfolio/skfolio}, 2023--2026.
+
+\bibitem{mlfinlab}
+Hudson and Thames.
+PortfolioLab, formerly mlfinlab, 2019--2021.
+
+\end{thebibliography}
+
+\end{document}

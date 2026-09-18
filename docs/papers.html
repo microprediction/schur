@@ -101,6 +101,24 @@
         examples are machine-verified.</em>
       </li>
       <li>
+        Cotton, P. (2026). <em>Hierarchical Equal Risk Contribution Is a Corner of a Schur Square, and Two Dials Lead to Minimum Variance</em>.
+        Working paper &mdash; <a href="./schur-herc-square.pdf">PDF</a>,
+        <a href="https://github.com/microprediction/schur/blob/main/paper/schur-herc-square.tex">source</a>,
+        <a href="https://github.com/microprediction/schur/blob/main/paper/verify_herc_square.py">certificate</a>.
+        <em>HERC budgets clusters by inverse cluster variance, which is the rule block inversion gives the
+        global minimum-variance portfolio. What HERC lacks is conditioning in two places: each cluster on
+        the others, and each asset on its cluster mates. Damping the two Schur complements by &gamma; and
+        &eta; gives a square with HERC at (0,0) and the global optimum at (1,1). Raffinot's split formula,
+        read with risk contribution as a precision, telescopes down any dendrogram to a flat inverse-fitness
+        rule; the reference implementations sum variances instead and depart from it at three or more
+        clusters. The inner dial has a closed form interpolating the naive and Stevens quantities, a
+        long-only frontier, and on an equicorrelated cluster is the straight segment from inverse variance
+        to cluster minimum variance, so its noise problem is one scalar: an exact interior optimum
+        &eta;&#8902;=3/5 with gaps 1/45 and 1/20, a sign criterion at full coupling with both signs realized,
+        and a two-dial local theorem at the minimum-variance corner with exact examples where both dials
+        move inside and where one stays. Every claim is machine-verified in rational arithmetic.</em>
+      </li>
+      <li>
         Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its Optimal
         Strength Is a Sampling-Error Correction</em>.
         Working paper &mdash; <a href="./localization-is-schur-damping.pdf">PDF</a>,
