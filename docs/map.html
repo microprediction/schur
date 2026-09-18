@@ -79,6 +79,7 @@ const CLUSTERS = {
   portfolio:  {label: "Portfolio / econometrics",   color: "#27ae60"},
   ml:         {label: "Machine learning",           color: "#e74c8b"},
   eval:       {label: "Scoring / evaluation",       color: "#5d6d7e"},
+  da:         {label: "Data assimilation",          color: "#a04000"},
 };
 
 const NODES = [
@@ -107,6 +108,12 @@ const NODES = [
  {id:"sko2021", label:"Schäfer–Katzfuss–Owhadi ⚠", year:2021, c:"spatial", url:"https://arxiv.org/abs/2004.14455", note:"Sparse inverse-Cholesky by KL minimization; near-linear cost with guarantees."},
  {id:"pan2024", label:"Block-Vecchia 2024", year:2024, c:"spatial", url:"https://arxiv.org/abs/2410.04477", note:"GPU block Vecchia."},
  {id:"shrinktm2025", label:"Chakraborty\u2013Katzfuss 2025", year:2025, c:"hub", url:"https://arxiv.org/abs/2409.19208", note:"Shrinks Vecchia conditionals toward a parametric base (EB intensity). Nearest relative; needs a base."},
+ {id:"evensen1994", label:"Evensen 1994", year:1994, c:"da", url:"https://doi.org/10.1029/94JC00572", note:"The ensemble Kalman filter: a small ensemble stands in for the forecast covariance, so estimation error is the whole game."},
+ {id:"gaspari1999", label:"Gaspari–Cohn 1999", year:1999, c:"da", url:"https://doi.org/10.1002/qj.49712555417", note:"Compactly supported correlation functions: the taper that localization multiplies the sample covariance by."},
+ {id:"houtekamer2001", label:"Houtekamer–Mitchell 2001", year:2001, c:"da", url:"https://doi.org/10.1175/1520-0493(2001)129<0123:ASEKFF>2.0.CO;2", note:"Covariance localization by a Schur (Hadamard) product with a distance taper. Schur's name, but the elementwise product, not the complement."},
+ {id:"hamill2001", label:"Hamill–Whitaker–Snyder 2001", year:2001, c:"da", url:"https://doi.org/10.1175/1520-0493(2001)129<2776:DDFOBE>2.0.CO;2", note:"Distance-dependent filtering of sample covariances; the localization radius is tuned empirically."},
+ {id:"anderson2007", label:"Anderson 2007", year:2007, c:"da", url:"https://doi.org/10.1016/j.physd.2006.02.011", note:"Hierarchical ensemble filter: adaptive localization from the sampling error of the regression coefficients. The nearest thing to a reliability argument."},
+ {id:"hz2016", label:"Houtekamer–Zhang 2016", year:2016, c:"da", url:"https://doi.org/10.1175/MWR-D-15-0440.1", note:"Review of the EnKF for atmospheric data assimilation; localization and inflation as the two dials."},
  {id:"taper2006", label:"Tapering 2006", year:2006, c:"spatial", url:"https://doi.org/10.1198/106186006X132178", note:"Entrywise damping (Schur product theorem) vs factorization damping (LDL'). The instructive contrast."},
 
  {id:"besag1975", label:"Besag 1975", year:1975, c:"composite", url:"https://doi.org/10.2307/2987782", note:"Pseudo-likelihood, the origin."},
@@ -180,6 +187,11 @@ const EDGES = [
  {s:"sko2021", t:"shrinktm2025", type:"lineage"},
  {s:"shrinktm2025", t:"hub", type:"identity", label:"shrunk conditionals; base-bound EB vs base-free γ*"},
  {s:"taper2006", t:"hub", type:"contrast", label:"entrywise vs factorization damping"},
+ {s:"evensen1994", t:"houtekamer2001", type:"lineage"}, {s:"gaspari1999", t:"houtekamer2001", type:"lineage", label:"taper functions"},
+ {s:"gaspari1999", t:"hamill2001", type:"lineage"}, {s:"houtekamer2001", t:"anderson2007", type:"lineage"},
+ {s:"houtekamer2001", t:"hz2016", type:"lineage"}, {s:"anderson2007", t:"hz2016", type:"lineage"},
+ {s:"gaspari1999", t:"taper2006", type:"lineage", label:"same tapers, spatial statistics"},
+ {s:"hub", t:"houtekamer2001", type:"gap", label:"a block-constant taper has the damped Schur complement; reliability γ* not yet applied to the localization radius"},
  {s:"besag1975", t:"varin2011", type:"lineage"},
  {s:"varin2011", t:"hub", type:"endpoint", label:"γ=0 is block-composite likelihood"},
  {s:"varin2011", t:"pakel2021", type:"lineage"},
