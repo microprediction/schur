@@ -93,12 +93,28 @@
       return solve(Q, b);
     });
   }
-  /* w ∝ D (D' S D)^{-1} D' u, a direction that vanishes is dropped */
+  /* d_i = Q_i^{-1} b_i with the continuous extension: b_i = u_I - gamma a_i can vanish only at
+     isolated gamma; there the shape of d_i has the limit -Q_i^{-1} a_i, which is used. The
+     vanishing test is relative to the cancelling terms, so rescaling Sigma or u changes nothing.
+     Returns null only when u_I itself is zero. Columns are returned at unit max-norm. */
+  function clusterDirection(Sigma, I, others, gamma, u) {
+    const { Q, b } = conditionedPair(Sigma, I, others, gamma, u);
+    const uI = I.map(a => u[a]);
+    const ga = uI.map((v, r) => v - b[r]);                      /* gamma * a_i */
+    const scale = Math.max(...uI.map(Math.abs), ...ga.map(Math.abs));
+    let rhs = b;
+    if (Math.max(...b.map(Math.abs)) <= 1e-10 * scale) {
+      if (gamma > 0 && Math.max(...ga.map(Math.abs)) > 0) rhs = ga.map(v => -v); else return null;
+    }
+    const d = solve(Q, rhs), m = Math.max(...d.map(Math.abs));
+    return d.map(v => v / m);
+  }
+  /* w ∝ D (D' S D)^{-1} D' u */
   function bridge(Sigma, clusters, knots, gamma, u) {
     const n = Sigma.length; u = u || new Array(n).fill(1);
     const ds = directions(Sigma, clusters, knots, gamma, u);
     const cols = [];
-    clusters.forEach((I, i) => { if (ds[i].some(v => Math.abs(v) > 1e-12)) { const c = new Array(n).fill(0); I.forEach((a, r) => c[a] = ds[i][r]); cols.push(c); } });
+    clusters.forEach((I, i) => { const d = clusterDirection(Sigma, I, knots.filter((_, j) => j !== i), gamma, u); if (d) { const c = new Array(n).fill(0); I.forEach((a, r) => c[a] = d[r]); cols.push(c); } });
     const SD = cols.map(c => matvec(Sigma, c));
     const G = cols.map((c, i) => cols.map((_, j) => dot(c, SD[j])));
     const a = solve(G, cols.map(c => dot(c, u)));
@@ -150,15 +166,21 @@
     const q = kappa.map((v, i) => v * a[i] / J);
     return quad(S_pop, q) + a.reduce((s, ai, i) => s + (ai / J) * (ai / J) * delta[i], 0);
   }
-  /* duplicated knots: S = 11' + eps I, two clusters with unit residual precision */
+  /* nearly duplicated knots: population S_eps = 11' + eps I is both built from and scored on,
+     two clusters with unit residual precision. As eps -> 0 the NCO end -> 3/8 and the optimum -> 1/3. */
   function duplicatedKnotsV0(gamma, eps) {
-    const S = [[1 + eps, 1], [1, 1 + eps]], Spop = [[1, 1], [1, 1]];
-    return compressedVariance(S, Spop, [1, 1], kappas(S, gamma));
+    const S = [[1 + eps, 1], [1, 1 + eps]];
+    return compressedVariance(S, S, [1, 1], kappas(S, gamma));
   }
-  function duplicatedKnotsLambdaPath(lambda) {
-    const kap = [1 - lambda / 2, 1 - lambda / 2];          /* (1-lambda)/s + lambda h, h = S^+ 1 = (1/2, 1/2) */
-    return compressedVariance([[1, 1], [1, 1]], [[1, 1], [1, 1]], [1, 1], kap);
+  /* the path in effective exposure for the same S_eps: (1-lambda)/s + lambda h, h = S_eps^{-1} 1 */
+  function duplicatedKnotsLambdaPath(lambda, eps) {
+    const S = [[1 + eps, 1], [1, 1 + eps]], h = solve(S, [1, 1]);
+    const kap = h.map((hi, i) => (1 - lambda) / S[i][i] + lambda * hi);
+    return compressedVariance(S, S, [1, 1], kap);
   }
+  /* the equicorrelated knot estimate z is a covariance iff -1/(k-1) < z < 1 */
+  function symmetricNoiseTauMax(k, c) { return Math.min(1 - c, c + 1 / (k - 1)); }
+  function estimateAdmissible(k, z) { return z > -1 / (k - 1) + 1e-9 && z < 1 - 1e-9; }
   /* lost precision: V0(gamma) - V* and the closed form L/(Z(Z-L)) */
   function lostPrecision(S, delta, gamma) {
     const k = S.length, one = new Array(k).fill(1), h = solve(S, one), kap = kappas(S, gamma);
@@ -248,6 +270,7 @@
   const api = { solve, inv, dot, matvec, quad, mulberry32, gatewayModel, conditionedPair, directions, bridge, minVar,
     t_of, x_of, V_of, xStar, gammaStarTwoPoint, F_twoPoint, F_symmetric, shiftCoefficient, argmin,
     lambda_of, kappas, compressedVariance, duplicatedKnotsV0, duplicatedKnotsLambdaPath, lostPrecision,
+    clusterDirection, symmetricNoiseTauMax, estimateAdmissible,
     lineChart, PALETTE, fmt };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.NCO = api;
 })(typeof window !== 'undefined' ? window : globalThis);
