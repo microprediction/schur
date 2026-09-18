@@ -191,6 +191,13 @@
           cluster.</em>
         </li>
         <li>
+          Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its
+          Optimal Strength Is a Sampling-Error Correction</em>.
+          Working paper &mdash; <a href="./localization-is-schur-damping.pdf">PDF</a>. <em>A
+          block-constant taper in an ensemble Kalman filter is the &gamma;-dial; the
+          optimal &gamma; is interior at every noise level and in closed form.</em>
+        </li>
+        <li>
           Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
           Working paper &mdash; <a href="./schur-damping-pdlp.pdf">PDF</a>,
           <a href="./damping-in-pdlps.html">web note</a>. <em>Brings the interior &gamma;-dial to the
@@ -203,8 +210,10 @@
       <p>The same dial under another name. Ensemble filters estimate a forecast
       covariance from a small ensemble and damp its cross-covariances by a
       distance taper, choosing the radius empirically. A block-constant taper
-      has the damped Schur complement as its conditional; the reliability
-      argument for &gamma;* has not been applied to the radius.</p>
+      has the damped Schur complement as its conditional, and for that case the
+      optimal &gamma; is a closed-form sampling-error correction (see the working
+      paper above). Distance tapers and radius selection in operational filters
+      remain untreated.</p>
       <ul>
         <li>
           Evensen, G. (1994). &ldquo;Sequential data assimilation with a nonlinear
