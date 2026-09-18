@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Effective damping and the singular limit — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>Effective damping &mdash; and what happens near rank deficiency</h1>
+
+  <p>A common &gamma; does not damp every cluster equally. Each knot's exposure
+  interpolates between its NCO value and its minimum-variance value, and the
+  interpolation actually achieved is
+  &lambda; = &gamma;r / (1 &minus; &gamma; + &gamma;r), where r is the share of the
+  knot's variance that the other knots leave unexplained. A knot the others nearly
+  explain has small r and barely moves until &gamma; is very close to 1.</p>
+
+  <div class="widget">
+    <canvas id="chartLam" width="820" height="280"></canvas>
+    <div class="readout">&lambda;(&gamma;) for four values of r. At r = 1 the
+    knot is unpredictable from the others and &lambda; = &gamma;. As r falls the
+    curve hugs zero and then rises in a boundary layer at the right end.</div>
+  </div>
+  <div class="lookfor">What to look for: every curve passes through
+  &lambda; = &frac12; at &gamma; = 1/(1 + r), so the r = 0.01 curve reaches the
+  halfway point only at &gamma; &asymp; 0.990.</div>
+
+  <p>The limit r &rarr; 0 is a duplicated knot. Take two clusters, each a knot and
+  an independent asset, all of unit variance, with the two knots correlated at
+  1/(1 + &epsilon;). The optimum has variance 1/3 as &epsilon; &rarr; 0. The
+  bridge reaches it at &gamma; = 1 for every &epsilon; &gt; 0, but at every fixed
+  &gamma; &lt; 1 its variance tends to 3/8. The limits do not commute.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="leps">log&#8321;&#8320; &epsilon;</label><input type="range" id="leps" min="-6" max="0" step="0.25" value="-2" /><span class="val" id="lepsVal">-2.00</span>
+    </div>
+    <canvas id="chartDup" width="820" height="300"></canvas>
+    <div class="readout" id="readDup"></div>
+  </div>
+  <div class="lookfor">What to look for: as &epsilon; shrinks, the &gamma;-curve
+  stays flat at 3/8 over more and more of the bridge and drops to 1/3 in a
+  narrower layer at the right end. The dashed path in effective exposure,
+  &kappa;&#773;(&lambda;) = (1 &minus; &lambda;)/s + &lambda;h with h = S<sup>+</sup>1,
+  is the same at every &epsilon;: it runs continuously from 3/8 to 1/3, which is
+  the paper's Proposition on a bridge in effective exposure.</div>
+
+  <p class="muted">Both curves are computed from the compressed two-tier formulas
+  of the paper's Section 6, with the knot covariance 11&prime; + &epsilon;I and unit
+  member precision. The verification script checks the same limits.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+function draw(){
+  const rs=[1,0.5,0.1,0.01];
+  N.lineChart('chartLam',{series:rs.map(r=>({name:'r = '+r,points:Array.from({length:401},(_,i)=>{const g=i/400;return [g,N.lambda_of(g,r)];})})),
+    title:'effective interpolation λ against γ',xlabel:'γ',xname:'γ',hlines:[{y:0.5,label:'λ = ½',color:'#999'}],height:280});
+  const le=+$('leps').value, eps=Math.pow(10,le); $('lepsVal').textContent=le.toFixed(2);
+  const gpts=Array.from({length:801},(_,i)=>{const g=i/800;return [g,N.duplicatedKnotsV0(g,eps)];});
+  const lpts=Array.from({length:201},(_,i)=>{const l=i/200;return [l,N.duplicatedKnotsLambdaPath(l)];});
+  N.lineChart('chartDup',{series:[{name:'bridge in γ, ε = 10^'+le.toFixed(2),points:gpts},{name:'path in effective exposure λ',points:lpts,dash:[6,4]}],
+    title:'duplicated knots: variance along the two paths',xlabel:'γ or λ',xname:'γ, λ',hlines:[{y:3/8,label:'3/8 (NCO)',color:'#999'},{y:1/3,label:'1/3 (optimum)',color:'#999'}],height:300});
+  const half=gpts.find(p=>p[1]<(3/8+1/3)/2);
+  $('readDup').innerHTML='At this ε the γ-curve is halfway down at <b>γ ≈ '+(half?half[0].toFixed(4):'—')+'</b>; V₀(0.99) = '+N.duplicatedKnotsV0(0.99,eps).toFixed(5)+', V₀(1) = '+N.duplicatedKnotsV0(1,eps).toFixed(5)+'.';
+}
+$('leps').addEventListener('input',draw); window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>

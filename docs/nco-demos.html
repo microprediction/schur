@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Demonstrations: the NCO bridge — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <h1>Demonstrations: the NCO bridge</h1>
+  <p class="subtitle">Three live pages for
+  <a href="./schur-nco-bridge.pdf"><em>A Schur Bridge from Nested Clustered
+  Optimization to Global Minimum Variance</em></a>.</p>
+
+  <p class="lead">Each page computes one result of the paper in your browser
+  from the same formulas the paper states, with sliders where a parameter can be
+  varied. The exact rational checks of the same claims are in
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py"><code>paper/verify_schur_nco_bridge.py</code></a>.</p>
+
+  <ul class="demo-list">
+    <li><a href="./nco-identical.html">Identical clusters &mdash; the bridge in
+      one number</a>
+      <div class="claim">With identical clusters the portfolio is one scalar and
+      the out-of-sample variance is a closed-form function of &gamma;. The
+      two-point estimate has a unique interior optimum at
+      (1 + 2(k&minus;2)c)/(2[1 + (k&minus;3)c]), which is 2/3 in the simplest case,
+      and small symmetric noise shows both signs of the endpoint shift with a
+      threshold at &delta; = 8.</div></li>
+    <li><a href="./nco-effective-damping.html">Effective damping &mdash; and the
+      singular limit</a>
+      <div class="claim">A common &gamma; damps each cluster by
+      &lambda; = &gamma;r/(1 &minus; &gamma; + &gamma;r). As a knot becomes
+      redundant the movement compresses into a boundary layer at &gamma; = 1, the
+      limits stop commuting, and the path in effective exposure runs continuously
+      from 3/8 to 1/3.</div></li>
+    <li><a href="./nco-knots-move.html">Only the knots move</a>
+      <div class="claim">On a random gateway covariance the member parts of every
+      cluster direction are flat in &gamma; to machine precision, only the knot
+      exposures move, and the lost-precision identity holds along the whole
+      bridge.</div></li>
+  </ul>
+</main>
+</body>
+</html>
