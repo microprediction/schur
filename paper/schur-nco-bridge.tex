@@ -924,20 +924,28 @@ what is lost.
 
 \section{Closing}
 
-The ingredients are old. The identity is block inversion, the truncation of
-a conditioning set is the device of Vecchia approximations, and the damping
-is from \cite{cotton2024schur}. What they give here is new.
+Nested clustered optimization has been treated as belonging to a different
+family from optimization proper: a clustering heuristic that quarantines the
+instability of Markowitz rather than a relaxation of it. This paper shows
+otherwise. Under a rank-one model of cross-cluster dependence, a Schur
+relaxation places NCO and the global minimum-variance portfolio at the two
+ends of a one-parameter family of portfolios, at a cost no greater than
+NCO's own.
 
-Under a rank-one model of cross-cluster dependence, one knot per cluster is
-a sufficient conditioning set, so the bridge from nested clustered
-optimization to the global minimum-variance portfolio costs no more than NCO
-itself. Along the bridge only the knots move, each by an explicit fraction
-of its journey, and the variance given up at every setting of $\gamma$ is in
-closed form. Where to sit under estimation error is decided by the sign of
-one derivative at the minimum-variance end. A symmetric family gives the
-optimal coupling exactly, and realizes both signs in a single model. When
-the knot covariance is singular the parameterization by $\gamma$ is itself
-singular, and a path in effective exposure repairs it.
+The family has structure. Along it only the knots move, each by an explicit
+fraction of its journey, and the variance given up at every setting is in
+closed form. It also comes with conditions for where to sit under
+estimation error. The sign of one derivative at the minimum-variance end
+decides whether remaining at that endpoint is optimal out of sample, and a
+symmetric family exhibits both outcomes in a single model, with the optimal
+coupling exact.
+
+The separation reasserts itself when the knot covariance is rank deficient.
+There the parameterization by $\gamma$ is itself singular, and NCO and the
+optimum stay apart on it, though a path in effective exposure still joins
+the two ends. The ingredients throughout are old: block inversion, the
+truncation of a conditioning set as in Vecchia approximations, and the
+damping of \cite{cotton2024schur}.
 
 Two directions are open. \Cref{prop:sufficient} may serve
 Schur-complementary allocation on the tree, where the complement against a
