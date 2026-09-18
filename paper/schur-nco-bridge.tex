@@ -924,18 +924,27 @@ what is lost.
 
 \section{Closing}
 
-The contribution is deliberately small. The identity is block inversion, the
-truncation of the conditioning set follows Vecchia approximations, and the
-damping is from
-\cite{cotton2024schur}. What is added is the model under which one knot
-per cluster suffices, and the bridge from NCO to the global optimum that it
-makes cheap.
+The ingredients are old. The identity is block inversion, the truncation of
+a conditioning set is the device of Vecchia approximations, and the damping
+is from \cite{cotton2024schur}. What they give here is new.
 
-\Cref{prop:sufficient} may also serve Schur-complementary allocation on the
-tree, where the complement against a sibling block could be taken against
-that block's knots. The whole-matrix analysis of \cite{cotton2026bridge}
-rests on a scalar reduction specific to the tree and needs a replacement
-here. We leave both, and an empirical comparison, to future work.
+Under a rank-one model of cross-cluster dependence, one knot per cluster is
+a sufficient conditioning set, so the bridge from nested clustered
+optimization to the global minimum-variance portfolio costs no more than NCO
+itself. Along the bridge only the knots move, each by an explicit fraction
+of its journey, and the variance given up at every setting of $\gamma$ is in
+closed form. Where to sit under estimation error is decided by the sign of
+one derivative at the minimum-variance end. A symmetric family gives the
+optimal coupling exactly, and realizes both signs in a single model. When
+the knot covariance is singular the parameterization by $\gamma$ is itself
+singular, and a path in effective exposure repairs it.
+
+Two directions are open. \Cref{prop:sufficient} may serve
+Schur-complementary allocation on the tree, where the complement against a
+sibling block could be taken against that block's knots. The whole-matrix
+analysis of \cite{cotton2026bridge} rests on a scalar reduction specific to
+the tree and needs a replacement here. We leave both, and an empirical
+comparison, to future work.
 
 \begin{thebibliography}{99}
 
