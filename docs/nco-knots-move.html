@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Only the knots move — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>Only the knots move</h1>
+
+  <p>Under the gateway model the conditioning term of every cluster is supported
+  on a single direction, so as &gamma; runs along the bridge the member part of
+  each cluster's direction does not move at all. Only the knot exposure changes.
+  The page draws a random gateway covariance, four clusters with two to four
+  assets each, and plots every entry of every cluster direction against
+  &gamma;.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="seed">seed</label><input type="range" id="seed" min="1" max="60" step="1" value="7" /><span class="val" id="seedVal">7</span>
+    </div>
+    <div class="controls">
+      <button id="btnU1" class="on">u = 1 (minimum variance)</button>
+      <button id="btnMu">u = &mu; (maximum Sharpe direction)</button>
+    </div>
+    <canvas id="chartDir" width="820" height="320"></canvas>
+    <div class="readout" id="readDir"></div>
+  </div>
+  <div class="lookfor">What to look for: the solid lines, the knot exposures
+  &kappa;<sub>i</sub>(&gamma;), move. The dotted lines, one per remaining member,
+  are flat to machine precision. At &gamma; = 1 the stacked directions are the
+  blocks of &Sigma;<sup>&minus;1</sup>u, and the portfolio is the global optimum;
+  the readout reports the largest deviation.</div>
+
+  <div class="widget">
+    <canvas id="chartLoss" width="820" height="260"></canvas>
+    <div class="readout" id="readLoss"></div>
+  </div>
+  <div class="lookfor">What to look for: the excess variance of the bridge over the
+  optimum, computed directly, against the closed form
+  L<sub>&gamma;</sub> / (Z(Z &minus; L<sub>&gamma;</sub>)) of the lost-precision
+  proposition, on the same random model compressed to its knots. The two curves
+  coincide, and vanish only at &gamma; = 1.</div>
+
+  <p class="muted">Everything is computed live from the sampled covariance. The
+  model has one knot per cluster; each remaining member loads on its own knot
+  with a random beta and carries independent residual noise.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+let useMu=false;
+function draw(){
+  const seed=+$('seed').value; $('seedVal').textContent=seed;
+  const m=N.gatewayModel(seed,[2,3,1,2]), n=m.Sigma.length;
+  const rnd=N.mulberry32(seed+1000); const mu=Array.from({length:n},()=>3+ (rnd()-0.5));
+  const u=useMu?mu:new Array(n).fill(1);
+  const gs=Array.from({length:101},(_,i)=>i/100);
+  const dirs=gs.map(g=>N.directions(m.Sigma,m.clusters,m.knots,g,u));
+  const series=[]; let flat=0;
+  m.clusters.forEach((I,i)=>{
+    const col=N.PALETTE[i];
+    const beta=I.slice(1).map(a=>m.Sigma[a][I[0]]/m.Sigma[I[0]][I[0]]);
+    series.push({name:'cluster '+(i+1)+' knot exposure κ',color:col,points:gs.map((g,t)=>{const d=dirs[t][i];return [g,d[0]+beta.reduce((s,b,r)=>s+b*d[r+1],0)];})});
+    for(let r=1;r<I.length;r++){series.push({name:'',color:col,dash:[2,4],points:gs.map((g,t)=>[g,dirs[t][i][r]])});
+      flat=Math.max(flat,...gs.map((g,t)=>Math.abs(dirs[t][i][r]-dirs[0][i][r])));}
+  });
+  const named=series.filter(s=>s.name);
+  N.lineChart('chartDir',{series:series,title:'cluster directions d_i(γ): knot exposures solid, member parts dotted',xlabel:'γ',xname:'γ',height:320});
+  const w1=N.bridge(m.Sigma,m.clusters,m.knots,1,u).w; const opt=N.solve(m.Sigma,u); const tot=opt.reduce((s,v)=>s+v,0); const optn=opt.map(v=>v/tot);
+  const dev=Math.max(...w1.map((v,i)=>Math.abs(v-optn[i])));
+  $('readDir').innerHTML='Largest movement of any member part across the bridge: <b>'+flat.toExponential(2)+'</b>. Largest deviation of the γ = 1 portfolio from Σ⁻¹u normalized: <b>'+dev.toExponential(2)+'</b>.';
+  // lost precision on the compressed model (u = 1 only)
+  const S=m.S; const delta=m.clusters.map((I,i)=>{if(I.length<2)return 0;const beta=I.slice(1).map(a=>m.Sigma[a][I[0]]/m.Sigma[I[0]][I[0]]);const E=m.resid[i];const cvec=beta.map(b=>1-b);return N.dot(cvec,N.solve(E,cvec));});
+  const ok=delta.every(v=>v>0);
+  if(ok){const pts1=[],pts2=[]; gs.forEach(g=>{const r=N.lostPrecision(S,delta,g); pts1.push([g,r.computed]); pts2.push([g,r.formula]);});
+    N.lineChart('chartLoss',{series:[{name:'V₀(γ) − V⋆ computed',points:pts1},{name:'L/(Z(Z−L))',points:pts2,dash:[6,4]}],title:'lost precision on the compressed knot system (u = 1)',xlabel:'γ',xname:'γ',height:260});
+    const gap=Math.max(...pts1.map((p,i)=>Math.abs(p[1]-pts2[i][1])));
+    $('readLoss').innerHTML='Largest gap between the two curves: <b>'+gap.toExponential(2)+'</b>. Residual precisions δ = ['+delta.map(v=>v.toFixed(3)).join(', ')+'].';}
+}
+$('seed').addEventListener('input',draw);
+$('btnU1').onclick=()=>{useMu=false;$('btnU1').classList.add('on');$('btnMu').classList.remove('on');draw();};
+$('btnMu').onclick=()=>{useMu=true;$('btnMu').classList.add('on');$('btnU1').classList.remove('on');draw();};
+window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>

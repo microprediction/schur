@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Identical clusters: the bridge in one number — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>Identical clusters &mdash; the bridge in one number</h1>
+
+  <p>Give each of k clusters a knot of unit variance and one independent asset of
+  variance 1/&delta;, with correlation c between every pair of knots. By symmetry
+  a portfolio is one number, the total weight x on the knots, and the bridge maps
+  an estimated correlation z to x through the closed-form knot exposure
+  t<sub>&gamma;</sub>(z). The expected out-of-sample variance is then a scalar
+  function of &gamma;, computed below from the formulas of the paper's
+  Section 7.1 with no matrix inversion.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="k">k</label><input type="range" id="k" min="2" max="12" step="1" value="10" /><span class="val" id="kVal">10</span>
+      <label for="c">c</label><input type="range" id="c" min="0.02" max="0.48" step="0.01" value="0.25" /><span class="val" id="cVal">0.25</span>
+    </div>
+    <div class="controls">
+      <label for="d">&delta;</label><input type="range" id="d" min="0.25" max="16" step="0.25" value="12" /><span class="val" id="dVal">12.00</span>
+      <label for="tau">&tau;</label><input type="range" id="tau" min="0.005" max="0.12" step="0.005" value="0.05" /><span class="val" id="tauVal">0.050</span>
+    </div>
+    <div class="controls">
+      <button id="modeTwo" class="on">estimate Z &isin; {0, 2c}</button>
+      <button id="modeSym">small symmetric noise Z = c &plusmn; &tau;</button>
+    </div>
+    <canvas id="chartF" width="820" height="300"></canvas>
+    <div class="readout" id="readF"></div>
+  </div>
+  <div class="lookfor">What to look for: with the two-point estimate, the minimum of
+  the curve lands on the dashed line at the closed form
+  &gamma;&#8902; = (1 + 2(k&minus;2)c) / (2[1 + (k&minus;3)c]) for every &delta;. At the
+  default k = 10, c = &frac14; that is 10/11, and at k = 2, c = &frac14;, &delta; = 1
+  it is exactly 2/3. With small symmetric noise the
+  minimum sits at 1 &minus; (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2; when that is
+  below 1, and at full coupling otherwise. At the default &delta; = 12 the same
+  model stays at full coupling under small noise and moves to 10/11 under the
+  two-point estimate. A curve whose minimum missed either line would falsify
+  the paper.</div>
+
+  <div class="widget">
+    <canvas id="chartShift" width="820" height="260"></canvas>
+    <div class="readout" id="readShift"></div>
+  </div>
+  <div class="lookfor">What to look for: the sign of the small-noise shift
+  coefficient as &delta; varies at the current k and c. For k = 10 and c = &frac14;
+  it is (8 &minus; &delta;)/(1 + 13&delta;/4): positive below &delta; = 8, where the
+  optimum moves inside, and negative above, where full coupling stays optimal.</div>
+
+  <p class="muted">The curves are the scalar formulas of the paper evaluated live.
+  The same identities are checked in exact rational arithmetic by the verification
+  script.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+let mode='two';
+function read(){return {k:+$('k').value,c:+$('c').value,d:+$('d').value,tau:+$('tau').value};}
+function draw(){
+  const {k,c,d,tau}=read();
+  $('kVal').textContent=k; $('cVal').textContent=c.toFixed(2); $('dVal').textContent=d.toFixed(2); $('tauVal').textContent=tau.toFixed(3);
+  const F=mode==='two'?(g=>N.F_twoPoint(g,k,c,d)):(g=>N.F_symmetric(g,tau,k,c,d));
+  const pts=[]; for(let i=0;i<=400;i++){const g=i/400; pts.push([g,F(g)]);}
+  const best=N.argmin(F,0,1,4000);
+  const vl=[];
+  let claim;
+  if(mode==='two'){claim=N.gammaStarTwoPoint(k,c); vl.push({x:claim,label:'closed form γ⋆ = '+claim.toFixed(4),color:'#c0392b'});}
+  else{const coef=N.shiftCoefficient(k,c,d); claim=Math.min(1,1-coef*tau*tau); vl.push({x:claim,label:'1 − (G′/V₀″)τ² = '+claim.toFixed(4),color:'#c0392b'});}
+  vl.push({x:best.g,label:'',color:'#0f8b6e'});
+  N.lineChart('chartF',{series:[{name:'F(γ)',points:pts}],title:'expected out-of-sample variance F(γ)',xlabel:'γ',xname:'γ',vlines:vl,height:300});
+  const xs=N.xStar(k,c,d), vs=N.V_of(xs,k,c,d);
+  $('readF').innerHTML='Numerical minimum at <b>γ = '+best.g.toFixed(4)+'</b> (green), analytic <b>'+claim.toFixed(4)+'</b> (red). '+
+    'Population optimum x⋆ = '+xs.toFixed(4)+' with variance '+vs.toFixed(5)+'. '+
+    (mode==='two'?'F(0) − F(γ⋆) = '+(F(0)-F(claim)).toExponential(3)+', F(1) − F(γ⋆) = '+(F(1)-F(claim)).toExponential(3)+'.':
+    'Shift coefficient G′(1)/V₀″(1) = '+N.shiftCoefficient(k,c,d).toFixed(4)+'.');
+  const ds=[]; for(let i=1;i<=64;i++){const dd=i/4; ds.push([dd,N.shiftCoefficient(k,c,dd)]);}
+  const hl=[{y:0,label:'',color:'#999'}];
+  const vl2=(k===10&&Math.abs(c-0.25)<1e-9)?[{x:8,label:'δ = 8',color:'#c0392b'}]:[];
+  N.lineChart('chartShift',{series:[{name:'G′(1)/V₀″(1)',points:ds,color:'#ef6c00'}],title:'small-noise shift coefficient against δ, at the current k and c',xlabel:'δ',xname:'δ',hlines:hl,vlines:vl2,height:260});
+  let z=null; for(let i=1;i<ds.length;i++){const a=ds[i-1],b=ds[i]; if(Math.sign(a[1])!==Math.sign(b[1])){z=a[0]+(b[0]-a[0])*a[1]/(a[1]-b[1]);break;}}
+  $('readShift').innerHTML=z!==null?'Sign change at <b>δ ≈ '+z.toFixed(2)+'</b>: below it the small-noise optimum is interior, above it full coupling is optimal.':'No sign change on this range of δ.';
+}
+['k','c','d','tau'].forEach(id=>$(id).addEventListener('input',draw));
+$('modeTwo').onclick=()=>{mode='two';$('modeTwo').classList.add('on');$('modeSym').classList.remove('on');draw();};
+$('modeSym').onclick=()=>{mode='sym';$('modeSym').classList.add('on');$('modeTwo').classList.remove('on');draw();};
+window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>
