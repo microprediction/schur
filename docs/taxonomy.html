@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Which Schur Is Which</title>
+  <meta name="description" content="A taxonomy of the Schur-conditioned portfolio constructions: named by their endpoints, qualified by their path." />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+  <style>
+    table.tax { width: 100%; border-collapse: collapse; font-size: 0.92rem; table-layout: fixed; }
+    table.tax th, table.tax td { text-align: left; vertical-align: top; padding: 10px 10px 10px 0; border-bottom: 1px solid var(--border, #e5e7eb); white-space: normal; }
+    table.tax thead th { font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted, #6b7280); }
+    table.tax td:first-child { font-weight: 600; }
+    table.tax code { overflow-wrap: anywhere; }
+    table.tax col.c1 { width: 22%; } table.tax col.c2 { width: 20%; } table.tax col.c3 { width: 20%; } table.tax col.c4 { width: 38%; }
+    @media (max-width: 700px) { table.tax { table-layout: auto; } table.tax col { width: auto; } }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-inner">
+      <a class="brand" href="./index.html">schur</a>
+      <nav>
+        <a href="./intro.html">Introduction</a>
+        <a href="./papers.html">Papers</a>
+        <a href="./demos.html">Demos</a>
+        <a href="./implementations.html">Implementations</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./index.html#bibliography">Bibliography</a>
+        <a href="./map.html">Literature map</a>
+        <a href="./timeline.html">Timeline</a>
+        <a href="https://github.com/microprediction/schur">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <h1>Which Schur is which</h1>
+    <p class="subtitle">Schur conditioning is a technique. A bridge is named by what it connects.</p>
+
+    <p class="lead">
+      Several portfolio constructions on this site, in the papers, and in code carry the word
+      &ldquo;Schur&rdquo;, and some of them disagree numerically. This page sorts them. The rule is
+      simple: a <strong>bridge</strong> is named by its two endpoints, a heuristic at the near end and
+      an optimizer at the far end, and it earns the plain name only if <em>both</em> ends are exact.
+      A qualifier names the <strong>path</strong> when the path changes the interior. The algebraic
+      <strong>encoding</strong> gets no name at all: it is either exact, or an approximation of the
+      exact one, and is labelled by which end it misses.
+    </p>
+
+    <h2>The recipe</h2>
+    <p>
+      Partition the assets into clusters. Each cluster carries a <em>pair</em> $(Q, b)$, a covariance
+      block and a companion vector. Conditioning a subset $I$ on $J$ inside a pair, damped by $g$, is
+    </p>
+    $$Q_I \leftarrow Q_{II} - g\,Q_{IJ}Q_{JJ}^{-1}Q_{JI}, \qquad b_I \leftarrow b_I - g\,Q_{IJ}Q_{JJ}^{-1}b_J .$$
+    <p>
+      Two dials: $\gamma$ conditions a cluster on the outside, $\eta$ conditions an asset on its
+      cluster mates. Each cluster is budgeted by the inverse of a variance. Block inversion gives
+      $\Sigma^{-1}u$ exactly at $(\gamma,\eta)=(1,1)$ for any partition, with $u=\mathbf 1$ minimum
+      variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. What the near end
+      is depends on the partition and on the <em>split rule</em>, the variance used for budgeting.
+    </p>
+
+    <h2>The bridges</h2>
+    <table class="tax">
+      <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+      <thead>
+        <tr><th>bridge</th><th>near end (dials at 0)</th><th>far end (dials at 1)</th><th>path, split rule, and where it lives</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HRP to minimum variance</td>
+          <td>HRP, exactly</td>
+          <td>minimum variance, exactly</td>
+          <td>Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's $\gamma$-damped naive portfolio on its conditioned pair. <code>SchurBridge.hrp_to_min_variance</code>. New: no published object had HRP at one end and minimum variance at the other.</td>
+        </tr>
+        <tr>
+          <td>HMV to minimum variance</td>
+          <td>hierarchical minimum variance: HRP's tree with each block's minimum variance as its fitness</td>
+          <td>minimum variance, exactly</td>
+          <td>Bisection tree, sibling conditioning, one dial. Split: the child pair's minimum variance $1/(b^\top Q^{-1}b)$. Cotton (2024), <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>, which names the near end HMV. <code>SchurBridge.hmv_to_min_variance</code>.</td>
+        </tr>
+        <tr>
+          <td>HRP to minimum variance, <em>collapsed encoding</em></td>
+          <td>HRP, exactly</td>
+          <td><strong>approximate</strong>: approaches minimum variance without reaching it</td>
+          <td>Bisection tree, sibling conditioning, one dial, with the pair collapsed into one matrix $(I-\gamma BD^{-1}M)^{-1}A^c(\gamma)$, symmetrized, and a step-up matrix for unequal blocks. Split: HRP's naive rule, the variance of the child block's inverse-variance portfolio. <code>precise</code>, skfolio <code>SchurComplementary</code>, <code>allocation.SchurComplementary</code> and <code>StreamingSchur</code>; the variant analysed in <a href="./neither-end-of-the-bridge.pdf">the tree paper</a>. Kept for compatibility, never called the bridge.</td>
+        </tr>
+        <tr>
+          <td>NCO to minimum variance</td>
+          <td>NCO: minimum variance inside each cluster, an optimizer across cluster portfolios</td>
+          <td>minimum variance, exactly; via knots, under the gateway model</td>
+          <td>Flat clusters, conditioned on all other assets or on one knot asset per other cluster (Vecchia), one dial. No split: the outer step is an optimizer over cluster directions. <a href="./schur-nco-bridge.pdf">The NCO bridge note</a>, SSRN 7480738. <code>SchurBridge.nco_to_min_variance</code> with factor knots.</td>
+        </tr>
+        <tr>
+          <td>HERC to minimum variance, a square</td>
+          <td>HERC: inverse variance inside, inverse cluster variance across</td>
+          <td>minimum variance, exactly</td>
+          <td>Flat clusters from a dendrogram cut, conditioned on all other assets (or siblings, or factor knots), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. <a href="./schur-herc-square.pdf">The HERC square note</a>. <code>SchurBridge.herc_to_min_variance</code>.</td>
+        </tr>
+        <tr>
+          <td>Inverse variance to minimum variance</td>
+          <td>inverse variance</td>
+          <td>minimum variance, exactly</td>
+          <td>One cluster, or every asset its own cluster; the inner dial alone, closed form from one inverse; Stevens (1998) at the far end. The inner dial of the HERC note. <code>SchurBridge.inverse_variance_to_min_variance</code>.</td>
+        </tr>
+        <tr>
+          <td>Any of the above to maximum diversification or tangency</td>
+          <td>the same near ends with $\sigma$ or $\mu$ in the numerator</td>
+          <td>$\Sigma^{-1}\sigma$ or $\Sigma^{-1}\mu$, exactly</td>
+          <td>As above with the companion vector $u=\sigma$ or $u=\mu$: <code>companion='vol'</code> / <code>'mean'</code>. The HERC note's remark on companion vectors; Wuebben (2026) for HRP with $\mu$.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>The paths</h2>
+    <p>
+      The outer dial needs a conditioning set. <strong>Siblings</strong>: compose conditioning down a
+      bisection tree, each block on its sibling; exact at $\gamma=1$ because Schur complements
+      compose, one half-size solve at the root. <strong>All</strong>: each cluster on every other
+      asset; exact, one solve of size $n-|C|$ per cluster. <strong>Knots</strong>: each cluster on one
+      asset per other cluster; exact under the gateway model of the NCO note, $k\times k$ solves.
+      <strong>Factor knots</strong>: each cluster on one factor-mimicking portfolio per other cluster,
+      $a_C=\Sigma_{CC}^{-1}\beta_C$; exact when cross-cluster dependence runs through one latent factor
+      per cluster, cluster-sized solves. The paths agree at both ends when exact and differ inside.
+    </p>
+
+    <h2>The split rules</h2>
+    <p>
+      On a tree the budget between siblings decides the near end. HRP's naive rule, the variance of
+      the child block's inverse-variance portfolio, starts at HRP and misses the far end. The
+      minimum-variance rule starts at HMV and reaches the far end. The dial-tied rule, the variance of
+      the child's $\gamma$-damped naive portfolio on its conditioned pair, starts at HRP and reaches
+      the far end: it is the only rule exact at both, which is why it defines the HRP bridge. On a flat
+      partition the same rule budgets the clusters; HERC's rule is the variance of what the cluster
+      holds, and the reference implementations' sum of cluster variances departs from it at three or
+      more clusters.
+    </p>
+
+    <h2>Where to sit</h2>
+    <p>
+      Three papers ask where on a bridge to sit when the covariance is estimated:
+      <a href="./neither-end-of-the-bridge.pdf">the tree paper</a> for the collapsed HRP variant under
+      cross-block noise, <a href="./schur-nco-bridge.pdf">the NCO note</a> for the flat bridge with
+      knots, and <a href="./schur-herc-square.pdf">the HERC note</a> for the square and the inner
+      dial. The same second-order machinery applies to every exact bridge, because at the far end the
+      noiseless objective is flat and only the noise cost has a slope.
+    </p>
+
+    <h2>Other uses of the word</h2>
+    <p>
+      <strong>Schur damping</strong> in <a href="./localization-is-schur-damping.pdf">the
+      localization note</a> refers to a Schur <em>product</em>, the tapering of a covariance by an
+      entrywise mask, which the note shows has the conditional structure $A-\gamma BD^{-1}B^\top$.
+      It is the same damping arrived at from the other side and is not a bridge in the sense above.
+      <strong>Hierarchical minimum variance on graphs</strong> (Mograby, 2025) is the far end made exact
+      by separator recursion, not a bridge. <strong>Schur-RA-HRP</strong> (Noguer i Alonso, 2026)
+      uses the exact bisection identity with HRP's substitutions named; its near end is HRP and its
+      far end is minimum variance in the sense of this page.
+    </p>
+
+    <h2>Glossary</h2>
+    <p>
+      <em>Pair</em>: a block and its companion vector. <em>Companion vector</em>: the conditioned
+      image of $u$, the numerator of every direction. <em>Dial</em>: a damping in $[0,1]$ on one
+      conditioning. <em>Path</em>: the conditioning set of the outer dial. <em>Split rule</em>: the
+      variance whose inverse budgets a child or a cluster. <em>Knot</em>: the one asset per cluster
+      that carries its cross-cluster dependence; <em>factor knot</em>: the one portfolio per cluster
+      that does. <em>Encoding</em>: an algebraic rewriting of the pair into a single matrix; exact
+      or not, never named.
+    </p>
+  </main>
+</body>
+</html>
