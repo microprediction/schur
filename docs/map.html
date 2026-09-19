@@ -263,8 +263,8 @@ const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
 // Chakraborty–Katzfuss (ShrinkTM) live inside the circle; edges that used to
 // terminate at a hub dot now stop at the perimeter, so the interior stays legible.
 // Hub↔inner edges are not drawn at all — containment already says it.
-const cx = W/2, cy = H/2, R_PERIM = 63, R_INNER = 24, R_DER = 130, R_RING = 185, R_OUTER = 320;
-const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
+const cx = W/2, cy = H/2, R_PERIM = 92, R_INNER = 42, R_DER = 150, R_RING = 205, R_OUTER = 330;
+const INNER = new Set(["cotton2022", "cotton2024", "shrinktm2025", "cotton2026herc", "cotton2026loc", "cotton2026nco"]);
 // derived works: papers citing Cotton 2024 or Chakraborty-Katzfuss (ShrinkTM)
 const DERIVED = new Set(["mograby2025","wuebben2026","skfolio2025","chitra2025",
                          "salas2025","pergher2026","calle2025","sikorski2025",
@@ -277,7 +277,7 @@ NODES.forEach((d,i) => {
   if (d.id === "hub") { d.fx = cx; d.fy = cy; return; }
   const ring = INNER.has(d.id) ? R_INNER : (DERIVED.has(d.id) ? R_DER : R_OUTER);
   let a;
-  if (INNER.has(d.id)) a = i*2.1;
+  if (INNER.has(d.id)) { const inn = NODES.filter(n => INNER.has(n.id)); a = (inn.indexOf(d)/inn.length)*2*Math.PI - Math.PI/2; }
   else if (DERIVED.has(d.id)) a = (derivedList.indexOf(d)/derivedList.length)*2*Math.PI - Math.PI/2;
   else a = sectors[d.c] + ((i%5)-2)*0.18;
   d.x = cx + ring*Math.cos(a); d.y = cy + ring*Math.sin(a);
