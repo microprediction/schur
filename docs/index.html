@@ -76,51 +76,62 @@
     </p>
 
     <div class="diagram">
-      <svg viewBox="0 0 760 210" role="img"
-           aria-label="The Schur complement as a bridge between hierarchical risk parity and minimum-variance optimisation">
+      <svg viewBox="0 0 760 300" role="img"
+           aria-label="Five heuristic constructions, each a Schur bridge to the same global optimizer">
         <defs>
           <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
             <path d="M0,0 L6.5,3 L0,6 Z" fill="#4a3aff"/>
           </marker>
         </defs>
 
-        <!-- left world -->
-        <rect x="8" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Heuristic</text>
-        <text x="120" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Hierarchical Risk Parity</text>
-        <text x="120" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">allocate on diagonal blocks</text>
+        <!-- near ends -->
+        <text x="120" y="16" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Heuristic</text>
+        <rect x="8" y="27" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="43" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Inverse variance</text>
+        <text x="120" y="57" text-anchor="middle" font-size="9.5" fill="#9a9a9a">diagonal only</text>
+        <rect x="8" y="71" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="87" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Hierarchical risk parity</text>
+        <text x="120" y="101" text-anchor="middle" font-size="9.5" fill="#9a9a9a">bisection, inverse-variance splits</text>
+        <rect x="8" y="115" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="131" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Hierarchical minimum variance</text>
+        <text x="120" y="145" text-anchor="middle" font-size="9.5" fill="#9a9a9a">bisection, min-variance splits</text>
+        <rect x="8" y="159" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="175" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">HERC</text>
+        <text x="120" y="189" text-anchor="middle" font-size="9.5" fill="#9a9a9a">clusters, inverse cluster variance</text>
+        <rect x="8" y="203" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="219" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">NCO</text>
+        <text x="120" y="233" text-anchor="middle" font-size="9.5" fill="#9a9a9a">clusters, an optimizer across</text>
 
-        <!-- right world -->
-        <rect x="528" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Global optimization</text>
-        <text x="640" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Minimum-Variance</text>
-        <text x="640" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">invert the full covariance</text>
+        <!-- far end -->
+        <text x="640" y="16" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Global optimization</text>
+        <rect x="528" y="86" width="224" height="72" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="640" y="116" text-anchor="middle" font-size="14" font-weight="600" fill="#1f1d3d">Minimum variance</text>
+        <text x="640" y="137" text-anchor="middle" font-size="11" fill="#5a5a5a">&#931;&#8315;&#185;1, or &#931;&#8315;&#185;&#963;, or &#931;&#8315;&#185;&#956;</text>
 
-        <!-- bridge connectors -->
-        <line x1="300" y1="72" x2="236" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
-        <line x1="460" y1="72" x2="524" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
+        <!-- the bridges -->
+        <path d="M236,44 C 340,44 420,104 520,104" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,88 C 340,88 420,113 520,113" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,132 C 340,132 420,122 520,122" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,176 C 340,176 420,131 520,131" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,220 C 340,220 420,140 520,140" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
 
-        <!-- bridge -->
-        <rect x="300" y="49" width="160" height="46" rx="23" fill="#4a3aff"/>
-        <text x="380" y="71" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Schur complement</text>
-        <text x="380" y="87" text-anchor="middle" font-size="10.5" fill="#cfcaff">the bridge</text>
+        <text x="380" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#4a3aff">each path is a Schur complement, damped by a dial</text>
 
-        <!-- gamma axis -->
-        <line x1="120" y1="158" x2="640" y2="158" stroke="#e2e2e2" stroke-width="2"/>
-        <circle cx="120" cy="158" r="5" fill="#4a3aff"/>
-        <circle cx="640" cy="158" r="5" fill="#4a3aff"/>
-        <circle cx="380" cy="158" r="6" fill="#4a3aff"/>
-        <text x="120" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 0</text>
-        <text x="120" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">HRP</text>
-        <text x="640" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 1</text>
-        <text x="640" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">MVP</text>
-        <text x="380" y="180" text-anchor="middle" font-size="12" fill="#4a3aff">&#947; &#8712; (0, 1)</text>
-        <text x="380" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">the interesting region</text>
+        <!-- dial axis -->
+        <line x1="120" y1="282" x2="640" y2="282" stroke="#e2e2e2" stroke-width="2"/>
+        <circle cx="120" cy="282" r="5" fill="#4a3aff"/>
+        <circle cx="380" cy="282" r="6" fill="#4a3aff"/>
+        <circle cx="640" cy="282" r="5" fill="#4a3aff"/>
+        <text x="120" y="297" text-anchor="middle" font-size="11" fill="#1f1d3d">dial = 0: the method as published</text>
+        <text x="380" y="297" text-anchor="middle" font-size="11" fill="#4a3aff">inside: where an estimated covariance says to stand</text>
+        <text x="640" y="297" text-anchor="middle" font-size="11" fill="#1f1d3d">dial = 1: the optimizer, exactly</text>
       </svg>
       <p class="caption">
-        One dial: $\gamma = 0$ recovers hierarchical risk parity, $\gamma = 1$ recovers the
-        minimum-variance portfolio with the dial-tied split of the
-        <a href="./taxonomy.html">taxonomy page</a>, and the interior interpolates between them.
+        Five near ends, one far end. Inverse variance, hierarchical risk parity, hierarchical
+        minimum variance, HERC and NCO each reach the same optimizer when their dial is turned to
+        one, with the split rule the <a href="./taxonomy.html">taxonomy page</a> names for each,
+        and the interior is where an estimated covariance says to stand. The
+        <a href="./all-roads.html">3D view</a> shows the same picture with heights.
       </p>
     </div>
 
