@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minimum Variance in Disguise &mdash; Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./taxonomy.html">Taxonomy</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+  <main>
+    <h1>Minimum variance in disguise</h1>
+    <p class="subtitle">The generality of the minimum-variance solution, and why every bridge lands on it.</p>
+
+    <p class="lead">
+      The far end of every bridge on this site is written as minimum variance. That looks narrow.
+      It is not, because the object the bridges reach is the direction $\Sigma^{-1}b$ for a
+      constraint vector $b$, and a surprising number of portfolio problems, and problems outside
+      portfolios, are exactly that with a different $b$. Whatever is a precision matrix times a
+      vector is reachable by the same recursion, and the block-inversion identity that makes the
+      far end exact is indifferent to which $b$ is in the numerator.
+    </p>
+
+    <h2>The one problem</h2>
+    <p>
+      For positive-definite $Q$ and a vector $b$, the problem of minimizing $x^\top Q x$ subject to
+      $b^\top x = 1$ has solution and attained value
+    </p>
+    $$ x^\star = \frac{Q^{-1}b}{b^\top Q^{-1}b}, \qquad \nu = \frac{1}{b^\top Q^{-1}b},
+       \qquad\text{so}\qquad Q^{-1}b = \frac{x^\star}{\nu}. $$
+    <p>
+      The third form is the one the bridges use: a linear solve is a normalized portfolio divided
+      by its variance, which is why an inverse-variance budget rule reproduces the optimizer. Block
+      inversion carries $b$ along as a <em>companion vector</em>: on a partition into a block and
+      its complement, $(\Sigma^{-1}b)_C = (\Sigma^c_C)^{-1}\big(b_C - \Sigma_{C,-C}\Sigma_{-C,-C}^{-1}b_{-C}\big)$,
+      the block's complement against a conditioned copy of its own part of $b$. Nothing in that
+      identity cares whether $b$ is a vector of ones.
+    </p>
+
+    <h2>Who is in the family</h2>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>problem</th><th>$Q$</th><th>$b$</th><th>solution</th></tr></thead>
+      <tbody>
+        <tr><td>Minimum variance, fully invested</td><td>$\Sigma$</td><td>$\mathbf 1$</td><td>$\Sigma^{-1}\mathbf 1$, normalized</td></tr>
+        <tr><td>Maximum diversification (Choueifaty and Coignard)</td><td>$\Sigma$</td><td>$\sigma$, the volatilities</td><td>$\Sigma^{-1}\sigma$: maximizes $\sigma^\top w/\sqrt{w^\top\Sigma w}$</td></tr>
+        <tr><td>Tangency, maximum Sharpe ratio</td><td>$\Sigma$</td><td>$\mu$, the excess means</td><td>$\Sigma^{-1}\mu$, normalized when $\mathbf 1^\top\Sigma^{-1}\mu>0$</td></tr>
+        <tr><td>Kelly, growth-optimal under Gaussian returns</td><td>$\Sigma$</td><td>$\mu$</td><td>$\Sigma^{-1}\mu$, unnormalized: the same direction with its scale kept</td></tr>
+        <tr><td>Maximum decorrelation</td><td>$R$, the correlation</td><td>$\mathbf 1$</td><td>$R^{-1}\mathbf 1$: minimum variance with the volatilities stripped out</td></tr>
+        <tr><td>Optimal forecast combination (Bates and Granger)</td><td>the forecast-error covariance</td><td>$\mathbf 1$</td><td>the same formula, on forecasts instead of assets</td></tr>
+        <tr><td>Minimum tracking error with one exposure target</td><td>$\Sigma$</td><td>$c$, the exposure</td><td>benchmark plus a multiple of $\Sigma^{-1}c$: minimum variance in active weights</td></tr>
+        <tr><td>Hedging one position with several instruments</td><td>$\Sigma_{yy}$</td><td>$\Sigma_{yx}$</td><td>$\Sigma_{yy}^{-1}\Sigma_{yx}$, the regression coefficients</td></tr>
+        <tr><td>Generalized least squares, one regressor</td><td>$\Sigma$, the error covariance</td><td>$x$, the regressor</td><td>$\Sigma^{-1}x$ up to scale: the estimator is a portfolio of observations</td></tr>
+        <tr><td>Bayes rule under quadratic loss</td><td>$\bar\Sigma$, the posterior mean</td><td>$\mathbf 1$</td><td>$\bar\Sigma^{-1}\mathbf 1$: the direct out-of-sample optimum is still in the family</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      Two extensions cost nothing. Mean-variance with a budget has solution
+      $\Sigma^{-1}(a\mathbf 1 + c\,\mu)$, two directions from the family combined, and a bridge run
+      with the companion <em>matrix</em> $[\mathbf 1,\ \mu]$ delivers both columns at once, since block
+      inversion applies columnwise. Several affine constraints $B^\top w = c$ give
+      $w = \Sigma^{-1}B\,(B^\top\Sigma^{-1}B)^{-1}c$, which again needs only $\Sigma^{-1}B$.
+    </p>
+
+    <h2>Who is not</h2>
+    <p>
+      Three families of problems are not a precision matrix times a vector, and no bridge on this
+      site is exact for them at the far end. Long-only and box-constrained problems have an active
+      set, and their solutions are $\Sigma^{-1}b$ only on the assets left free, with $b$ adjusted by
+      multipliers that depend on the data; the recursion still runs, and the
+      <a href="./taxonomy.html">HERC square</a> has a closed-form frontier for how far the inner
+      dial can turn before the first short appears, but the far end is not the constrained optimum.
+      Risk parity and its budgeted variants are fixed points of $w_i(\Sigma w)_i = \beta_i$, not
+      linear solves. And objectives that are not quadratic forms, expected shortfall, drawdown,
+      utilities beyond the second moment, have no companion vector at all; hierarchical versions of
+      them exist, HERC admits them, but the fitness identity above is what makes a far end exact,
+      and it needs a quadratic form.
+    </p>
+
+    <h2>Why it matters for the bridges</h2>
+    <p>
+      Every construction catalogued in the <a href="./taxonomy.html">taxonomy</a> is defined for a
+      pair $(Q_C, b_C)$, and the choice of $b$ is a parameter of the recipe, not of the theory.
+      So the same family that runs from HRP, HERC or NCO to minimum variance runs, with $b=\sigma$,
+      to maximum diversification, and with $b=\mu$ to the tangency portfolio; the HERC note's
+      companion-vector remark states the corners, and the <code>allocation</code> package exposes
+      them as <code>companion='vol'</code> and <code>companion='mean'</code>. The far end is exact in
+      every case for the same reason. What changes with $b$ is the near end, since the heuristic
+      one starts from must carry $b$ in its numerator to be on the bridge at all: inverse volatility
+      rather than inverse variance for $b=\sigma$, per-asset Kelly $\mu_i/\sigma_i^2$ for $b=\mu$.
+      That is a useful test of a heuristic. If it cannot be written with a $b$ in the numerator, it
+      is not the near end of anything that reaches an optimizer.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
