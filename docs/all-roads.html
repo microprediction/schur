@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>All roads lead to minimum variance — Schur Complementary Portfolios</title>
+  <meta name="description" content="A 3D view of five heuristic portfolios each descending its Schur bridge to the same optimizer." />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <a href="./intro.html">Introduction</a>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./taxonomy.html">Taxonomy</a>
+      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+</header>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f4f5f8; --panel: #ffffff; --ink: #14161a; --ink-2: #4d5360; --muted: #7b8291; --line: #dfe2e8;
+    --floor: #4a3aa7; --floor-glow: rgba(74,58,167,0.18);
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --stage: #eef0f4; --grid: #cfd3db;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14161a; --panel: #1b1e24; --ink: #f2f3f5; --ink-2: #c3c7d0; --muted: #8b919e; --line: #2c313a;
+      --floor: #9085e9; --floor-glow: rgba(144,133,233,0.22);
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --stage: #0f1114; --grid: #2a2f38;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14161a; --panel: #1b1e24; --ink: #f2f3f5; --ink-2: #c3c7d0; --muted: #8b919e; --line: #2c313a;
+    --floor: #9085e9; --floor-glow: rgba(144,133,233,0.22);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --stage: #0f1114; --grid: #2a2f38;
+  }
+  main.roads { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; max-width: none; padding: 0; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 48px; padding-inline: 16px; }
+  h1 { font-family: "Newsreader", Georgia, "Times New Roman", serif; font-weight: 500; font-size: clamp(30px, 4.2vw, 46px); line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
+  .thesis { font-size: 17px; color: var(--ink-2); max-width: 62ch; margin: 0 0 20px; text-wrap: pretty; }
+  .thesis b { color: var(--ink); font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 12px; }
+  .ctl { display: flex; flex-direction: column; gap: 5px; }
+  .ctl label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  .seg button { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; padding: 7px 12px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .seg button:focus-visible { outline: 2px solid var(--s1); outline-offset: -2px; }
+  .btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 13.5px; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  .btn:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
+  .stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; height: min(72vh, 680px); min-height: 380px; }
+  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .stage canvas:active { cursor: grabbing; }
+  .tag { position: absolute; transform: translate(-50%, -100%); pointer-events: none; font-size: 12.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: color-mix(in srgb, var(--stage) 78%, transparent); color: var(--ink); white-space: nowrap; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 70%, transparent); }
+  .tag.floor { color: var(--floor); font-family: "Newsreader", Georgia, serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; transform: translate(-50%, 0); }
+  .tag.start { transform: translate(-108%, -50%); }
+  .tag.axis { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-weight: 400; color: var(--ink-2); background: transparent; box-shadow: none; }
+  .hint { position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--muted); pointer-events: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--ink-2); }
+  .legend li { display: flex; align-items: center; gap: 8px; }
+  .legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; }
+  .legend .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .legend .fl i { background: var(--floor); height: 3px; }
+  .read { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px 36px; margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
+  .read h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 8px; }
+  .read p { margin: 0 0 10px; color: var(--ink-2); max-width: 60ch; text-wrap: pretty; }
+  .read code, .thesis code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.92em; color: var(--ink); }
+  .foot { margin-top: 26px; font-size: 13px; color: var(--muted); }
+  .foot a { color: var(--ink-2); }
+  @media (prefers-reduced-motion: reduce) { .stage canvas { cursor: default; } }
+</style>
+
+<main class="roads"><div class="wrap">
+  <h1>All roads lead to minimum variance</h1>
+  <p class="thesis">Inverse variance, HRP, hierarchical minimum variance, HERC and NCO look like different families. Each is the near end of a <b>Schur bridge</b>: turn one dial and every one of them lands on the same optimizer. With an estimated covariance the best place to stand is often <b>part way across</b>.</p>
+
+  <div class="controls">
+    <div class="ctl"><label id="lbl-far">Far end</label>
+      <div class="seg" role="group" aria-labelledby="lbl-far">
+        <button id="far-ones" aria-pressed="true">Minimum variance</button>
+        <button id="far-vol" aria-pressed="false">Maximum diversification</button>
+        <button id="far-mean" aria-pressed="false">Tangency</button>
+      </div></div>
+    <div class="ctl"><label id="lbl-cov">Covariance the recipes see</label>
+      <div class="seg" role="group" aria-labelledby="lbl-cov">
+        <button id="cov-true" aria-pressed="true">The truth</button>
+        <button id="cov-400" aria-pressed="false">Estimated, 400 days</button>
+        <button id="cov-120" aria-pressed="false">Estimated, 120 days</button>
+      </div></div>
+    <div class="ctl"><label id="lbl-view">View</label>
+      <div class="seg" role="group" aria-labelledby="lbl-view">
+        <button id="view-bridges" aria-pressed="true">Five bridges</button>
+        <button id="view-square" aria-pressed="false">The HERC square</button>
+      </div></div>
+    <div class="ctl"><label>&nbsp;</label><button class="btn" id="reseed">New random market</button></div>
+  </div>
+
+  <div class="stage" id="stage"><canvas id="c"></canvas><div class="hint">drag to orbit · scroll to zoom</div></div>
+
+  <ul class="legend" id="legend"></ul>
+
+  <section class="read">
+    <div>
+      <h2>What the axes are</h2>
+      <p>Twenty-four assets in four correlated sectors, one factor per sector. Height is how much worse a portfolio is than the far-end optimum, in percent of its objective: variance for minimum variance, the inverse squared diversification ratio for maximum diversification, the inverse squared Sharpe ratio for tangency. The violet floor is the optimum itself, at zero.</p>
+      <p>Depth is the method. Along the length of each ribbon the dial runs from 0, the method as published, to 1, the far end. The dial damps a Schur complement: it conditions each cluster on the assets outside it, and, for HERC, each asset on its cluster mates.</p>
+    </div>
+    <div>
+      <h2>How to read it</h2>
+      <p>With the true covariance every ribbon descends to the floor. That is the theorem: at dial 1 every one of these recipes is the global optimizer, whatever its partition. The ribbons differ only in where they start.</p>
+      <p>Switch to an estimated covariance and the recipes see noise. The far ends lift off the floor, because the estimated optimizer is not the true one, and some ribbons now dip before they end. The lowest point is where to stand, and it is neither end.</p>
+      <p>The HERC square view shows HERC with both of its dials, the cluster dial across and the asset dial along. HERC is the near corner; minimum variance is the far corner; the surface between is the square.</p>
+    </div>
+  </section>
+  <p class="foot">Definitions, proofs and the taxonomy of which Schur is which: <a href="https://schur.microprediction.org/taxonomy.html">schur.microprediction.org</a>. Engine: <code>allocation.SchurBridge</code>.</p>
+</div></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  // ------------------------------------------------------------ linear algebra
+  function zeros(n, m) { const A = new Array(n); for (let i = 0; i < n; i++) A[i] = new Float64Array(m); return A; }
+  function clone(A) { return A.map(r => Float64Array.from(r)); }
+  function sub(A, I, J) { const B = zeros(I.length, J.length); for (let a = 0; a < I.length; a++) for (let b = 0; b < J.length; b++) B[a][b] = A[I[a]][J[b]]; return B; }
+  function solveMulti(A, B) { // A^{-1} B, B is n x k (array of rows)
+    const n = A.length, k = B[0].length; const M = A.map((r, i) => { const row = new Float64Array(n + k); row.set(r); for (let j = 0; j < k; j++) row[n + j] = B[i][j]; return row; });
+    for (let c = 0; c < n; c++) {
+      let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      const t = M[c]; M[c] = M[p]; M[p] = t;
+      const pv = M[c][c] || 1e-300; for (let j = 0; j < n + k; j++) M[c][j] /= pv;
+      for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c]; if (f !== 0) for (let j = c; j < n + k; j++) M[r][j] -= f * M[c][j]; }
+    }
+    return M.map(r => r.subarray(n));
+  }
+  function inv(A) { const n = A.length; const I = zeros(n, n); for (let i = 0; i < n; i++) I[i][i] = 1; return solveMulti(A, I); }
+  function matvec(A, x) { return A.map(r => { let s = 0; for (let j = 0; j < x.length; j++) s += r[j] * x[j]; return s; }); }
+  function dot(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+  function quad(x, Q) { return dot(x, matvec(Q, x)); }
+  function chol(A) { const n = A.length, L = zeros(n, n); for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) { let s = A[i][j]; for (let k = 0; k < j; k++) s -= L[i][k] * L[j][k]; L[i][j] = i === j ? Math.sqrt(Math.max(s, 1e-12)) : s / L[j][j]; } return L; }
+
+  // ------------------------------------------------------------ the bridge
+  function conditionPair(Q, b, I, J, g) {
+    const A = sub(Q, I, I); const bI = I.map(i => b[i]);
+    if (g === 0 || J.length === 0) return { Q: A, b: Float64Array.from(bI) };
+    const B = sub(Q, I, J), D = sub(Q, J, J);
+    const rhs = B[0].length ? J.map((j, r) => { const row = new Float64Array(I.length + 1); for (let a = 0; a < I.length; a++) row[a] = B[a][r]; row[I.length] = b[j]; return row; }) : [];
+    const X = solveMulti(D, rhs); // (|J|) x (|I|+1)
+    const Qc = zeros(I.length, I.length); const bc = new Float64Array(I.length);
+    for (let a = 0; a < I.length; a++) { for (let c = 0; c < I.length; c++) { let s = 0; for (let k = 0; k < J.length; k++) s += B[a][k] * X[k][c]; Qc[a][c] = A[a][c] - g * s; } let s2 = 0; for (let k = 0; k < J.length; k++) s2 += B[a][k] * X[k][I.length]; bc[a] = bI[a] - g * s2; }
+    return { Q: Qc, b: bc };
+  }
+  function leafDirection(Q, b, eta) {
+    const n = Q.length; const z = new Float64Array(n);
+    if (eta === 0) { for (let i = 0; i < n; i++) z[i] = b[i] / Q[i][i]; return z; }
+    const Qi = inv(Q); const Qb = matvec(Qi, b);
+    for (let i = 0; i < n; i++) { const d = Qi[i][i]; const q = 1 / d, s = Qb[i] / d; z[i] = ((1 - eta) * b[i] + eta * s) / ((1 - eta) * Q[i][i] + eta * q); }
+    return z;
+  }
+  function rescale(z, Q, b, split, eta) { // stacking children = inverse-fitness budgets
+    const bz = dot(b, z); if (bz === 0) return z.map(() => 0);
+    let nu;
+    if (split === 'minvar') { nu = 1 / dot(b, matvec(inv(Q), b)); }
+    else { const v = leafDirection(Q, b, eta); const bv = dot(b, v); nu = quad(v, Q) / (bv * bv); }
+    return z.map(x => x / (bz * nu));
+  }
+  function recurseTree(Q, b, lo, hi, gamma, eta, split) { // bisection tree over local indices lo..hi-1
+    const n = hi - lo; if (n === 1) return Float64Array.from([b[0] / Q[0][0]]);
+    const mid = n >> 1; const I = [...Array(mid).keys()], J = [...Array(n - mid).keys()].map(k => k + mid);
+    const L = conditionPair(Q, b, I, J, gamma), R = conditionPair(Q, b, J, I, gamma);
+    const zL = recurseTree(L.Q, L.b, 0, mid, gamma, eta, split), zR = recurseTree(R.Q, R.b, 0, n - mid, gamma, eta, split);
+    const out = new Float64Array(n); out.set(rescale(zL, L.Q, L.b, split, eta), 0); out.set(rescale(zR, R.Q, R.b, split, eta), mid); return out;
+  }
+  function normalize(w) { let s = 0; for (const x of w) s += x; return w.map(x => x / s); }
+  // weights of a method at (gamma, eta) on covariance S with companion u
+  function bridge(S, u, clusters, spec, gamma, eta) {
+    const n = S.length; const w = new Float64Array(n);
+    if (spec.tree) { const z = recurseTree(S, u, 0, n, gamma, spec.split === 'minvar' ? 1 : eta, spec.split); return normalize(z); }
+    const all = [...Array(n).keys()];
+    const cols = [];
+    for (const C of clusters) {
+      const J = all.filter(j => !C.includes(j));
+      const P = conditionPair(S, u, C, J, gamma);
+      const zc = leafDirection(P.Q, P.b, spec.eta === undefined ? eta : spec.eta);
+      if (spec.outer === 'optimize') { const col = new Float64Array(n); C.forEach((i, k) => col[i] = zc[k]); cols.push(col); }
+      else { const r = rescale(zc, P.Q, P.b, 'dial', spec.eta === undefined ? eta : spec.eta); C.forEach((i, k) => w[i] = r[k]); }
+    }
+    if (spec.outer === 'optimize') { // w = D (D^T S D)^{-1} D^T u
+      const k = cols.length; const M = zeros(k, k); const rhs = cols.map(c => [dot(c, u)]);
+      for (let a = 0; a < k; a++) for (let c = 0; c < k; c++) M[a][c] = dot(cols[a], matvec(S, cols[c]));
+      const alpha = solveMulti(M, rhs).map(r => r[0]);
+      for (let a = 0; a < k; a++) for (let i = 0; i < n; i++) w[i] += cols[a][i] * alpha[a];
+    }
+    return normalize(w);
+  }
+
+  // ------------------------------------------------------------ market
+  let seed = 7;
+  function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const N = 24, K = 4, M = 6;
+  const clusters = [...Array(K).keys()].map(k => [...Array(M).keys()].map(i => k * M + i));
+  let market;
+  function makeMarket() {
+    const r = rng(seed);
+    // sector factor correlation: market mode plus noise
+    const F = zeros(K, K); const g = [...Array(K).keys()].map(() => 0.45 + 0.3 * r());
+    for (let a = 0; a < K; a++) for (let b = 0; b < K; b++) F[a][b] = a === b ? 1 : g[a] * g[b] * (0.5 + 0.3 * r());
+    const beta = new Float64Array(N), psi = new Float64Array(N), vol = new Float64Array(N);
+    for (let i = 0; i < N; i++) { vol[i] = 0.12 + 0.28 * r(); const load = 0.35 + 0.4 * r(); beta[i] = load; psi[i] = 1 - load * load; }
+    const S = zeros(N, N);
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const ci = (i / M) | 0, cj = (j / M) | 0; let c = beta[i] * beta[j] * F[ci][cj]; if (i === j) c += psi[i]; S[i][j] = c * vol[i] * vol[j]; }
+    const mu = new Float64Array(N); for (let i = 0; i < N; i++) mu[i] = 0.02 + 0.08 * vol[i] * beta[i] + 0.02 * gauss(r);
+    return { S, mu, r };
+  }
+  function sampleCov(Strue, muTrue, T, r) {
+    const L = chol(Strue); const X = []; const mean = new Float64Array(N);
+    for (let t = 0; t < T; t++) { const z = new Float64Array(N); for (let i = 0; i < N; i++) z[i] = gauss(r); const x = new Float64Array(N); for (let i = 0; i < N; i++) { let s = 0; for (let k = 0; k <= i; k++) s += L[i][k] * z[k]; x[i] = s / Math.sqrt(252) + muTrue[i] / 252; mean[i] += x[i] / T; } X.push(x); }
+    const S = zeros(N, N);
+    for (const x of X) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) S[i][j] += (x[i] - mean[i]) * (x[j] - mean[j]) * 252 / (T - 1);
+    return { S, mu: mean.map(m => m * 252) };
+  }
+
+  // ------------------------------------------------------------ methods
+  const css = getComputedStyle(document.documentElement);
+  const methods = [
+    { key: 'ivp', name: 'Inverse variance', spec: { tree: false, eta: undefined, outer: 'stack' }, one: true, color: '--s1' },
+    { key: 'hrp', name: 'HRP', spec: { tree: true, split: 'dial' }, color: '--s2' },
+    { key: 'hmv', name: 'Hierarchical min-var', spec: { tree: true, split: 'minvar' }, color: '--s3' },
+    { key: 'herc', name: 'HERC', spec: { tree: false, outer: 'stack' }, color: '--s4' },
+    { key: 'nco', name: 'NCO', spec: { tree: false, eta: 1, outer: 'optimize' }, color: '--s5' },
+  ];
+  const state = { far: 'ones', cov: 'true', view: 'bridges' };
+  function companion(S, mu) { if (state.far === 'vol') return Float64Array.from(S.map((r, i) => Math.sqrt(r[i]))); if (state.far === 'mean') return Float64Array.from(mu); return new Float64Array(N).fill(1); }
+  function objective(w, Strue, uTrue) { const e = dot(uTrue, w); return quad(w, Strue) / (e * e); }
+  const GRID = 49;
+  let data;
+  function compute() {
+    market = market || makeMarket();
+    let seen;
+    if (state.cov === 'true') seen = { S: market.S, mu: market.mu };
+    else seen = sampleCov(market.S, market.mu, state.cov === '400' ? 400 : 120, rng(seed * 31 + 5));
+    const uTrue = companion(market.S, market.mu), uSeen = companion(seen.S, seen.mu);
+    const wOpt = normalize(matvec(inv(market.S), uTrue)); const best = objective(wOpt, market.S, uTrue);
+    const ribbons = methods.map(m => {
+      const pts = [];
+      for (let g = 0; g < GRID; g++) {
+        const t = g / (GRID - 1);
+        const cl = m.one ? [[...Array(N).keys()]] : clusters;
+        // inverse variance: one cluster, the inner dial alone; HERC: both dials together; NCO/HRP/HMV: the outer dial
+        const w = m.one ? bridge(seen.S, uSeen, cl, { tree: false, eta: t, outer: 'stack' }, 0, t) : bridge(seen.S, uSeen, cl, m.spec, t, t);
+        pts.push(100 * (objective(w, market.S, uTrue) / best - 1));
+      }
+      return { m, pts };
+    });
+    let square = null;
+    if (state.view === 'square') {
+      const G = 33; square = { G, z: [] };
+      for (let a = 0; a < G; a++) { const row = []; for (let b = 0; b < G; b++) { const w = bridge(seen.S, uSeen, clusters, { tree: false, outer: 'stack' }, a / (G - 1), b / (G - 1)); row.push(100 * (objective(w, market.S, uTrue) / best - 1)); } square.z.push(row); }
+    }
+    data = { ribbons, square };
+  }
+
+  // ------------------------------------------------------------ scene
+  const stage = document.getElementById('stage'), canvas = document.getElementById('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(2, 4, 3); scene.add(key);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const group = new THREE.Group(); scene.add(group);
+  const W = 4.2, H = 2.0, DEP = 3.2; // x length, max height, depth
+  let orbit = { theta: -0.55, phi: 1.12, dist: 8.2, tx: 0.1, ty: 0.5 };
+  function cssColor(v) { return new THREE.Color(css.getPropertyValue(v).trim() || '#888'); }
+  function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+  function placeCamera() { const x = orbit.dist * Math.sin(orbit.phi) * Math.sin(orbit.theta), y = orbit.dist * Math.cos(orbit.phi), z = orbit.dist * Math.sin(orbit.phi) * Math.cos(orbit.theta); camera.position.set(x + orbit.tx, y + orbit.ty, z); camera.lookAt(orbit.tx, orbit.ty, 0); }
+  const labels = []; // {el, pos}
+  function label(text, cls, pos) { const el = document.createElement('div'); el.className = 'tag ' + (cls || ''); el.textContent = text; stage.appendChild(el); labels.push({ el, pos }); return el; }
+  function clearScene() { while (group.children.length) { const c = group.children.pop(); c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); } for (const l of labels) l.el.remove(); labels.length = 0; }
+  let yScale = 1;
+  function toY(v) { return Math.min(v, yMax) / yMax * H; }
+  let yMax = 30;
+  function ribbonMesh(pts, color, zc, width) {
+    const n = pts.length; const pos = new Float32Array(n * 2 * 3); const idx = [];
+    for (let i = 0; i < n; i++) { const x = -W / 2 + W * i / (n - 1), y = toY(pts[i]); pos.set([x, y, zc - width / 2], i * 6); pos.set([x, y, zc + width / 2], i * 6 + 3); if (i < n - 1) { const a = 2 * i; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.92 });
+    const mesh = new THREE.Mesh(geo, mat); group.add(mesh);
+    // spine line for crispness
+    const lp = new Float32Array(n * 3); for (let i = 0; i < n; i++) lp.set([-W / 2 + W * i / (n - 1), toY(pts[i]) + 0.004, zc], i * 3);
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.BufferAttribute(lp, 3)); group.add(new THREE.Line(lg, new THREE.LineBasicMaterial({ color: color.clone().offsetHSL(0, 0, -0.12) })));
+    // drop to the floor at the far end
+    const dp = new Float32Array([W / 2, toY(pts[n - 1]), zc, W / 2, 0, zc]); const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(dp, 3));
+    group.add(new THREE.Line(dg, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 })));
+    return mesh;
+  }
+  function floorMesh() {
+    const fc = cssColor('--floor');
+    const geo = new THREE.PlaneGeometry(W + 0.5, DEP + 0.6); geo.rotateX(-Math.PI / 2);
+    const mat = new THREE.MeshBasicMaterial({ color: fc, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+    group.add(new THREE.Mesh(geo, mat));
+    const edge = new THREE.EdgesGeometry(geo); group.add(new THREE.LineSegments(edge, new THREE.LineBasicMaterial({ color: fc, transparent: true, opacity: 0.8 })));
+    // grid on the floor
+    const gc = cssColor('--grid'); const gp = [];
+    for (let i = 0; i <= 8; i++) { const x = -W / 2 + W * i / 8; gp.push(x, 0.001, -DEP / 2 - 0.3, x, 0.001, DEP / 2 + 0.3); }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(gp), 3)); group.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({ color: gc, transparent: true, opacity: 0.6 })));
+  }
+  function axes() {
+    const ac = cssColor('--grid');
+    const ap = new Float32Array([-W / 2, 0, DEP / 2 + 0.3, W / 2, 0, DEP / 2 + 0.3, -W / 2, 0, -DEP / 2 - 0.3, -W / 2, H, -DEP / 2 - 0.3]);
+    const ag = new THREE.BufferGeometry(); ag.setAttribute('position', new THREE.BufferAttribute(ap, 3)); group.add(new THREE.LineSegments(ag, new THREE.LineBasicMaterial({ color: ac })));
+    label('dial 0: the method as published', 'axis', new THREE.Vector3(-W / 2 + 0.6, -0.02, DEP / 2 + 0.55));
+    label('dial 1: the far end', 'axis', new THREE.Vector3(W / 2 - 0.4, -0.02, DEP / 2 + 0.55));
+    label('+' + yMax.toFixed(0) + '% worse than the optimum', 'axis', new THREE.Vector3(-W / 2, H + 0.14, -DEP / 2 - 0.3));
+  }
+  function build() {
+    clearScene();
+    const ribbons = data.ribbons;
+    const top = Math.max(...ribbons.map(r => Math.max(...r.pts)), data.square ? Math.max(...data.square.z.flat()) : 0);
+    yMax = Math.max(5, Math.ceil(top * 1.05 / 5) * 5);
+    floorMesh(); axes();
+    const farName = { ones: 'minimum variance', vol: 'maximum diversification', mean: 'tangency' }[state.far];
+    label('the floor: ' + farName, 'floor', new THREE.Vector3(0.2, 0.0, DEP / 2 + 0.1));
+    const legend = document.getElementById('legend'); legend.innerHTML = '';
+    if (state.view === 'bridges') {
+      const lane = DEP / ribbons.length;
+      ribbons.forEach((r, i) => {
+        const zc = -DEP / 2 + lane * (i + 0.5); const col = cssColor(r.m.color);
+        ribbonMesh(r.pts, col, zc, lane * 0.62);
+        label(r.m.name, 'start', new THREE.Vector3(-W / 2, toY(r.pts[0]), zc));
+        const li = document.createElement('li'); li.innerHTML = '<i style="background:var(' + r.m.color + ')"></i>' + r.m.name + ' <span class="num">' + r.pts[0].toFixed(1) + '% → ' + r.pts[r.pts.length - 1].toFixed(1) + '%</span>'; legend.appendChild(li);
+      });
+      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + ' <span class="num">0%</span>'; legend.appendChild(fl);
+    } else {
+      const sq = data.square, G = sq.G; const pos = new Float32Array(G * G * 3); const colors = new Float32Array(G * G * 3); const idx = [];
+      const c0 = cssColor('--s4'), c1 = cssColor('--floor');
+      for (let a = 0; a < G; a++) for (let b = 0; b < G; b++) { const k = a * G + b; const x = -W / 2 + W * a / (G - 1), z = -DEP / 2 + DEP * b / (G - 1), y = toY(sq.z[a][b]); pos.set([x, y, z], k * 3); const f = Math.min(1, sq.z[a][b] / yMax); const c = c1.clone().lerp(c0, f); colors.set([c.r, c.g, c.b], k * 3); if (a < G - 1 && b < G - 1) idx.push(k, k + 1, k + G, k + 1, k + G + 1, k + G); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+      group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.05, transparent: true, opacity: 0.94 })));
+      group.add(new THREE.LineSegments(new THREE.WireframeGeometry(geo), new THREE.LineBasicMaterial({ color: cssColor('--ink'), transparent: true, opacity: 0.08 })));
+      label('HERC', 'start', new THREE.Vector3(-W / 2, toY(sq.z[0][0]), -DEP / 2));
+      label('cluster min-var, inverse-variance budgets', 'start', new THREE.Vector3(-W / 2, toY(sq.z[0][G - 1]), DEP / 2));
+      label('conditioned HERC', '', new THREE.Vector3(W / 2, toY(sq.z[G - 1][0]) + 0.05, -DEP / 2));
+      label(farName, '', new THREE.Vector3(W / 2, toY(sq.z[G - 1][G - 1]) + 0.05, DEP / 2));
+      label('asset dial η →', 'axis', new THREE.Vector3(W / 2 + 0.25, 0, 0));
+      const li = document.createElement('li'); li.innerHTML = '<i style="background:var(--s4)"></i>HERC square: cluster dial γ along, asset dial η across <span class="num">' + sq.z[0][0].toFixed(1) + '% at HERC → ' + sq.z[G - 1][G - 1].toFixed(1) + '% at the far corner</span>'; legend.appendChild(li);
+    }
+  }
+  function render() { placeCamera(); renderer.setClearColor(cssColor('--stage'), 1); renderer.render(scene, camera); const r = stage.getBoundingClientRect(); for (const l of labels) { const p = l.pos.clone().project(camera); l.el.style.left = ((p.x + 1) / 2 * r.width) + 'px'; l.el.style.top = ((1 - p.y) / 2 * r.height) + 'px'; l.el.style.opacity = p.z < 1 ? '1' : '0'; } }
+  // orbit
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => { if (!drag) return; orbit.theta -= (e.clientX - drag.x) * 0.006; orbit.phi = Math.min(1.5, Math.max(0.25, orbit.phi - (e.clientY - drag.y) * 0.006)); drag = { x: e.clientX, y: e.clientY }; render(); });
+  canvas.addEventListener('pointerup', () => { drag = null; }); canvas.addEventListener('pointercancel', () => { drag = null; });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); orbit.dist = Math.min(14, Math.max(4, orbit.dist * (1 + Math.sign(e.deltaY) * 0.08))); render(); }, { passive: false });
+  window.addEventListener('resize', () => { resize(); render(); });
+  const mq = window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener && mq.addEventListener('change', () => { build(); render(); });
+  new MutationObserver(() => { build(); render(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  // controls
+  function seg(groupIds, key) { groupIds.forEach(id => { const btn = document.getElementById(id); btn.addEventListener('click', () => { groupIds.forEach(o => document.getElementById(o).setAttribute('aria-pressed', o === id ? 'true' : 'false')); state[key] = id.split('-')[1]; refresh(); }); }); }
+  seg(['far-ones', 'far-vol', 'far-mean'], 'far'); seg(['cov-true', 'cov-400', 'cov-120'], 'cov'); seg(['view-bridges', 'view-square'], 'view');
+  document.getElementById('reseed').addEventListener('click', () => { seed = (seed * 7 + 3) % 1000 + 1; market = null; refresh(); });
+  function refresh() { compute(); build(); render(); }
+  resize(); refresh();
+  // a slow settle-in turn on load, unless motion is reduced
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { let f = 0; const t0 = orbit.theta - 0.35; orbit.theta = t0; (function spin() { f++; orbit.theta = t0 + 0.35 * (1 - Math.pow(1 - Math.min(f / 70, 1), 3)); render(); if (f < 70) requestAnimationFrame(spin); })(); }
+})();
+</script>
+
+</body>
+</html>
