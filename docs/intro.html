@@ -150,6 +150,94 @@
       held-out-fitted intensity does better still.
     </p>
 
+    <h2>Not one bridge but a family</h2>
+    <p>
+      The 2024 recursion was one bridge, on one tree. Three notes in 2026 show that the same
+      move works on any partition and that the familiar heuristics are the near ends of a whole
+      family. The recipe has four parts. Partition the assets into clusters. Give each cluster a
+      <em>pair</em> $(Q_C, b_C)$: its covariance block and a companion vector, both conditioned on
+      the assets outside the cluster and damped by $\gamma$. Inside the cluster, condition each
+      asset on its cluster mates, damped by a second dial $\eta$. Then budget each cluster by the
+      inverse variance of what it holds. Block inversion says that at $(\gamma,\eta)=(1,1)$ this is
+      $\Sigma^{-1}u$ <em>exactly</em>, for any partition, with $u=\mathbf 1$ minimum variance,
+      $u=\sigma$ maximum diversification and $u=\mu$ the tangency portfolio. The near ends are the
+      methods people already use.
+    </p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>bridge</th><th>near end</th><th>far end</th><th>where</th></tr></thead>
+      <tbody>
+        <tr><td>HRP to minimum variance</td><td>hierarchical risk parity, exactly</td><td>minimum variance, exactly</td><td>the bisection tree with a split rule tied to the dial; the first object exact at both ends (<a href="./taxonomy.html">taxonomy</a>)</td></tr>
+        <tr><td>HMV to minimum variance</td><td>the 2024 family's near end, min-variance splits</td><td>minimum variance</td><td><a href="https://arxiv.org/abs/2411.05807">Cotton (2024)</a></td></tr>
+        <tr><td>NCO to minimum variance</td><td>nested clustered optimization</td><td>minimum variance, via one knot per cluster</td><td><a href="./schur-nco-bridge.pdf">the NCO note</a>, SSRN 7480738</td></tr>
+        <tr><td>HERC to minimum variance, a square</td><td>hierarchical equal risk contribution</td><td>minimum variance, two dials</td><td><a href="./schur-herc-square.pdf">the HERC note</a></td></tr>
+        <tr><td>Inverse variance to minimum variance</td><td>$w_i\propto 1/\sigma_i^2$</td><td>minimum variance; Stevens' regression identity made a path</td><td>the inner dial of the HERC note; one inverse per cluster</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      Two rules keep the family honest. A bridge is named by its endpoints and earns the plain
+      name only if both ends are exact; anything else is a variant labelled by the end it misses,
+      which is where the collapsed encoding of the reference implementations sits. And an encoding
+      is never named, because it is either exact or an approximation of the exact one. The
+      <a href="./taxonomy.html">taxonomy page</a> sorts every published &ldquo;Schur&rdquo; by this
+      rule, and <a href="./all-roads.html">one 3D picture</a> shows the five near ends descending
+      to the same floor.
+    </p>
+    <p>
+      The inner dial deserves a sentence of its own. Conditioning one asset on its cluster mates
+      is Stevens' identity, the minimum-variance weight as one minus the hedge sum over the residual
+      variance. Damping it gives a weight whose numerator and denominator are each linear in $\eta$
+      between the naive quantity and the regression quantity, so the whole path costs one inverse,
+      and there is an explicit frontier $\eta_+$ beyond which the first short appears. On an
+      equicorrelated cluster the path is the straight segment from inverse variance to the
+      cluster's minimum-variance portfolio.
+    </p>
+
+    <h2>Where to sit: what is proved</h2>
+    <p>
+      With the true covariance the far end wins and the question is empty. With an estimate
+      $\widehat\Sigma_\tau=\Sigma+\tau E$ the expected out-of-sample objective is
+      $F(\gamma,\tau)=V_0(\gamma)+\tau^2 G(\gamma)+O(\tau^4)$, and three facts decide where to
+      stand. The far end is flat in the population, $V_0'(1)=0$, so only the noise term has a slope
+      there: the optimum moves inside exactly when $G'(1)>0$, to
+      $\tilde\gamma=1-\big(G'(1)/V_0''(1)\big)\tau^2$, and the gain from moving is of fourth order.
+      The near end is blind to the cross-cluster block, so its estimation cost does not grow with
+      $\gamma$ and moving away from it costs $\gamma\tau^2$; if the population objective falls at
+      the near end, the near end is strictly suboptimal for small noise. And the sign of $G'(1)$ is
+      not fixed by the structure: both signs occur, each on an open set.
+    </p>
+    <p>
+      The examples are exact, in rational arithmetic. Identical clusters coupled through their
+      knots have a closed-form optimum $\gamma_\star=\big(1+2(k-2)c\big)/\big(2[1+(k-3)c]\big)$;
+      for two clusters and $c=\tfrac14$ it is $\tfrac23$, with gaps $1/576$ and $1/900$ to the two
+      ends. An equicorrelated cluster on the inner dial has optimum $\eta_\star=\tfrac35$ for
+      volatilities $(1,2,2)$ and $\rho=\tfrac14$, with gaps $1/45$ and $1/20$. A threshold in the
+      member variance ($\delta=8$) or in the cluster size and correlation ($q^2-1$ against
+      $r\rho(2+q)$) separates the interior case from the case where full coupling stays optimal.
+      Every claim has a certificate script, and the <a href="./demos.html">demos</a> recompute
+      the conditions live.
+    </p>
+
+    <h2>What the partition costs</h2>
+    <p>
+      At the far end the weights do not depend on the partition at all, so the price of a wrong
+      or changing clustering is a continuous function of the dials that vanishes at $(1,1)$. The
+      dials that damp estimation noise damp reclustering churn too. Along the way the partition is
+      taken from the Fiedler vector of the correlation graph, which is continuous in the covariance
+      and reorders only when two of its coordinates cross; each crossing is a finite jump, fewer
+      than a dendrogram's, and the lower turnover is an empirical result rather than a theorem.
+    </p>
+    <p>
+      Conditioning a cluster on everything outside it is the inverse a two-level method exists to
+      avoid. Two devices make it cheap. Composing the conditioning down a tree, each block on its
+      sibling, is exact because Schur complements compose. Conditioning on one factor-mimicking
+      portfolio per other cluster is exact whenever cross-cluster dependence runs through one
+      latent factor per cluster, of which the NCO note's knot asset is the special case, and costs
+      only cluster-sized solves. The <code>allocation</code> package's <code>SchurBridge</code>
+      exposes all of this with constructors named by their endpoints.
+    </p>
+
     <h2>Why this is one idea and not three</h2>
     <p>
       The fields solved complementary halves. Finance contributed the <em>bridge</em>: the
@@ -167,7 +255,9 @@
     <div class="next-steps">
       <p>
         For the recursion at arbitrary hierarchy depth and the empirical comparisons, see the
-        <a href="https://arxiv.org/abs/2411.05807">paper</a>. To use it today, head to the
+        <a href="https://arxiv.org/abs/2411.05807">paper</a>; for the family, the
+        <a href="./papers.html">2026 notes</a> and the <a href="./taxonomy.html">taxonomy</a>.
+        To use it today, head to the
         <a href="./implementations.html">implementations</a>: skfolio for batch portfolios,
         <code>allocation</code> for streaming universes, <code>precise</code> for online covariance
         estimation and the Schur pseudo-likelihood.
