@@ -57,16 +57,6 @@
 \maketitle
 
 \noindent\textit{Original version: October 29, 2024. Latest version: September 19, 2026.}
-This version corrects two misprinted companion vectors (\ref{eqn:ba} and \ref{eqn:inverses}),
-states the intra-group step in its pair form so that the block-inversion identity is applied
-correctly, and states the condition under which $\gamma=1$ recovers the minimum-variance
-portfolio exactly: the inter-group fitness must be the minimum variance of the augmented
-pair. The naive inverse-variance split of the accompanying code, and of the skfolio
-implementation derived from it, starts at HRP but only approaches the far end. A split tied
-to the dial is exact at both ends; see the taxonomy and the 2026 notes at
-\texttt{schur.microprediction.org}.\footnote{The flat-partition bridge from nested
-clustered optimization, SSRN 7480738; the two-dial square from hierarchical equal risk
-contribution; and the analysis of where on the bridge to sit under estimation error.}
 
 
 \begin{quote}
@@ -366,6 +356,19 @@ The use of Schur complement-inspired altered sub-covariance matrices used in int
 
 
 
+
+\section*{Note on versions}
+The version of September 19, 2026 corrects two misprinted companion vectors
+(\ref{eqn:ba} and \ref{eqn:inverses}), states the intra-group step in its pair form so that
+the block-inversion identity is applied correctly, and states the condition under which
+$\gamma=1$ recovers the minimum-variance portfolio exactly: the inter-group fitness must be
+the minimum variance of the augmented pair. The naive inverse-variance split of the
+accompanying code, and of the skfolio implementation derived from it, starts at HRP but only
+approaches the far end; a split tied to the dial is exact at both ends. Later work is
+catalogued at \texttt{schur.microprediction.org}: the flat-partition bridge from nested
+clustered optimization (SSRN 7480738), the two-dial square from hierarchical equal risk
+contribution, the analysis of where on the bridge to sit under estimation error, and a
+taxonomy of which construction is which.
 
 \section{Appendix A: Split representation of a minimum variance portfolio} 
 \label{sec:split}
