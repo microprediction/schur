@@ -261,8 +261,8 @@
   const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(2, 4, 3); scene.add(key);
   scene.add(new THREE.AmbientLight(0xffffff, 0.75));
   const group = new THREE.Group(); scene.add(group);
-  const W = 4.2, H = 2.0, DEP = 3.2; // x length, max height, depth
-  let orbit = { theta: -0.55, phi: 1.12, dist: 8.2, tx: 0.1, ty: 0.5 };
+  const W = 4.2, H = 2.0, DEP = 4.2; // x length, max height, depth
+  let orbit = { theta: -0.42, phi: 0.98, dist: 9.0, tx: 0.2, ty: 0.45 };
   function cssColor(v) { return new THREE.Color(css.getPropertyValue(v).trim() || '#888'); }
   function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
   function placeCamera() { const x = orbit.dist * Math.sin(orbit.phi) * Math.sin(orbit.theta), y = orbit.dist * Math.cos(orbit.phi), z = orbit.dist * Math.sin(orbit.phi) * Math.cos(orbit.theta); camera.position.set(x + orbit.tx, y + orbit.ty, z); camera.lookAt(orbit.tx, orbit.ty, 0); }
@@ -318,7 +318,7 @@
       const lane = DEP / ribbons.length;
       ribbons.forEach((r, i) => {
         const zc = -DEP / 2 + lane * (i + 0.5); const col = cssColor(r.m.color);
-        ribbonMesh(r.pts, col, zc, lane * 0.62);
+        ribbonMesh(r.pts, col, zc, lane * 0.5);
         label(r.m.name, 'start', new THREE.Vector3(-W / 2, toY(r.pts[0]), zc));
         const li = document.createElement('li'); li.innerHTML = '<i style="background:var(' + r.m.color + ')"></i>' + r.m.name + ' <span class="num">' + r.pts[0].toFixed(1) + '% → ' + r.pts[r.pts.length - 1].toFixed(1) + '%</span>'; legend.appendChild(li);
       });
@@ -338,7 +338,17 @@
       const li = document.createElement('li'); li.innerHTML = '<i style="background:var(--s4)"></i>HERC square: cluster dial γ along, asset dial η across <span class="num">' + sq.z[0][0].toFixed(1) + '% at HERC → ' + sq.z[G - 1][G - 1].toFixed(1) + '% at the far corner</span>'; legend.appendChild(li);
     }
   }
-  function render() { placeCamera(); renderer.setClearColor(cssColor('--stage'), 1); renderer.render(scene, camera); const r = stage.getBoundingClientRect(); for (const l of labels) { const p = l.pos.clone().project(camera); l.el.style.left = ((p.x + 1) / 2 * r.width) + 'px'; l.el.style.top = ((1 - p.y) / 2 * r.height) + 'px'; l.el.style.opacity = p.z < 1 ? '1' : '0'; } }
+  function render() {
+    placeCamera(); renderer.setClearColor(cssColor('--stage'), 1); renderer.render(scene, camera);
+    const r = stage.getBoundingClientRect();
+    for (const l of labels) { const p = l.pos.clone().project(camera); l.sx = (p.x + 1) / 2 * r.width; l.sy = (1 - p.y) / 2 * r.height; l.vis = p.z < 1; }
+    // push overlapping start labels apart vertically (they share a left edge)
+    const starts = labels.filter(l => l.el.classList.contains('start')).sort((a, b) => a.sy - b.sy);
+    const gap = 24;
+    for (let i = 1; i < starts.length; i++) if (starts[i].sy - starts[i - 1].sy < gap) starts[i].sy = starts[i - 1].sy + gap;
+    for (let i = starts.length - 2; i >= 0; i--) if (starts[i + 1].sy - starts[i].sy < gap) starts[i].sy = starts[i + 1].sy - gap;
+    for (const l of labels) { l.el.style.left = l.sx + 'px'; l.el.style.top = l.sy + 'px'; l.el.style.opacity = l.vis ? '1' : '0'; }
+  }
   // orbit
   let drag = null;
   canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); });
