@@ -32,20 +32,31 @@
 </head>
 <body>
 <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./implementations.html">Implementations</a>
         <a href="./taxonomy.html">Taxonomy</a>
-        <a href="./map.html">Literature map</a>
-        <a href="./timeline.html">Timeline</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
 <div id="map-wrap">
     <h1>Schur Damping: Research Directions</h1>

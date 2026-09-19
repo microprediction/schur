@@ -11,37 +11,47 @@
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./implementations.html">Implementations</a>
         <a href="./taxonomy.html">Taxonomy</a>
-        <a href="#bibliography">Bibliography</a>
-        <a href="./map.html">Literature map</a>
-        <a href="./timeline.html">Timeline</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
   <main>
     <h1>Schur Complementary Portfolios</h1>
     <p class="subtitle">A bridge between hierarchical and optimisation-based portfolio construction.</p>
 
     <p class="lead">
-      Portfolio construction has long had two camps. <strong>Top-down</strong> methods build a
+      Portfolio construction has long had two camps. <em>Top-down</em> methods build a
       hierarchy of assets and allocate between and within clusters &mdash; robust, intuitive, and
-      forgiving of a noisy covariance estimate. <strong>Bottom-up</strong> methods solve a single
+      forgiving of a noisy covariance estimate. <em>Bottom-up</em> methods solve a single
       optimisation over the whole covariance matrix &mdash; efficient when the estimate is good.
       Both are reasonable; they simply trust the data to different degrees.
     </p>
 
     <p>
-      The <strong>Schur complement</strong> connects them. Augment each cluster&apos;s covariance
+      The <em>Schur complement</em> connects them. Augment each cluster&apos;s covariance
       with the Schur complement of the others before allocating, and the hierarchical construction
       reproduces the global optimisation exactly. A single dial $\gamma \in [0, 1]$ slides smoothly
       between the two worlds &mdash; and, encouragingly, the best out-of-sample portfolios usually
@@ -105,8 +115,8 @@
     <h2 id="implementations">Implementations</h2>
     <p>
       Three maintained libraries cover the batch, streaming, and estimation layers:
-      <strong>skfolio</strong> (fixed universe, sklearn idiom), <strong>allocation</strong>
-      (online, evolving universe, Fiedler seriation), and <strong>precise</strong> (online
+      <em>skfolio</em> (fixed universe, sklearn idiom), <em>allocation</em>
+      (online, evolving universe, Fiedler seriation), and <em>precise</em> (online
       covariance and the Schur pseudo-likelihood). Install commands, repositories, and tutorials
       are on the <a href="./implementations.html">implementations page</a>.
     </p>
@@ -356,7 +366,7 @@
           Chitra, T., Diamandis, T., Sheng, N., Sterle, L., and Yusubov, K. (2025).
           <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual Demand Lending Pools</em></a>.
           arXiv:2502.06028. <em>Appendix B decides single vs multiple DeFi lending pools via the
-          <strong>undamped</strong> Schur complement of the pool covariance &mdash; the exact
+          <em>undamped</em> Schur complement of the pool covariance &mdash; the exact
           conditional covariance, no &gamma;. The &gamma;=0 vs &gamma;=1 architecture
           question, posed for billions of dollars of pooled assets &mdash; see the note on
           <a href="./damping-in-pdlps.html">damping in PDLPs</a> for what the interior dial adds.</em>
