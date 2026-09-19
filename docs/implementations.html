@@ -55,7 +55,14 @@
       seriation</em> (the Fiedler vector is continuous in the covariance, and the order changes only
       when two of its coordinates cross, each crossing a finite jump in the allocation; the lower
       turnover is empirical, not a continuity result), covariance is maintained incrementally, and names can enter or leave without a
-      refit.
+      refit. Its <code>SchurBridge</code> is the pair-form engine of which the family on this site
+      are corners, with constructors named by their endpoints:
+      <code>hrp_to_min_variance</code>, <code>hmv_to_min_variance</code>,
+      <code>herc_to_min_variance</code>, <code>nco_to_min_variance</code>,
+      <code>inverse_variance_to_min_variance</code>, each exact at both ends, and a
+      <code>companion</code> of <code>'vol'</code> or <code>'mean'</code> for maximum
+      diversification or tangency. The older <code>SchurComplementary</code> is kept as the
+      collapsed encoding that matches skfolio to machine precision.
     </p>
     <ul>
       <li>Install: <code>pip install allocation</code></li>
