@@ -43,7 +43,7 @@
       <button id="entOff" class="on">six off-diagonal</button>
       <button id="entAll">all ten</button>
       <label for="entTau">&tau;</label>
-      <input type="range" id="entTau" min="0.01" max="0.2" step="0.005" value="0.1" />
+      <input type="range" id="entTau" min="0.01" max="0.16" step="0.005" value="0.1" />
       <span class="val" id="entTauVal">0.100</span>
     </div>
     <canvas id="entChart" width="820" height="280"></canvas>
@@ -51,7 +51,7 @@
   </div>
   <div class="lookfor">What to look for: F(0) is no longer flat in &tau; (compare
   Lemma 1: the diagonal channels charge HRP too), yet the minimum stays strictly
-  inside. Push &tau; toward 0.15 with all ten entries: the &gamma; = 1 end blows
+  inside. Push &tau; toward 0.12 with all ten entries: the &gamma; = 1 end blows
   up by orders of magnitude as branches go near-singular, exactly as in the
   paper.</div>
 
@@ -66,10 +66,10 @@
 const S=window.SCHUR;
 
 let entAllMode=false;
-document.getElementById('entOff').addEventListener('click',()=>{entAllMode=false;
+document.getElementById('entOff').addEventListener('click',()=>{entAllMode=false; entTau.max='0.16'; if(+entTau.value>0.16) entTau.value='0.16';
   document.getElementById('entOff').classList.add('on');
   document.getElementById('entAll').classList.remove('on');draw();});
-document.getElementById('entAll').addEventListener('click',()=>{entAllMode=true;
+document.getElementById('entAll').addEventListener('click',()=>{entAllMode=true; entTau.max='0.12'; if(+entTau.value>0.12) entTau.value='0.12';
   document.getElementById('entAll').classList.add('on');
   document.getElementById('entOff').classList.remove('on');draw();});
 const entTau=document.getElementById('entTau'),entTauVal=document.getElementById('entTauVal');
@@ -80,6 +80,7 @@ function draw(){
   const padL=64,padB=28;
   const gs=[];for(let g=0;g<=1.0001;g+=0.02)gs.push(g);
   const res=gs.map(g=>S.Fent(g,tau,entAllMode));
+  if(!res[0].valid){ $('entRead').innerHTML='<b>Outside the domain:</b> at τ = '+tau.toFixed(3)+' '+res[0].nIndef+' of '+res[0].nStates+' sign states are not positive definite, so no covariance interpretation applies. The slider is capped at 1/6 for six off-diagonals and 1/8 for all ten entries.'; return; }
   const F=res.map(r=>r.mean);
   const F0=F[0],F1=F[F.length-1];
   let k=0;F.forEach((v,i)=>{if(v<F[k])k=i;});

@@ -133,27 +133,29 @@ function mc(){
   const rnd=N.mulberry32(seed*7919+T*31+1);
   const Sig=market.Sigma, idx=market.clusters, kn=market.knots;
   const v0=GS.map(g=>{const w=N.bridge(Sig,idx,kn,g).w; return N.quad(Sig,w);});
-  const sum=new Array(GS.length).fill(0), sumsq=new Array(GS.length).fill(0); let done=0;
+  const sum=new Array(GS.length).fill(0), sumsq=new Array(GS.length).fill(0); let done=0, sumMV=0;
   $('run').disabled=true;
   function step(){
     const batch=Math.min(25,draws-done);
     for(let b=0;b<batch;b++){const S=N.sampleCovariance(Sig,T,rnd);
       GS.forEach((g,i)=>{let v; try{const w=N.bridge(S,idx,kn,g).w; v=N.quad(Sig,w);}catch(e){v=NaN;} if(isFinite(v)){sum[i]+=v; sumsq[i]+=v*v;}});
+      try{const vmv=N.quad(Sig,N.minVar(S)); if(isFinite(vmv)) sumMV+=vmv;}catch(e){}
       done++;}
     const mean=sum.map(s=>s/done), se=sumsq.map((s,i)=>Math.sqrt(Math.max(0,s/done-mean[i]*mean[i])/done));
     const bi=mean.indexOf(Math.min(...mean)); best=GS[bi];
-    N.lineChart('chartMC',{series:[{name:'out-of-sample variance, mean of '+done+' draws',points:GS.map((g,i)=>[g,mean[i]])}],
+    const meanMV=sumMV/done;
+    N.lineChart('chartMC',{series:[{name:'out-of-sample variance, mean of '+done+' draws',points:GS.map((g,i)=>[g,mean[i]])},{name:'sample minimum variance Σ̂⁻¹1, mean of '+done+' draws (benchmark, not on the bridge)',points:GS.map(g=>[g,meanMV])}],
       title:'expected out-of-sample variance against the dial, T = '+T,xlabel:'γ  (0 = NCO, 1 = full conditioning on the sample knots)',xname:'γ',vlines:[{x:best,label:'lowest mean at γ = '+best.toFixed(2),color:'#0f8b6e'}],height:300});
-    $('readMC').innerHTML='<b>'+done+' of '+draws+' draws.</b> Mean out-of-sample variance: at γ = 0 (NCO) <b>'+mean[0].toFixed(4)+'</b>, at the best γ = '+best.toFixed(2)+' <b>'+mean[bi].toFixed(4)+'</b>, at γ = 1 <b>'+mean[GS.length-1].toFixed(4)+'</b> (standard errors about '+se[bi].toFixed(4)+'). With the true covariance the bridge would reach '+v0[GS.length-1].toFixed(4)+' at γ = 1 and '+v0[0].toFixed(4)+' at γ = 0.';
+    $('readMC').innerHTML='<b>'+done+' of '+draws+' draws.</b> Mean out-of-sample variance: at γ = 0 (NCO) <b>'+mean[0].toFixed(4)+'</b>, at the best γ = '+best.toFixed(2)+' <b>'+mean[bi].toFixed(4)+'</b>, at γ = 1 (full conditioning on the sample knots) <b>'+mean[GS.length-1].toFixed(4)+'</b>, and for the sample minimum-variance portfolio Σ̂⁻¹1 <b>'+meanMV.toFixed(4)+'</b> (standard errors about '+se[bi].toFixed(4)+'). With the true covariance the bridge would reach '+v0[GS.length-1].toFixed(4)+' at γ = 1 and '+v0[0].toFixed(4)+' at γ = 0.';
     if(done<draws) setTimeout(step,0); else {$('run').disabled=false; drawBars();}
   }
   step();
 }
 function drawBars(){
   const m=market, cats=labels(m), cl=clusterOf(m);
-  const gsel=[0,best,1], names=['γ = 0 (NCO)','γ = '+best.toFixed(2)+' (best above)','γ = 1 (minimum variance)'];
+  const gsel=[0,best,1], names=['γ = 0 (NCO)','γ = '+best.toFixed(2)+' (best above)','γ = 1 (full knot conditioning; minimum variance under the gateway model)'];
   N.barChart('barsTrue',{title:'weights built from the true covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(m.Sigma,m.clusters,m.knots,g).w})),height:260});
-  N.barChart('barsSample',{title:'weights built from the last sample covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(sampleS,m.clusters,m.knots,g).w})),height:260});
+  N.barChart('barsSample',{title:'weights built from the last sample covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(sampleS,m.clusters,m.knots,g).w})).concat([{name:'sample minimum variance Σ̂⁻¹1',values:N.minVar(sampleS)}]),height:260});
   const ws=N.bridge(sampleS,m.clusters,m.knots,1).w, wt=N.bridge(m.Sigma,m.clusters,m.knots,1).w;
   $('readBars').innerHTML='Largest position in the γ = 1 portfolio built from the sample: <b>'+Math.max(...ws.map(Math.abs)).toFixed(3)+'</b>, against '+Math.max(...wt.map(Math.abs)).toFixed(3)+' with the true covariance. Sum of squared weight errors of the sample γ = 1 portfolio: '+ws.reduce((s,v,i)=>s+(v-wt[i])**2,0).toFixed(4)+'.';
 }

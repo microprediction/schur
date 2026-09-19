@@ -128,17 +128,31 @@
   }
   // Mean over all sign states; states with |V| > bigCut stand in for the exactly
   // singular branches of the rational computation and are counted separately.
+  // Positive definiteness of a small symmetric matrix by Cholesky.
+  function isPD(S) {
+    const n = S.length, L = S.map(() => new Array(n).fill(0));
+    for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) {
+      let t = S[i][j]; for (let k = 0; k < j; k++) t -= L[i][k] * L[j][k];
+      if (i === j) { if (t <= 0) return false; L[i][i] = Math.sqrt(t); } else L[i][j] = t / L[j][j];
+    }
+    return true;
+  }
+  // Largest tau at which every enumerated state is positive definite (issue #28):
+  // 1/6 for the six off-diagonals, 1/8 for all ten entries.
+  const ENT_TAU_MAX = { six: 1 / 6, ten: 1 / 8 };
   function Fent(g, tau, all) {
     const entries = all ? OFFD.concat(DIAG) : OFFD;
     const n = 1 << entries.length;
-    let tot = 0, kept = 0, nBig = 0;
+    let tot = 0, kept = 0, nBig = 0, nIndef = 0;
     const bigCut = 1e6;
     for (let b = 0; b < n; b++) {
-      const V = Vof(weights4(famEnt(tau, entries, b), g), ST_A);
+      const S = famEnt(tau, entries, b);
+      if (!isPD(S)) { nIndef++; continue; }
+      const V = Vof(weights4(S, g), ST_A);
       if (!isFinite(V) || Math.abs(V) > bigCut) { nBig++; continue; }
       tot += V; kept++;
     }
-    return { mean: tot / kept, nBig, nStates: n };
+    return { mean: kept ? tot / kept : NaN, nBig, nIndef, nStates: n, valid: nIndef === 0 };
   }
 
   // ---------- sample covariance (seeded Monte Carlo; paper Section 6) ----------
@@ -221,7 +235,7 @@
     cx.fillText(title, padL, 8);
   }
 
-  window.SCHUR = { weights4, Vof, famA, famB, Fof, dF0, argminF,
+  window.SCHUR = { weights4, Vof, famA, famB, Fof, dF0, argminF, isPD, ENT_TAU_MAX,
                    famWhole, Fwhole, XiOf, XI_DENOM,
                    Fent, wisSample, wisF, wisV, Qx, Fclosed, FA,
                    setup, axes };
