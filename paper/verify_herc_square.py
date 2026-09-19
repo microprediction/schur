@@ -104,9 +104,11 @@ def square(S, clusters, gamma, eta, u=None):
     for C in clusters:
         Q, b = cluster_pair(S, u, C, gamma)
         z = diagonal_bridge(Q, b, eta)
-        s = sum(bi*zi for bi, zi in zip(b, z)); wC = [zi/s for zi in z]    # b^T w_C = 1
-        nu = quad(wC, Q)                                                    # fitness on the pair
-        for k, i in enumerate(C): w[i] = wC[k]/nu
+        zQz = quad(z, Q)
+        if zQz == 0:                                   # a vanishing direction contributes nothing
+            continue
+        scale = sum(bi*zi for bi, zi in zip(b, z))/zQz   # = 1/(b^T z * nu), with no division by b^T z
+        for k, i in enumerate(C): w[i] = z[k]*scale
     return normalize(w)
 
 def herc(S, clusters):
@@ -173,6 +175,10 @@ S = random_spd(8, rng)
 # 1-3 corners
 check('1. (0,0) is HERC (inverse naive variance budgets, inverse variance inside)', square(S, clusters3, Fr(0), Fr(0)) == herc(S, clusters3))
 check('2. (1,1) is the global minimum-variance portfolio', square(S, clusters3, Fr(1), Fr(1)) == gmv(S))
+S22 = [[Fr(2), Fr(1)], [Fr(1), Fr(1)]]   # issue #26: b_{1}(1) = 0 on SPD input; the global direction is (0, 1)
+check('2b. a vanishing companion at the far end (issue #26): Sigma = [[2,1],[1,1]], singleton clusters, gamma = 1 gives (0, 1)',
+      square(S22, [[0], [1]], Fr(1), Fr(1)) == gmv(S22) == [Fr(0), Fr(1)]
+      and square(S22, [[0], [1]], Fr(0), Fr(1)) == [Fr(1, 3), Fr(2, 3)] and square(S22, [[0], [1]], Fr(1, 2), Fr(1)) == [Fr(1, 4), Fr(3, 4)])
 u = [Fr(rng.randint(1, 9), 4) for _ in range(8)]
 check('3. (1,1) with companion u is Sigma^{-1} u', square(S, clusters3, Fr(1), Fr(1), u) == normalize(solve(S, u)))
 
