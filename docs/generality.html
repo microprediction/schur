@@ -122,20 +122,6 @@
       needs a quadratic form.
     </p>
 
-    <h2>Consequences for the bridges</h2>
-    <p>
-      Every construction catalogued in the <a href="./taxonomy.html">taxonomy</a> is defined for a
-      pair $(Q_C, b_C)$, and the choice of $b$ is a parameter of the recipe, not of the theory.
-      So the same family that runs from HRP, HERC or NCO to minimum variance runs, with $b=\sigma$,
-      to maximum diversification, and with $b=\mu$ to the tangency portfolio; the HERC note's
-      companion-vector remark states the corners, and the <code>allocation</code> package exposes
-      them as <code>companion='vol'</code> and <code>companion='mean'</code>. The far end is exact in
-      every case for the same reason. The near end changes with $b$, since the heuristic
-      one starts from must carry $b$ in its numerator to be on the bridge at all: inverse volatility
-      rather than inverse variance for $b=\sigma$, per-asset Kelly $\mu_i/\sigma_i^2$ for $b=\mu$.
-      That is a useful test of a heuristic. If it cannot be written with a $b$ in the numerator, it
-      is not the near end of anything that reaches an optimizer.
-    </p>
   </main>
 
   <footer>
