@@ -15,7 +15,14 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">schur</a>
     <nav>
-      <a href="./theory.html">Theory</a>
+      <div class="menu">
+        <button class="menu-label" type="button" aria-haspopup="true" aria-expanded="false">Theory</button>
+        <div class="submenu">
+          <a href="./intro.html">Introduction</a>
+          <a href="./taxonomy.html">Taxonomy</a>
+          <a href="./generality.html">Generality</a>
+        </div>
+      </div>
       <a href="./papers.html">Papers</a>
       <a href="./demos.html">Demos</a>
       <a href="./implementations.html">Implementations</a>
@@ -25,6 +32,12 @@
       <a href="https://github.com/microprediction/schur">GitHub</a>
     </nav>
   </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
 </header>
 
   <main>
@@ -167,10 +180,6 @@
 
     <h2>Further reading</h2>
     <ul>
-      <li>
-        <a href="./theory.html">Theory</a> &mdash; the introduction, the taxonomy and the
-        generality page in one place.
-      </li>
       <li>
         <a href="./intro.html">Introduction</a> &mdash; the method explained step by step on this
         site: the block-inverse identity, the $\gamma$ interpolation, the family of bridges, and
