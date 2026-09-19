@@ -108,7 +108,7 @@
   particular covariance, priced long-only and without ever inverting <code>Σ</code>.</p>
 
   <h2>Out of sample, the middle of the bridge wins</h2>
-  <p>In sample, variance can only fall as γ rises — more of the covariance is used. Out of
+  <p>In sample, variance falls as γ rises until the cap — more of the covariance is used. Out of
   sample the question is different: the cross-block terms that γ folds in are <em>estimated</em>,
   and estimation error grows with how aggressively they are used. Here weights are fitted on
   one-year windows drawn from 2010–2017 (raw weights, no monotonic cap, so the whole bridge
@@ -140,8 +140,8 @@
   <code>F(0.9) &lt; F(1)</code> as exact rational inequalities (every step of the recursion is
   rational arithmetic, so the comparison is a certificate, not a simulation), while γ = 0 is
   structurally noise-immune — the HRP recursion never reads the cross block, so the minimizer
-  is never at 0 and, above the exhibited noise level, never at 1 either. The construction and
-  certificate: <code>experiments/schur_interior_optimum.py</code>.</p>
+  is never at 0 and, at the exhibited noise level and a neighbourhood of it, not at 1 either. The construction and
+  certificate: <code>paper/neither_end_certificate.py</code>.</p>
 
   <h2>What the smooth ordering is worth</h2>
   <p>Same experiment twice: an EWMA covariance (60-day halflife) over the same 28 names,
@@ -164,7 +164,7 @@
   everything shown here (orders, weight grid, turnover series) with the
   <code>allocation</code> package. Estimator: <code>allocation/schur.py</code>
   (<code>SchurComplementary</code>, and <code>HierarchicalRiskParity</code> as its
-  <code>γ = 0</code> case). The analytical companion — <em>When Neither Minimum Variance nor Hierarchical Risk Parity Is Optimal</em> — is <a href="./neither-end-of-the-bridge.pdf">here</a>; data generators live in the <a href="https://github.com/microprediction/allocation">allocation</a> repository.</p>
+  <code>γ = 0</code> case). The analytical companion — <em>When the Out-of-Sample-Optimal Schur Portfolio Lies Between HRP and Minimum Variance</em> — is <a href="./neither-end-of-the-bridge.pdf">here</a>; data generators live in the <a href="https://github.com/microprediction/allocation">allocation</a> repository.</p>
 </main>
 
 <footer>

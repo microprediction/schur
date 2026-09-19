@@ -66,7 +66,7 @@ function draw(){
   const X=v=>padL+v/xmax*(W-padL-14),Y=v=>H-padB-v/ymax*(H-padB-24);
   S.axes(cx,W,H,padL,padB,'1 − γ*(e) against e² — family A; line has slope 1025/153');
   cx.strokeStyle='#ef6c00';cx.lineWidth=1.6;cx.beginPath();
-  cx.moveTo(X(0),Y(0));cx.lineTo(X(xmax),Y(1025/153*xmax));cx.stroke();
+  {const xe=Math.min(xmax,ymax/(1025/153));cx.moveTo(X(0),Y(0));cx.lineTo(X(xe),Y(1025/153*xe));cx.stroke();}
   cx.fillStyle='#4a3aff';
   pts.forEach(p=>{cx.beginPath();cx.arc(X(p.x),Y(p.y),3.5,0,7);cx.fill();});
   cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';

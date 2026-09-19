@@ -35,7 +35,7 @@
   the algorithm run on data.</p>
 
   <h2>The market</h2>
-  <p>Ten assets in four groups. Each group has one representative (K1 to K4)
+  <p>Twelve assets in four groups. Each group has one representative (K1 to K4)
   and one to three other members (m). The representatives are correlated with
   each other; each member is its own group's representative scaled by a beta,
   plus independent noise, which is the paper's gateway model. The left matrix
@@ -80,7 +80,7 @@
   <div class="lookfor">What to look for. With few observations the sample
   covariance is unreliable and the curve's minimum sits well inside: trusting
   the estimated cross-group correlation partly beats both ignoring it
-  (&gamma; = 0, NCO) and trusting it fully (&gamma; = 1, sample minimum variance).
+  (&gamma; = 0, NCO) and trusting it fully (&gamma; = 1, full conditioning on the sample knots, which is the sample minimum-variance portfolio only under the gateway model).
   Raise T and the minimum drifts toward 1 as the estimate improves. This is
   the estimation-error trade-off of the paper's Section 7, here without any
   of its simplifying assumptions: the sample covariance does not satisfy the
@@ -143,7 +143,7 @@ function mc(){
     const mean=sum.map(s=>s/done), se=sumsq.map((s,i)=>Math.sqrt(Math.max(0,s/done-mean[i]*mean[i])/done));
     const bi=mean.indexOf(Math.min(...mean)); best=GS[bi];
     N.lineChart('chartMC',{series:[{name:'out-of-sample variance, mean of '+done+' draws',points:GS.map((g,i)=>[g,mean[i]])}],
-      title:'expected out-of-sample variance against the dial, T = '+T,xlabel:'γ  (0 = NCO, 1 = sample minimum variance)',xname:'γ',vlines:[{x:best,label:'lowest mean at γ = '+best.toFixed(2),color:'#0f8b6e'}],height:300});
+      title:'expected out-of-sample variance against the dial, T = '+T,xlabel:'γ  (0 = NCO, 1 = full conditioning on the sample knots)',xname:'γ',vlines:[{x:best,label:'lowest mean at γ = '+best.toFixed(2),color:'#0f8b6e'}],height:300});
     $('readMC').innerHTML='<b>'+done+' of '+draws+' draws.</b> Mean out-of-sample variance: at γ = 0 (NCO) <b>'+mean[0].toFixed(4)+'</b>, at the best γ = '+best.toFixed(2)+' <b>'+mean[bi].toFixed(4)+'</b>, at γ = 1 <b>'+mean[GS.length-1].toFixed(4)+'</b> (standard errors about '+se[bi].toFixed(4)+'). With the true covariance the bridge would reach '+v0[GS.length-1].toFixed(4)+' at γ = 1 and '+v0[0].toFixed(4)+' at γ = 0.';
     if(done<draws) setTimeout(step,0); else {$('run').disabled=false; drawBars();}
   }
@@ -155,7 +155,7 @@ function drawBars(){
   N.barChart('barsTrue',{title:'weights built from the true covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(m.Sigma,m.clusters,m.knots,g).w})),height:260});
   N.barChart('barsSample',{title:'weights built from the last sample covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(sampleS,m.clusters,m.knots,g).w})),height:260});
   const ws=N.bridge(sampleS,m.clusters,m.knots,1).w, wt=N.bridge(m.Sigma,m.clusters,m.knots,1).w;
-  $('readBars').innerHTML='Largest position in the sample minimum-variance portfolio: <b>'+Math.max(...ws.map(Math.abs)).toFixed(3)+'</b>, against '+Math.max(...wt.map(Math.abs)).toFixed(3)+' with the true covariance. Sum of squared weight errors of the sample γ = 1 portfolio: '+ws.reduce((s,v,i)=>s+(v-wt[i])**2,0).toFixed(4)+'.';
+  $('readBars').innerHTML='Largest position in the γ = 1 portfolio built from the sample: <b>'+Math.max(...ws.map(Math.abs)).toFixed(3)+'</b>, against '+Math.max(...wt.map(Math.abs)).toFixed(3)+' with the true covariance. Sum of squared weight errors of the sample γ = 1 portfolio: '+ws.reduce((s,v,i)=>s+(v-wt[i])**2,0).toFixed(4)+'.';
 }
 ['seed','T'].forEach(id=>$(id).addEventListener('input',drawMarket));
 $('resample').onclick=drawMarket; $('draws').addEventListener('input',()=>{$('drawsVal').textContent=$('draws').value;}); $('run').onclick=mc;

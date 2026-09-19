@@ -37,12 +37,12 @@
   the paper's table uses 200,000).</p>
   <p>Two honest wrinkles, both findings of the paper rather than bugs. First, on
   a sample covariance the implemented recursion at &gamma; = 1 is <em>not</em>
-  the sample minimum-variance portfolio (symmetrization and the naive splits
+  the sample minimum-variance portfolio (the naive splits
   break the exact recovery once exchangeability is gone), so the right end of
   the chart is <em>full coupling</em>, and the paper carries sample Markowitz
   as a separate benchmark. Second, the <em>mean</em> of the raw recursion's
-  loss diverges at small T: rare draws drive the fitness sum through zero, the
-  pole is non-integrable, and a sample mean never settles. The plot therefore
+  loss appears to diverge at small T: rare draws drive the fitness sum through zero, the
+  pole looks non-integrable, and a sample mean never settles; the paper gives a pole criterion and Monte Carlo evidence but stops short of a theorem. The plot therefore
   shows the <em>median</em> curve, which is stable at any sample count, with
   the tail frequency reported separately.</p>
   <div class="widget">
@@ -116,7 +116,7 @@ function draw(){
   document.getElementById('wisRead').innerHTML=
     `T = <b>${curT}</b>: med F(0) = <b>${med[0].toFixed(4)}</b>, med F(γ*) = <b>${med[k].toFixed(4)}</b>, `+
     `med F(1) = <b>${med[med.length-1].toFixed(4)}</b>; at γ = 1, `+
-    `<b>${(100*tail1).toFixed(1)}%</b> of draws exceed ten times the population variance.`+sweepText();
+    `<b>${(100*tail1).toFixed(1)}%</b> of draws exceed 10, more than thirteen times the population minimum variance.`+sweepText();
 }
 document.querySelectorAll('.wisT').forEach(b=>b.addEventListener('click',()=>{
   curT=+b.dataset.t;
