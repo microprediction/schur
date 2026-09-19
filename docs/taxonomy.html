@@ -45,10 +45,10 @@
     <p class="lead">
       Several portfolio constructions on this site, in the papers, and in code carry the word
       &ldquo;Schur&rdquo;, and some of them disagree numerically. This page sorts them. The rule is
-      simple: a <strong>bridge</strong> is named by its two endpoints, a heuristic at the near end and
+      simple: a <em>bridge</em> is named by its two endpoints, a heuristic at the near end and
       an optimizer at the far end, and it earns the plain name only if <em>both</em> ends are exact.
-      A qualifier names the <strong>path</strong> when the path changes the interior. The algebraic
-      <strong>encoding</strong> gets no name at all: it is either exact, or an approximation of the
+      A qualifier names the <em>path</em> when the path changes the interior. The algebraic
+      <em>encoding</em> gets no name at all: it is either exact, or an approximation of the
       exact one, and is labelled by which end it misses.
     </p>
 
@@ -88,7 +88,7 @@
         <tr>
           <td>HRP to minimum variance, <em>collapsed encoding</em></td>
           <td>HRP, exactly</td>
-          <td><strong>approximate</strong>: moves toward minimum variance when the optimum is long-only, and does not reach it</td>
+          <td><em>approximate</em>: moves toward minimum variance when the optimum is long-only, and does not reach it</td>
           <td>Bisection tree, sibling conditioning, one dial, with the pair collapsed into one matrix $(I-\gamma BD^{-1}M^\top)^{-1}A^c(\gamma)$, symmetrized, with a step-up matrix $M$ for unequal blocks. Split: HRP's naive rule, the variance of the inverse-variance portfolio of the collapsed child block. <code>precise</code>, skfolio <code>SchurComplementary</code>, <code>allocation.SchurComplementary</code> and <code>StreamingSchur</code>; the variant analysed in <a href="./neither-end-of-the-bridge.pdf">the tree paper</a>. Kept for compatibility, never called the bridge.</td>
         </tr>
         <tr>
@@ -120,12 +120,12 @@
 
     <h2>The paths</h2>
     <p>
-      The outer dial needs a conditioning set. <strong>Siblings</strong>: compose conditioning down a
+      The outer dial needs a conditioning set. <em>Siblings</em>: compose conditioning down a
       bisection tree, each block on its sibling; exact at $\gamma=1$ because Schur complements
-      compose, one half-size solve at the root. <strong>All</strong>: each cluster on every other
-      asset; exact, one solve of size $n-|C|$ per cluster. <strong>Knots</strong>: each cluster on one
+      compose, one half-size solve at the root. <em>All</em>: each cluster on every other
+      asset; exact, one solve of size $n-|C|$ per cluster. <em>Knots</em>: each cluster on one
       asset per other cluster; exact under the gateway model of the NCO note, $k\times k$ solves.
-      <strong>Factor knots</strong>: each cluster on one factor-mimicking portfolio per other cluster,
+      <em>Factor knots</em>: each cluster on one factor-mimicking portfolio per other cluster,
       $a_C=\Sigma_{CC}^{-1}\beta_C$; exact when cross-cluster dependence runs through one latent factor
       per cluster, cluster-sized solves. The paths agree at both ends when exact and differ inside.
     </p>
@@ -154,14 +154,14 @@
 
     <h2>Other uses of the word</h2>
     <p>
-      <strong>Localization</strong> in <a href="./localization-is-schur-damping.pdf">the
+      <em>Localization</em> in <a href="./localization-is-schur-damping.pdf">the
       localization note</a> is a Schur <em>product</em>, an entrywise taper of the covariance; the note
       shows that a block-constant taper is the same damped complement $A-\gamma BD^{-1}B^\top$, so
       &ldquo;Schur damping&rdquo; there means what it means here. Same dial, no portfolio endpoints.
-      <strong>Damping in PDLPs</strong> (<a href="./damping-in-pdlps.html">the DeFi note</a>) is the
+      <em>Damping in PDLPs</em> (<a href="./damping-in-pdlps.html">the DeFi note</a>) is the
       same complement with isolated pools at $\gamma=0$ and one merged pool at $\gamma=1$.
-      <strong>Hierarchical minimum variance on graphs</strong> (Mograby, 2025) is the far end made exact
-      by separator recursion, not a bridge. <strong>Noguer i Alonso (2026)</strong> states the exact
+      <em>Hierarchical minimum variance on graphs</em> (Mograby, 2025) is the far end made exact
+      by separator recursion, not a bridge. <em>Noguer i Alonso (2026)</em> states the exact
       bisection identity and names HRP's three substitutions; his Schur-RA-HRP is a fixed return-aware
       rule that swaps standalone for conditional cluster variance inside RA-HRP's split, with no dial,
       reducing to RA-HRP when the hedge terms vanish, and aimed at tangency rather than at a bridge in

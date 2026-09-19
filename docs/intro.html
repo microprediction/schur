@@ -64,12 +64,12 @@
        \qquad
        S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
     </div>
-    <p><strong>Finance.</strong> Allocate top-down between clusters using the damped complements
+    <p><em>Finance.</em> Allocate top-down between clusters using the damped complements
       and recurse. At $\gamma=0$ the cross block is set aside and you have
-      <strong>hierarchical risk parity</strong> &mdash; robust, and deliberately blind to $B$. At
+      <em>hierarchical risk parity</em> &mdash; robust, and deliberately blind to $B$. At
       $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: when each split is
       budgeted by the child's conditioned variance, the recursion reproduces the global
-      <strong>minimum-variance portfolio</strong> (the collapsed encoding in the reference
+      <em>minimum-variance portfolio</em> (the collapsed encoding in the reference
       implementations only approaches it; see the <a href="./taxonomy.html">taxonomy</a>). The dial turns a heuristic
       into an identity, with everything in between a tunable trade-off between estimation noise and
       information.
@@ -114,7 +114,7 @@
         conditionals&rdquo; and &ldquo;full Vecchia conditioning.&rdquo;
       </p>
     </div>
-    <p><strong>Spatial statistics.</strong> The Vecchia approximation &mdash; the workhorse for
+    <p><em>Spatial statistics.</em> The Vecchia approximation &mdash; the workhorse for
       fitting Gaussian fields over tens of thousands of locations &mdash; writes the likelihood as
       a product of per-location conditionals. Each conditional <em>is</em> a Schur complement, and
       each is estimated, hence noisy. Shrinking those conditionals (as ShrinkTM does toward a
@@ -122,7 +122,7 @@
       $\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
       variance a weather model keeps after conditioning on neighbours.
     </p>
-    <p><strong>Machine learning.</strong> The natural gradient is the minimum-variance operation
+    <p><em>Machine learning.</em> The natural gradient is the minimum-variance operation
       applied to the <em>gradient</em> covariance, and the optimizer hierarchy lines up with the
       portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC&apos;s
       block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices &mdash;

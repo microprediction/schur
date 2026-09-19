@@ -30,20 +30,20 @@
 
   <main>
     <h1>Schur Complementary Portfolios</h1>
-    <p class="subtitle">A bridge between hierarchical and optimisation-based portfolio construction.</p>
+    <p class="subtitle">Bridges between heuristic and optimization-based portfolio construction.</p>
 
     <p class="lead">
-      Portfolio construction has long had two camps. One is <strong>global optimization</strong>:
+      Portfolio construction has long had two camps. One is <em>global optimization</em>:
       a single objective over the whole covariance matrix, with estimation error dealt with before
       the optimizer sees it, by shrinkage, factor structure and the like. The other is
-      <strong>heuristic</strong>, motivated through hierarchies, clusters and risk budgets, and
+      <em>heuristic</em>, motivated through hierarchies, clusters and risk budgets, and
       deals with estimation error inside the construction itself, by using the covariance
       piecemeal. The question that separates them is where to handle estimation uncertainty: at
       the estimation level, at the construction level, or both.
     </p>
 
     <p>
-      The <strong>Schur complement</strong> connects them. Augment each cluster&apos;s covariance
+      The <em>Schur complement</em> connects them. Augment each cluster&apos;s covariance
       with the Schur complement of the others before allocating, and the hierarchical construction
       reproduces the global optimisation exactly, when each split is budgeted by the child's
       conditioned variance (the <a href="./taxonomy.html">taxonomy</a> says which encodings do this
@@ -54,7 +54,7 @@
     </p>
 
     <p>
-      That was one bridge, on one tree. It is now a <strong>family</strong>: nested clustered
+      That was one bridge, on one tree. It is now a <em>family</em>: nested clustered
       optimization, hierarchical equal risk contribution, hierarchical risk parity and plain
       inverse variance are each the near end of a bridge whose far end is the same optimizer, and
       the notes below prove when the best place to stand is strictly inside. The
@@ -63,7 +63,7 @@
     </p>
 
     <p>
-      <strong>Scope.</strong> The aim here is not to compete with the optimization school but to
+      <em>Scope.</em> The aim here is not to compete with the optimization school but to
       demonstrate the connection to it. Optimization done properly already handles estimation
       uncertainty at the estimation level: under quadratic loss the rule that minimizes
       out-of-sample variance is the optimizer applied to the posterior-mean covariance, and
@@ -144,8 +144,8 @@
     <h2 id="implementations">Implementations</h2>
     <p>
       Three maintained libraries cover the batch, streaming, and estimation layers:
-      <strong>skfolio</strong> (fixed universe, sklearn idiom), <strong>allocation</strong>
-      (online, evolving universe, Fiedler seriation), and <strong>precise</strong> (online
+      <em>skfolio</em> (fixed universe, sklearn idiom), <em>allocation</em>
+      (online, evolving universe, Fiedler seriation), and <em>precise</em> (online
       covariance and the Schur pseudo-likelihood). Install commands, repositories, and tutorials
       are on the <a href="./implementations.html">implementations page</a>.
     </p>
