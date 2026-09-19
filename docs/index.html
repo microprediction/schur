@@ -33,11 +33,11 @@
     <p class="subtitle">A bridge between hierarchical and optimisation-based portfolio construction.</p>
 
     <p class="lead">
-      Portfolio construction has long had two camps. <strong>Top-down</strong> methods build a
-      hierarchy of assets and allocate between and within clusters &mdash; robust, intuitive, and
-      forgiving of a noisy covariance estimate. <strong>Bottom-up</strong> methods solve a single
-      optimisation over the whole covariance matrix &mdash; efficient when the estimate is good.
-      Both are reasonable; they simply trust the data to different degrees.
+      Portfolio construction has long had two camps. One is <strong>global optimization</strong>:
+      a single objective over the whole covariance matrix, exact when the inputs are right and
+      brittle when they are not. The other is <strong>heuristic</strong>, motivated through
+      hierarchies, clusters, risk budgets and the like: recipes that use the covariance piecemeal
+      and are valued for surviving a noisy estimate of it.
     </p>
 
     <p>
@@ -70,13 +70,13 @@
 
         <!-- left world -->
         <rect x="8" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Top-down</text>
+        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Heuristic</text>
         <text x="120" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Hierarchical Risk Parity</text>
         <text x="120" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">allocate on diagonal blocks</text>
 
         <!-- right world -->
         <rect x="528" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Bottom-up</text>
+        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Global optimization</text>
         <text x="640" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Minimum-Variance</text>
         <text x="640" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">invert the full covariance</text>
 
