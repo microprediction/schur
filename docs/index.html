@@ -67,6 +67,19 @@
     </p>
 
     <p>
+      <em>The intuition.</em> When people build heuristic allocators they chunk: the assets are
+      cut into blocks, by sector, by a dendrogram, by a clustering, and each block is handled on its
+      own, with the covariance between blocks thrown away at the cut. The cut is a hard decision
+      made on soft evidence. The Schur complement is a softer way to cleave. Conditioning a block on
+      the others keeps what the cross-block covariance says while still solving one block at a time,
+      and the dial says how much of it to keep. The cleaving can follow structure that is presumed,
+      sectors or a prior, or structure that is measured, an estimated correlation, and it degrades
+      gracefully in either case: at one end of the dial it is the chunking everyone already does, at
+      the other it is the global optimizer, and in between it is the same recursion trusting the
+      cross-block evidence by degrees.
+    </p>
+
+    <p>
       <em>Scope.</em> The aim here is not to compete with the optimization school but to
       demonstrate the connection to it. Optimization done properly already handles estimation
       uncertainty at the estimation level: under quadratic loss the rule that minimizes
