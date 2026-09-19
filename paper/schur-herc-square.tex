@@ -425,8 +425,15 @@ cluster's minimum-variance portfolio $v_\star$,
   \label{eq:theta}
 \end{equation}
 where $\alpha=\sum_i\sigma_i^{-2}$ and $\beta=\sum_i s_{-i}/\sigma_i$, so
-that $\beta=(\sum_i\sigma_i^{-1})^2-\alpha$. The long-only frontier is
-$\eta_+=\min_i 1/(\kappa\sigma_i s_{-i})$.
+that $\beta=(\sum_i\sigma_i^{-1})^2-\alpha$. With $h_i=\kappa\sigma_i s_{-i}$
+the long-only frontier is
+\begin{equation}
+  \eta_+=\min\big(\{1\}\cup\{1/h_i : h_i>1\}\big),
+  \label{eq:equifrontier}
+\end{equation}
+which is $\min_i 1/h_i$ when some asset is shorted inside the square and $1$
+otherwise, including every $\rho\le0$, where $\kappa\le0$ and nothing is
+ever shorted.
 \end{proposition}
 
 \begin{proof}
@@ -437,7 +444,8 @@ weight is $a_i-t\,c_i$ with $t=\eta\kappa$, $a_i=\sigma_i^{-2}$ and
 $c_i=s_{-i}/\sigma_i$. Two normalized vectors of this form differ by a
 multiple of the fixed vector $a\beta-c\alpha$, which gives the segment,
 and $t=\kappa$ is the minimum-variance end. The frontier is
-\eqref{eq:frontier} with $b=\ones$ and $s_i=1-\kappa\sigma_i s_{-i}$.
+\eqref{eq:frontier} with $b=\ones$ and $s_i=1-h_i$: the numerator of asset
+$i$ crosses zero inside $[0,1]$ exactly when $h_i>1$, at $\eta=1/h_i$.
 \end{proof}
 
 In words: on an equicorrelated cluster, the inner dial is linear shrinkage

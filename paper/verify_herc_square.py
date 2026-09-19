@@ -241,10 +241,21 @@ for eta in (Fr(1, 5), Fr(1, 2), Fr(9, 10)):
     ok = ok and w == w_of_m(m) == [wstar[i] + (1 - theta(m))*(wivp[i] - wstar[i]) for i in range(n3)]
 check('11. equicorrelated leaf: w(eta) lies on the segment from inverse variance to cluster minimum variance, theta as stated', ok)
 sig4 = [Fr(1), Fr(2), Fr(3), Fr(5)]; E4 = equicorrelated(sig4, Fr(1, 3)); s4 = sum(1/x for x in sig4); k4 = Fr(1, 3)/(1 + 2*Fr(1, 3))
-eta_plus4 = min(1/(k4*sig4[i]*(s4 - 1/sig4[i])) for i in range(4))
-check('12. equicorrelated eta_+ = min_i 1/(kappa sigma_i s_{-i}); equals 6/11 for vols (1,2,3,5) and rho = 1/3',
+def equi_frontier(sig, rho):
+    n = len(sig); s_ = sum(1/x for x in sig); kap_ = rho/(1 + (n - 2)*rho)
+    h = [kap_*sig[i]*(s_ - 1/sig[i]) for i in range(n)]
+    return min([Fr(1)] + [1/hi for hi in h if hi > 1])
+eta_plus4 = equi_frontier(sig4, Fr(1, 3))
+check('12. equicorrelated eta_+ = min({1} u {1/h_i : h_i > 1}), h_i = kappa sigma_i s_{-i}; equals 6/11 for vols (1,2,3,5) and rho = 1/3',
       eta_plus4 == Fr(6, 11) and all(x >= 0 for x in diagonal_bridge(E4, [Fr(1)]*4, eta_plus4))
       and any(x < 0 for x in diagonal_bridge(E4, [Fr(1)]*4, eta_plus4 + Fr(1, 50))))
+ok30 = True
+for rho_ in (Fr(-1, 4), Fr(0), Fr(1, 4)):          # issue #30: nonpositive and small correlations, three unit-vol assets
+    E3 = equicorrelated([Fr(1)]*3, rho_)
+    ok30 = ok30 and equi_frontier([Fr(1)]*3, rho_) == Fr(1)
+    ok30 = ok30 and all(all(x > 0 for x in diagonal_bridge(E3, [Fr(1)]*3, e)) for e in (Fr(0), Fr(1, 2), Fr(1)))
+    ok30 = ok30 and normalize(diagonal_bridge(E3, [Fr(1)]*3, Fr(1))) == [Fr(1, 3)]*3
+check('12b. frontier is 1 with no crossing (issue #30): rho in {-1/4, 0, 1/4}, unit vols, no division by zero, no short, path is (1/3,1/3,1/3)', ok30)
 Vs = quad(wstar, E); Delta = quad(wivp, E) - Vs
 def F2(eta): return sum(quad(w_of_m(eta*kap(r)), E) for r in (Fr(0), 2*rho))/2
 ok = all(F2(eta) == Vs + Delta/2*sum((1 - theta(eta*kap(r)))**2 for r in (Fr(0), 2*rho)) for eta in (Fr(0), Fr(1, 3), Fr(1)))
