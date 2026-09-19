@@ -24,67 +24,45 @@
     </nav>
   </div>
 </header>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  :root {
-    --bg: #f4f5f8; --panel: #ffffff; --ink: #14161a; --ink-2: #4d5360; --muted: #7b8291; --line: #dfe2e8;
-    --floor: #4a3aa7; --floor-glow: rgba(74,58,167,0.18);
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
-    --stage: #eef0f4; --grid: #cfd3db;
+  main.roads {
+    --ink: #1a1a1a; --ink-2: #5a5a5a; --line: #e2e2e2; --panel: #ffffff;
+    --floor: #4a3aff; --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --stage: #f3f3f7; --grid: #cfcfda; --muted: #9a9a9a; --bg: #fafafa;
+    max-width: 1080px; margin: 32px auto; padding: 0 24px 60px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #14161a; --panel: #1b1e24; --ink: #f2f3f5; --ink-2: #c3c7d0; --muted: #8b919e; --line: #2c313a;
-      --floor: #9085e9; --floor-glow: rgba(144,133,233,0.22);
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
-      --stage: #0f1114; --grid: #2a2f38;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #14161a; --panel: #1b1e24; --ink: #f2f3f5; --ink-2: #c3c7d0; --muted: #8b919e; --line: #2c313a;
-    --floor: #9085e9; --floor-glow: rgba(144,133,233,0.22);
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
-    --stage: #0f1114; --grid: #2a2f38;
-  }
-  main.roads { background: var(--bg); color: var(--ink); font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; max-width: none; padding: 0; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding-block: 28px 48px; padding-inline: 16px; }
-  h1 { font-family: "Newsreader", Georgia, "Times New Roman", serif; font-weight: 500; font-size: clamp(30px, 4.2vw, 46px); line-height: 1.05; letter-spacing: -0.01em; margin: 0 0 8px; text-wrap: balance; }
-  .thesis { font-size: 17px; color: var(--ink-2); max-width: 62ch; margin: 0 0 20px; text-wrap: pretty; }
-  .thesis b { color: var(--ink); font-weight: 600; }
-  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 12px; }
-  .ctl { display: flex; flex-direction: column; gap: 5px; }
-  .ctl label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
-  .seg button { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; padding: 7px 12px; cursor: pointer; }
-  .seg button + button { border-left: 1px solid var(--line); }
-  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-  .seg button:focus-visible { outline: 2px solid var(--s1); outline-offset: -2px; }
-  .btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 13.5px; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
-  .btn:focus-visible { outline: 2px solid var(--s1); outline-offset: 2px; }
-  .stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; height: min(72vh, 680px); min-height: 380px; }
-  .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-  .stage canvas:active { cursor: grabbing; }
-  .tag { position: absolute; transform: translate(-50%, -100%); pointer-events: none; font-size: 12.5px; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: color-mix(in srgb, var(--stage) 78%, transparent); color: var(--ink); white-space: nowrap; box-shadow: 0 0 0 1px color-mix(in srgb, var(--line) 70%, transparent); }
-  .tag.floor { color: var(--floor); font-family: "Newsreader", Georgia, serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; transform: translate(-50%, 0); }
-  .tag.start { transform: translate(-108%, -50%); }
-  .tag.axis { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-weight: 400; color: var(--ink-2); background: transparent; box-shadow: none; }
-  .hint { position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--muted); pointer-events: none; }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 13.5px; color: var(--ink-2); }
-  .legend li { display: flex; align-items: center; gap: 8px; }
-  .legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; }
-  .legend .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
-  .legend .fl i { background: var(--floor); height: 3px; }
-  .read { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px 36px; margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
-  .read h2 { font-family: "Newsreader", Georgia, serif; font-weight: 600; font-size: 20px; margin: 0 0 8px; }
-  .read p { margin: 0 0 10px; color: var(--ink-2); max-width: 60ch; text-wrap: pretty; }
-  .read code, .thesis code { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 0.92em; color: var(--ink); }
-  .foot { margin-top: 26px; font-size: 13px; color: var(--muted); }
-  .foot a { color: var(--ink-2); }
-  @media (prefers-reduced-motion: reduce) { .stage canvas { cursor: default; } }
+  main.roads .thesis { font-size: 1.07rem; color: var(--ink-2); max-width: 62ch; margin: 0 0 20px; }
+  main.roads .thesis b { color: var(--ink); font-weight: 600; }
+  main.roads .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 12px; }
+  main.roads .ctl { display: flex; flex-direction: column; gap: 5px; }
+  main.roads .ctl label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  main.roads .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  main.roads .seg button { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 0.88rem; padding: 7px 12px; cursor: pointer; }
+  main.roads .seg button + button { border-left: 1px solid var(--line); }
+  main.roads .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  main.roads .seg button:focus-visible { outline: 2px solid var(--floor); outline-offset: -2px; }
+  main.roads .btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  main.roads .stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; height: min(68vh, 620px); min-height: 380px; }
+  main.roads .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  main.roads .tag { position: absolute; transform: translate(-50%, -100%); pointer-events: none; font-size: 0.8rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: rgba(243,243,247,0.82); color: var(--ink); white-space: nowrap; box-shadow: 0 0 0 1px rgba(0,0,0,0.06); }
+  main.roads .tag.floor { color: var(--floor); font-size: 0.95rem; transform: translate(-50%, 0); }
+  main.roads .tag.start { transform: translate(-108%, -50%); }
+  main.roads .tag.axis { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-weight: 400; font-size: 0.76rem; color: var(--ink-2); background: transparent; box-shadow: none; }
+  main.roads .hint { position: absolute; right: 12px; bottom: 10px; font-size: 0.78rem; color: var(--muted); pointer-events: none; }
+  main.roads .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 0.88rem; color: var(--ink-2); }
+  main.roads .legend li { display: flex; align-items: center; gap: 8px; margin: 0; }
+  main.roads .legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; }
+  main.roads .legend .num { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+  main.roads .legend .fl i { background: var(--floor); height: 3px; }
+  main.roads .read { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 36px; margin-top: 10px; }
+  main.roads .read h2 { margin-top: 1.4em; }
+  main.roads .read p { color: var(--ink-2); max-width: 60ch; }
+  main.roads .foot { margin-top: 26px; font-size: 0.85rem; color: var(--muted); }
 </style>
 
-<main class="roads"><div class="wrap">
+<main class="roads">
   <h1>All roads lead to minimum variance</h1>
+  <p class="subtitle">Five heuristics, one dial each, one floor.</p>
   <p class="thesis">Inverse variance, HRP, hierarchical minimum variance, HERC and NCO look like different families. Each is the near end of a <b>Schur bridge</b>: turn one dial and every one of them lands on the same optimizer. With an estimated covariance the best place to stand is often <b>part way across</b>.</p>
 
   <div class="controls">
@@ -126,7 +104,7 @@
     </div>
   </section>
   <p class="foot">Definitions, proofs and the taxonomy of which Schur is which: <a href="https://schur.microprediction.org/taxonomy.html">schur.microprediction.org</a>. Engine: <code>allocation.SchurBridge</code>.</p>
-</div></main>
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -235,7 +213,7 @@
   }
 
   // ------------------------------------------------------------ methods
-  const css = getComputedStyle(document.documentElement);
+  const css = getComputedStyle(document.querySelector('main.roads'));
   const methods = [
     { key: 'ivp', name: 'Inverse variance', spec: { tree: false, eta: undefined, outer: 'stack' }, one: true, color: '--s1' },
     { key: 'hrp', name: 'HRP', spec: { tree: true, split: 'dial' }, color: '--s2' },
@@ -368,8 +346,6 @@
   canvas.addEventListener('pointerup', () => { drag = null; }); canvas.addEventListener('pointercancel', () => { drag = null; });
   canvas.addEventListener('wheel', e => { e.preventDefault(); orbit.dist = Math.min(14, Math.max(4, orbit.dist * (1 + Math.sign(e.deltaY) * 0.08))); render(); }, { passive: false });
   window.addEventListener('resize', () => { resize(); render(); });
-  const mq = window.matchMedia('(prefers-color-scheme: dark)'); mq.addEventListener && mq.addEventListener('change', () => { build(); render(); });
-  new MutationObserver(() => { build(); render(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   // controls
   function seg(groupIds, key) { groupIds.forEach(id => { const btn = document.getElementById(id); btn.addEventListener('click', () => { groupIds.forEach(o => document.getElementById(o).setAttribute('aria-pressed', o === id ? 'true' : 'false')); state[key] = id.split('-')[1]; refresh(); }); }); }
   seg(['far-ones', 'far-vol', 'far-mean'], 'far'); seg(['cov-true', 'cov-400', 'cov-120'], 'cov'); seg(['view-bridges', 'view-square'], 'view');
