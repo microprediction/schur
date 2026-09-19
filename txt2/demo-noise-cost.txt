@@ -1,0 +1,42 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Theorems 1 and 2: the noise cost is &gamma;&tau;&sup2;, not &gamma;&sup2;&tau;&sup2;
+
+ Theorem 2 says the expected excess cost F &minus; V&#8320; factors as
+ &gamma;&tau;&sup2;H with H bounded. The plot shows the measured
+ (F&nbsp;&minus;&nbsp;V&#8320;)/(&gamma;&tau;&sup2;): it stays bounded near
+ &gamma; = 0. Toggle the normalization to &gamma;&sup2;&tau;&sup2; and Family B
+ blows up as &gamma; &darr; 0, which is exactly the failure of the tempting
+ &gamma;&sup2; claim. Family A is the special case where a cancellation makes even
+ the &gamma;&sup2; normalization bounded (the paper's remark on structural
+ cancellation), which is why numerics on Family A alone once suggested the wrong
+ general law.
+
+ Family A: volatilities (1,1,2,2), within correlation &frac12;,
+ cross correlation 0.3 &plusmn; &tau; in common. Family B: blocks
+ A&nbsp;=&nbsp;D&nbsp;=&nbsp;[[1,&minus;&frac12;],[&minus;&frac12;,2]],
+ cross-block entries 0.1, noise &plusmn;&tau; in one cross entry.
+
+ family
+ A (cancellation)
+ B (generic)
+ normalize by
+ &gamma;&tau;&sup2;
+ &gamma;&sup2;&tau;&sup2;
+
+ Curves for &tau; = 0.10 and &tau; = 0.15, computed from
+ the recursion. Theorem 1 is also visible: near &gamma; = 0 the derivative of F
+ stays negative for small &tau;, so the optimizer is pushed off the HRP
+ end.
+
+ What to look for: under &gamma;&tau;&sup2; both families
+ stay bounded (Family B approaches H(0,0) = 8/189 &asymp; 0.042). Under
+ &gamma;&sup2;&tau;&sup2;, Family B diverges near zero; Family A does not
+ (the cancellation). A Family B curve that diverged under &gamma;&tau;&sup2; would
+ refute Theorem 2.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.

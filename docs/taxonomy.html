@@ -52,10 +52,10 @@
     <p class="subtitle">Schur conditioning is a technique. A bridge is named by what it connects.</p>
 
     <p class="lead">
-      Several portfolio constructions on this site, in the papers, and in code carry the word
-      &ldquo;Schur&rdquo;, and some of them disagree numerically. This page sorts them. The rule is
-      simple: a <em>bridge</em> is named by its two endpoints, a heuristic at the near end and
-      an optimizer at the far end, and it earns the plain name only if <em>both</em> ends are exact.
+      Several portfolio constructions in the papers and in code carry the word
+      &ldquo;Schur&rdquo;, and some of them disagree numerically. A <em>bridge</em> is named by
+      its two endpoints, a heuristic at the near end and
+      an optimizer at the far end, and it carries the plain name only if <em>both</em> ends are exact.
       A qualifier names the <em>path</em> when the path changes the interior. The algebraic
       <em>encoding</em> gets no name at all: it is either exact, or an approximation of the
       exact one, and is labelled by which end it misses.
@@ -71,8 +71,8 @@
       Two dials: $\gamma$ conditions a cluster on the outside, $\eta$ conditions an asset on its
       cluster mates. Each cluster is budgeted by the inverse of a variance, or by NCO's outer optimizer. Block inversion gives
       $\Sigma^{-1}u$ exactly at $(\gamma,\eta)=(1,1)$ for any partition, with $u=\mathbf 1$ minimum
-      variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. What the near end
-      is depends on the partition and on the <em>split rule</em>, the variance used for budgeting.
+      variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. The near end
+      depends on the partition and on the <em>split rule</em>, the variance used for budgeting.
     </p>
 
     <h2>The bridges</h2>
@@ -86,7 +86,7 @@
           <td>HRP to minimum variance</td>
           <td>HRP, exactly</td>
           <td>minimum variance, exactly</td>
-          <td>Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's damped naive portfolio on its conditioned pair, the damping tied to $\gamma$. <code>SchurBridge.hrp_to_min_variance</code>. New in the sense that earlier constructions were exact at one end only: the 2024 pair form starts at the min-variance split's near end, and its collapsed implementations start at HRP and miss minimum variance (Wuebben 2026 makes the $\gamma=0$ point).</td>
+          <td>Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's damped naive portfolio on its conditioned pair, the damping tied to $\gamma$. <code>SchurBridge.hrp_to_min_variance</code>. Earlier constructions are exact at one end only: the 2024 pair form starts at the min-variance split's near end, and its collapsed implementations start at HRP and miss minimum variance (Wuebben 2026 makes the $\gamma=0$ point).</td>
         </tr>
         <tr>
           <td>Min-variance split to minimum variance</td>
@@ -166,7 +166,7 @@
       <em>Localization</em> in <a href="./localization-is-schur-damping.pdf">the
       localization note</a> is a Schur <em>product</em>, an entrywise taper of the covariance; the note
       shows that a block-constant taper is the same damped complement $A-\gamma BD^{-1}B^\top$, so
-      &ldquo;Schur damping&rdquo; there means what it means here. Same dial, no portfolio endpoints.
+      &ldquo;Schur damping&rdquo; there is the damping used here. Same dial, no portfolio endpoints.
       <em>Damping in PDLPs</em> (<a href="./damping-in-pdlps.html">the DeFi note</a>) is the
       same complement with isolated pools at $\gamma=0$ and one merged pool at $\gamma=1$.
       <em>Hierarchical minimum variance on graphs</em> (Mograby, 2025) is the far end made exact
@@ -182,7 +182,10 @@
       <em>Pair</em>: a block and its companion vector. <em>Companion vector</em>: the conditioned
       image of $u$, the numerator of every direction. <em>Dial</em>: a damping in $[0,1]$ on one
       conditioning. <em>Path</em>: the conditioning set of the outer dial. <em>Split rule</em>: the
-      variance whose inverse budgets a child or a cluster. <em>Knot</em>: the one asset per cluster
+      variance whose inverse budgets a child or a cluster.
+    </p>
+    <p>
+      <em>Knot</em>: the one asset per cluster
       that carries its cross-cluster dependence; <em>factor knot</em>: the one portfolio per cluster
       that does. <em>Encoding</em>: an algebraic rewriting of the pair into a single matrix; exact
       or not, never named.

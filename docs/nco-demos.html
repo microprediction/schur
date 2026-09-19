@@ -36,7 +36,7 @@
 <main>
   <h1>Where to sit on the NCO bridge: the analytic conditions, checked live</h1>
   <p class="subtitle">Four pages: one Monte Carlo experiment, and three that each state a closed-form condition from
-  <a href="./schur-nco-bridge.pdf"><em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em></a> and then computing it in front of you.</p>
+  <a href="./schur-nco-bridge.pdf"><em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em></a> and then compute it live.</p>
 
   <p class="lead">The paper is about a dial. Assets are grouped, and each group
   has a representative asset. At one end of the dial, &gamma; = 0, each group is
@@ -44,14 +44,14 @@
   which is <em>nested clustered optimization</em>. At the other end, &gamma; = 1,
   the whole covariance is used at once, which is <em>global minimum
   variance</em>. In between, each group is told a fraction &gamma; of what the
-  other groups' representatives explain about its own. The question is where
+  other groups' representatives explain about its own.</p>
+
+  <p class="lead">The question is where
   on the dial to sit when the covariance is estimated with error. The paper
   answers with analytic conditions: a closed-form best dial for a noisy
   estimate, a sign that decides whether small noise moves the best dial inside
-  at all, a formula for how far each group actually travels along the dial,
-  and a closed form for the variance given up at every setting. Each page
-  below states one of these conditions, explains the setting, and then
-  evaluates the condition live so you can see it hold.</p>
+  at all, a formula for how far each group travels along the dial,
+  and a closed form for the variance given up at every setting.</p>
 
   <ul class="demo-list">
     <li><a href="./nco-montecarlo.html">The bridge by Monte Carlo: a random
@@ -59,8 +59,8 @@
       <div class="claim">The true correlation matrix and a sample estimate of
       it side by side, the algorithm run on hundreds of such estimates, and
       the average out-of-sample variance against the dial with its interior
-      minimum. Then the portfolios themselves as bars. No formulas; the
-      algorithm on data.</div></li>
+      minimum. Then the portfolios themselves as bars. There are no formulas,
+      only the algorithm run on data.</div></li>
     <li><a href="./nco-identical.html">The best dial in closed form, and the sign
       that decides whether small noise moves it</a>
       <div class="claim">When every group is the same, the only decision is how

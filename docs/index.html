@@ -58,18 +58,18 @@
       conditioned variance (the <a href="./taxonomy.html">taxonomy</a> says which encodings do this
       and which only approach it). A single dial $\gamma \in [0, 1]$ slides smoothly
       between the two worlds, a construction-level answer that sits on top of whatever
-      estimation-level answer is in use &mdash; and, encouragingly, the best out-of-sample
-      portfolios usually live somewhere in between.
+      estimation-level answer is in use. The best out-of-sample portfolios usually live somewhere
+      in between.
     </p>
 
     <p>
       The bridge first appeared in a
       <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">blog
-      post in November 2022</a>, as one bridge on one tree, and was formalized in the
-      <a href="https://arxiv.org/abs/2411.05807">2024 paper</a>. It is now a <em>family</em>: nested clustered
+      post in November 2022</a>, on one tree, and was formalized in the
+      <a href="https://arxiv.org/abs/2411.05807">2024 paper</a>. The 2026 notes extend it to a <em>family</em>: nested clustered
       optimization, hierarchical equal risk contribution, hierarchical risk parity and plain
       inverse variance are each the near end of a bridge whose far end is the same optimizer, and
-      the notes below prove when the best place to stand is strictly inside. The
+      the notes prove when the best place to stand is strictly inside. The
       <a href="./taxonomy.html">taxonomy</a> says which published &ldquo;Schur&rdquo; is which, and
       <a href="./all-roads.html">one picture</a> shows all five roads descending to the same floor.
     </p>
@@ -81,19 +81,19 @@
       made on soft evidence. The Schur complement is a softer way to cleave. Conditioning a block on
       the others keeps what the cross-block covariance says while still solving one block at a time,
       and the dial says how much of it to keep. The cleaving can follow structure that is presumed,
-      sectors or a prior, or structure that is measured, an estimated correlation, and it degrades
-      gracefully in either case: at one end of the dial it is the chunking everyone already does, at
+      sectors or a prior, or structure that is measured, an estimated correlation. In either case,
+      at one end of the dial it is the chunking everyone already does, at
       the other it is the global optimizer, and in between it is the same recursion trusting the
       cross-block evidence by degrees.
     </p>
 
     <p>
-      <em>Scope.</em> The aim here is not to compete with the optimization school but to
-      demonstrate the connection to it. Optimization done properly already handles estimation
+      <em>Scope.</em> The scope here is to demonstrate the connection to the optimization
+      school rather than to compete with it. Optimization done properly already handles estimation
       uncertainty at the estimation level: under quadratic loss the rule that minimizes
       out-of-sample variance is the optimizer applied to the posterior-mean covariance, and
-      nonlinear shrinkage solves that problem exactly over rotation-invariant rules. What this
-      site shows is that the heuristic constructions are not a separate tradition. Each is the
+      nonlinear shrinkage solves that problem exactly over rotation-invariant rules. The heuristic
+      constructions belong to the same school. Each is the
       near end of a path whose far end is that optimizer, the path is a Schur complement damped
       by degrees, and the damping is the same reliability ratio a Bayesian would put on the
       coupling. Where to stand on the path is then a question one can answer, and the answer is
@@ -161,9 +161,9 @@
     </div>
 
     <p>
-      For the derivation &mdash; the block-inverse identity, the $\gamma$ interpolation, and the
-      recursion at arbitrary hierarchy depth &mdash; see the
-      <a href="./intro.html">introduction</a> or the <a href="https://arxiv.org/abs/2411.05807">paper</a>.
+      The block-inverse identity, the $\gamma$ interpolation, and the recursion at arbitrary
+      hierarchy depth are derived in the
+      <a href="./intro.html">introduction</a> and the <a href="https://arxiv.org/abs/2411.05807">paper</a>.
     </p>
 
     <h2 id="implementations">Implementations</h2>
@@ -178,7 +178,7 @@
     <h2>Further reading</h2>
     <ul>
       <li>
-        <a href="./all-roads.html">All roads lead to minimum variance</a> &mdash; the five near
+        <a href="./all-roads.html">All roads lead to minimum variance</a>: the five near
         ends and the floor in one 3D view, with an estimated covariance showing the interior optimum.
       </li>
       <li>
@@ -189,20 +189,20 @@
         Cotton, P. (2022). &ldquo;Schur Complementary Portfolios &mdash; A Unification of Machine
         Learning and Optimization-Based Allocation.&rdquo;
         <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
-        Culture (Medium)</a> &mdash; the original, informal introduction that started it all.
+        Culture (Medium)</a>: the original, informal introduction.
       </li>
       <li>
-        Cotton, P. (2024). <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a> &mdash;
+        Cotton, P. (2024). <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>:
         the canonical paper.
       </li>
       <li>
         <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">CQF
-        slides</a> &mdash; a compact derivation with the interpolation argument.
+        slides</a>: a compact derivation with the interpolation argument.
       </li>
       <li>
         Palomar, D. P. <em>Portfolio Optimization</em>,
         <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">&sect;12.3.4</a>
-        &mdash; textbook treatment alongside HRP and the global minimum-variance portfolio.
+        : textbook treatment alongside HRP and the global minimum-variance portfolio.
       </li>
     </ul>
 
@@ -221,10 +221,10 @@
   url     = {https://arxiv.org/abs/2411.05807}
 }</pre>
 
-    <p>The <a href="./bibliography.html">bibliography</a>, works on, citing, or extending Schur
-    complementary allocation together with the spatial-statistics side of the same idea, is on
-    its own page. Every entry also appears on the <a href="./map.html">literature map</a>; the
-    dated story is on the <a href="./timeline.html">timeline</a>.</p>
+    <p>The <a href="./bibliography.html">bibliography</a> lists works on, citing, or extending Schur
+    complementary allocation, together with the spatial-statistics side of the same idea. Every
+    entry also appears on the <a href="./map.html">literature map</a>, and the dates are on the
+    <a href="./timeline.html">timeline</a>.</p>
   </main>
 
   <footer>

@@ -42,20 +42,19 @@
     <p class="subtitle">The generality of the minimum-variance solution, and why every bridge lands on it.</p>
 
     <p class="lead">
-      The far end of every bridge on this site is written as minimum variance. That looks narrow.
-      It is not, because the object the bridges reach is the direction $\Sigma^{-1}b$ for a
-      constraint vector $b$, and a surprising number of portfolio problems, and problems outside
-      portfolios, are exactly that with a different $b$. Whatever is a precision matrix times a
+      The far end of every bridge is written as minimum variance. The object the bridges reach is
+      the direction $\Sigma^{-1}b$ for a constraint vector $b$, and many portfolio problems, and
+      problems outside portfolios, are exactly that with a different $b$. Whatever is a precision matrix times a
       vector is reachable by the same recursion, and the block-inversion identity that makes the
       far end exact is indifferent to which $b$ is in the numerator.
     </p>
 
     <h2>Every symmetric linear system has a financial reading</h2>
     <p>
-      This is the observation the
+      The
       <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">2022
-      blog post</a> and the <a href="https://arxiv.org/abs/2411.05807">2024 paper</a> build on, and
-      it is worth stating on its own. Take any symmetric positive-definite $Q$ and any
+      blog post</a> and the <a href="https://arxiv.org/abs/2411.05807">2024 paper</a> build on one
+      observation. Take any symmetric positive-definite $Q$ and any
       vector $b$, and ask for the solution of $Qx=b$. Read $Q$ as a covariance and $b$ as a vector
       of exposures, one per asset. The portfolio that minimizes variance $x^\top Qx$ subject to unit
       exposure $b^\top x=1$ is
@@ -71,7 +70,7 @@
       with $Q$ and $b$ renamed.
     </p>
     <p>
-      The reading is what makes hierarchy possible. Block inversion says the solution splits by
+      The reading makes hierarchy possible. Block inversion says the solution splits by
       blocks, $(\Sigma^{-1}b)_C = (\Sigma^c_C)^{-1}\big(b_C - \Sigma_{C,-C}\Sigma_{-C,-C}^{-1}b_{-C}\big)$:
       each block is the same problem again on its Schur complement, with its part of $b$
       conditioned on the rest as a <em>companion vector</em>. Read financially, each block holds
@@ -109,8 +108,8 @@
 
     <h2>Who is not</h2>
     <p>
-      Three families of problems are not a precision matrix times a vector, and no bridge on this
-      site is exact for them at the far end. Long-only and box-constrained problems have an active
+      Three families of problems are not a precision matrix times a vector, and no bridge is exact
+      for them at the far end. Long-only and box-constrained problems have an active
       set, and their solutions are $\Sigma^{-1}b$ only on the assets left free, with $b$ adjusted by
       multipliers that depend on the data; the recursion still runs, and the
       <a href="./taxonomy.html">HERC square</a> has a closed-form frontier for how far the inner
@@ -118,11 +117,11 @@
       Risk parity and its budgeted variants are fixed points of $w_i(\Sigma w)_i = \beta_i$, not
       linear solves. And objectives that are not quadratic forms, expected shortfall, drawdown,
       utilities beyond the second moment, have no companion vector at all; hierarchical versions of
-      them exist, HERC admits them, but the fitness identity above is what makes a far end exact,
-      and it needs a quadratic form.
+      them exist, HERC admits them, but the far end is exact only through the identity above, which
+      needs a quadratic form.
     </p>
 
-    <h2>Why it matters for the bridges</h2>
+    <h2>Consequences for the bridges</h2>
     <p>
       Every construction catalogued in the <a href="./taxonomy.html">taxonomy</a> is defined for a
       pair $(Q_C, b_C)$, and the choice of $b$ is a parameter of the recipe, not of the theory.
@@ -130,7 +129,7 @@
       to maximum diversification, and with $b=\mu$ to the tangency portfolio; the HERC note's
       companion-vector remark states the corners, and the <code>allocation</code> package exposes
       them as <code>companion='vol'</code> and <code>companion='mean'</code>. The far end is exact in
-      every case for the same reason. What changes with $b$ is the near end, since the heuristic
+      every case for the same reason. The near end changes with $b$, since the heuristic
       one starts from must carry $b$ in its numerator to be on the bridge at all: inverse volatility
       rather than inverse variance for $b=\sigma$, per-asset Kelly $\mu_i/\sigma_i^2$ for $b=\mu$.
       That is a useful test of a heuristic. If it cannot be written with a $b$ in the numerator, it

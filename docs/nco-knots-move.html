@@ -39,19 +39,19 @@
   <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
   <h1>The member weights do not depend on the dial</h1>
   <p class="subtitle">Under the paper's model of grouped assets, turning the
-  dial changes only how much each group holds of its representative. That is
-  what lets the variance the bridge gives up be written in closed form.</p>
+  dial changes only how much each group holds of its representative. The
+  variance the bridge gives up then has a closed form.</p>
 
   <h2>The setting</h2>
   <p>Assets are grouped, and each group has one representative, the paper's
   knot. The paper's model of the world, the <em>gateway model</em>, says that
   every other member of a group is its representative scaled by a beta plus
   independent noise. So a member's only connection to the rest of the market
-  runs through its own group's representative. The page draws such a market at
+  runs through its own group's representative. Such a market is drawn at
   random: four groups with two, three, one and two members besides the
   representative.</p>
 
-  <h2>What the bridge does inside a group</h2>
+  <h2>Inside a group</h2>
   <p>The bridge builds a small portfolio for each group, the group's
   <em>direction</em>, and then decides how much money each group gets. The
   direction lists a weight for the representative and a weight for each
@@ -82,13 +82,14 @@
     </div>
     <div class="readout" id="readDir"></div>
   </div>
-  <div class="lookfor">How to read it. Bars are grouped by asset, with the
+  <div class="lookfor">The direction bars. Bars are grouped by asset, with the
   representative first in each group. For every member the three bars have
   the same height; for every representative they differ. The readout gives
   the largest movement of any member weight across the whole dial, which is
   rounding error, and confirms that at &gamma; = 1 the portfolio equals the
-  global optimum for the chosen objective. Change the seed to draw a different
-  market; the picture does not change.</div>
+  global optimum for the chosen objective. A member bar that differed across
+  the three settings would refute the result. A different seed draws a
+  different market with the same pattern.</div>
 
   <h2>How far from optimal is the bridge at each &gamma;?</h2>
   <p>Because the members never move, the paper can collapse each group to two
@@ -101,14 +102,14 @@
     <canvas id="chartLoss" width="820" height="240"></canvas>
     <div class="readout" id="readLoss"></div>
   </div>
-  <div class="lookfor">How to read it. The height is how much variance the
+  <div class="lookfor">The excess variance. The height is how much variance the
   bridge gives up relative to the best possible portfolio, with no estimation
   error. It is largest at NCO on the left, falls as the dial turns, and reaches
   zero only at the right end. The two curves lie on top of each other, which is
   the paper's lost-precision identity checked live.</div>
 
-  <p class="muted">Everything on this page is computed from the sampled
-  covariance in your browser. Betas are drawn around 1 and residual noise is
+  <p class="muted">Everything is computed from the sampled covariance in the
+  browser. Betas are drawn around 1 and residual noise is
   independent, so the gateway model holds exactly.</p>
 </main>
 

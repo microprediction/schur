@@ -50,8 +50,7 @@
   plus independent noise, which is the paper's gateway model. The left matrix
   is the true correlation, with the groups outlined. The right matrix is a
   sample correlation estimated from T observations, which is what the
-  portfolio has to be built from. Move T to see how much the estimate
-  disagrees with the truth.</p>
+  portfolio has to be built from. The two disagree less as T grows.</p>
 
   <div class="widget">
     <div class="controls">
@@ -90,6 +89,7 @@
   covariance is unreliable and the curve's minimum sits well inside: trusting
   the estimated cross-group correlation partly beats both ignoring it
   (&gamma; = 0, NCO) and trusting it fully (&gamma; = 1, full conditioning on the sample knots, which is the sample minimum-variance portfolio only under the gateway model).
+  A minimum at either end of the dial at small T would refute this.
   Raise T and the minimum drifts toward 1 as the estimate improves. This is
   the estimation-error trade-off of the paper's Section 7, here without any
   of its simplifying assumptions: the sample covariance does not satisfy the
@@ -113,8 +113,8 @@
   portfolio takes the largest and most erratic positions, which is why it
   loses out of sample.</div>
 
-  <p class="muted">The market is drawn from a seeded generator so the page is
-  reproducible. The same algorithm, in Python, is checked against exact
+  <p class="muted">The market is drawn from a seeded generator, so the same seed
+  gives the same market. The same algorithm, in Python, is checked against exact
   arithmetic in the verification script.</p>
 </main>
 

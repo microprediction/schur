@@ -1,0 +1,25 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Example 2 — one-entry noise: interior without symmetry
+
+ The solved family perturbs all four cross entries in common. This example
+ perturbs a single covariance entry, (1,3), by &plusmn;2&tau; (a correlation shift of &plusmn;&tau;), so the common-noise
+ symmetry is gone, and the interior optimum survives. The paper's certificate
+ point is &tau; = 0.15 with &gamma;&#770; = 9/10: F(9/10) &lt; F(0) and
+ F(9/10) &lt; F(1) as exact rational inequalities. Here the whole curve is drawn
+ live at any &tau;.
+
+ one-entry noise &tau;
+
+ 0.150
+
+ What to look for: at &tau; = 0.15 the minimizer sits near
+ &gamma; = 0.9, matching the certificate. F(0) never moves as &tau; changes
+ (Lemma 1 again: the noised entry is in the cross-block), while the right end
+ rises with the noise.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is pre-baked.

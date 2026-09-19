@@ -1,0 +1,22 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Example 1: HRP becomes locally optimal at finite noise
+
+ For Family B (blocks A&nbsp;=&nbsp;D&nbsp;=&nbsp;[[1,&minus;&frac12;],
+ [&minus;&frac12;,2]], cross entries 0.1, noise &plusmn;&tau; in one cross entry)
+ the paper computes the boundary derivative exactly:
+ &part;&gamma;F(0;&tau;) = &minus;1/700 + (8/189)&tau;&sup2;. The dots
+ are measured from the recursion; the line is the formula. The sign flips at
+ &tau;* = &radic;(27/800) &asymp; 0.1837: beyond it, moving off HRP
+ hurts, so the HRP endpoint is a one-sided local minimum despite
+ coupling having population value.
+
+ What to look for: measured dots sit exactly on the
+ parabola; the zero crossing is at &tau;* &asymp; 0.1837. Dots off the parabola,
+ or a crossing elsewhere, would refute the formula.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.

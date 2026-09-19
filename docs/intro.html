@@ -40,16 +40,16 @@
   <main>
     <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>An introduction</h1>
-    <p class="subtitle">One damped Schur complement &mdash; discovered separately by portfolio
+    <p class="subtitle">One damped Schur complement, discovered separately by portfolio
     managers, spatial statisticians, and (almost) machine learners.</p>
 
     <p class="lead">
       Whenever a covariance matrix is too large or too noisy to trust whole, every field reaches
       for the same first move: split the variables into groups and handle the groups separately.
       A portfolio manager clusters assets. A meteorologist conditions each weather station on a few
-      neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows &mdash;
-      how much of the <em>coupling between groups</em> to put back &mdash; turns out to be the same
-      object in every case, and this site is about that object.
+      neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows,
+      how much of the <em>coupling between groups</em> to put back, is the same
+      object in every case.
     </p>
 
     <h2>The shared object</h2>
@@ -62,7 +62,7 @@
       other produces two quantities that carry all of $B$&apos;s information: a regression
       $b = A^{-1}B$ and a <em>Schur complement</em> $S_D = D - B^\top A^{-1} B$, the covariance of
       the second group once the first is known. The coupling $B$ is also the noisiest part of any
-      estimated $\hat\Sigma$ &mdash; so the practical question, in every field, is how much of it
+      estimated $\hat\Sigma$, so the practical question, in every field, is how much of it
       to believe.
     </p>
 
@@ -74,8 +74,8 @@
        S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
     </div>
     <p><em>Finance.</em> Allocate top-down between clusters using the damped complements
-      and recurse. At $\gamma=0$ the cross block is set aside and you have
-      <em>hierarchical risk parity</em> &mdash; robust, and deliberately blind to $B$. At
+      and recurse. At $\gamma=0$ the cross block is set aside and the recursion is
+      <em>hierarchical risk parity</em>, blind to $B$ by construction. At
       $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: when each split is
       budgeted by the child's conditioned variance, the recursion reproduces the global
       <em>minimum-variance portfolio</em> (the collapsed encoding in the reference
@@ -123,8 +123,8 @@
         conditionals&rdquo; and &ldquo;full Vecchia conditioning.&rdquo;
       </p>
     </div>
-    <p><em>Spatial statistics.</em> The Vecchia approximation &mdash; the workhorse for
-      fitting Gaussian fields over tens of thousands of locations &mdash; writes the likelihood as
+    <p><em>Spatial statistics.</em> The Vecchia approximation, the workhorse for
+      fitting Gaussian fields over tens of thousands of locations, writes the likelihood as
       a product of per-location conditionals. Each conditional <em>is</em> a Schur complement, and
       each is estimated, hence noisy. Shrinking those conditionals (as ShrinkTM does toward a
       parametric base, or as the damped form above does toward independence, base-free) is the same
@@ -134,7 +134,7 @@
     <p><em>Machine learning.</em> The natural gradient is the minimum-variance operation
       applied to the <em>gradient</em> covariance, and the optimizer hierarchy lines up with the
       portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC&apos;s
-      block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices &mdash;
+      block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices:
       trust a cross-layer coupling completely or zero it exactly. KFAC&apos;s own
       &ldquo;damping&rdquo; (&lambda;I) is spectrum loading, not coupling attenuation. Every rung
       of the ladder is discrete; the continuous dial is unoccupied there.
@@ -142,51 +142,47 @@
 
     <h2>How much to trust the coupling: a closed form</h2>
     <p>
-      The right $\gamma$ is not a style preference; it is the <em>reliability</em> of the estimated
-      coupling &mdash; a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
+      The right $\gamma$ is the <em>reliability</em> of the estimated
+      coupling, a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
       two-block case with conditional correlation $\rho$ estimated from $n$ observations,
     </p>
     <div class="equation-card">
       $\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}$
     </div>
     <p>
-      More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation deserves your
-      trust. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
-      heuristic was right all along. Empirically the sweet spot is interior: on daily asset
+      More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation is the right
+      choice. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
+      heuristic is the right choice. Empirically the optimum is interior: on daily asset
       returns in <em>Two Sides of Schur Damping</em>, and on crypto correlations, weather-forecast
       residuals and simulated fields in the earlier Schur pseudo-likelihood work in
       <code>precise</code>. The closed form gets most of the gain with zero tuning, and a single
       held-out-fitted intensity does better still.
     </p>
 
-    <h2>Not one bridge but a family</h2>
+    <h2>A family of bridges</h2>
     <p>
-      The 2024 recursion was one bridge, on one tree. Three notes in 2026 show that the same
+      The 2024 recursion runs on one bisection tree. Three notes in 2026 show that the same
       move works on any partition and that the familiar heuristics are the near ends of a whole
-      family. The recipe has four parts. Partition the assets into clusters. Give each cluster a
+      family.
+    </p>
+    <p>
+      The recipe has four parts. Partition the assets into clusters. Give each cluster a
       <em>pair</em> $(Q_C, b_C)$: its covariance block and a companion vector, both conditioned on
       the assets outside the cluster and damped by $\gamma$. Inside the cluster, condition each
       asset on its cluster mates, damped by a second dial $\eta$. Then budget each cluster by the
-      inverse variance of what it holds. Block inversion says that at $(\gamma,\eta)=(1,1)$ this is
-      $\Sigma^{-1}u$ <em>exactly</em>, for any partition, with $u=\mathbf 1$ minimum variance,
-      $u=\sigma$ maximum diversification and $u=\mu$ the tangency portfolio, and more besides: the
-      far end is <a href="./generality.html">minimum variance in disguise</a>. The near ends are the
-      methods people already use.
+      inverse variance of what it holds.
     </p>
-    <div class="table-wrap">
-    <table class="impl">
-      <thead><tr><th>bridge</th><th>near end</th><th>far end</th><th>where</th></tr></thead>
-      <tbody>
-        <tr><td>HRP to minimum variance</td><td>hierarchical risk parity, exactly</td><td>minimum variance, exactly</td><td>the bisection tree with a split rule tied to the dial; the first object exact at both ends (<a href="./taxonomy.html">taxonomy</a>)</td></tr>
-        <tr><td>HMV to minimum variance</td><td>the 2024 family's near end, min-variance splits</td><td>minimum variance</td><td><a href="https://arxiv.org/abs/2411.05807">Cotton (2024)</a></td></tr>
-        <tr><td>NCO to minimum variance</td><td>nested clustered optimization</td><td>minimum variance, via one knot per cluster</td><td><a href="./schur-nco-bridge.pdf">the NCO note</a>, SSRN 7480738</td></tr>
-        <tr><td>HERC to minimum variance, a square</td><td>hierarchical equal risk contribution</td><td>minimum variance, two dials</td><td><a href="./schur-herc-square.pdf">the HERC note</a></td></tr>
-        <tr><td>Inverse variance to minimum variance</td><td>$w_i\propto 1/\sigma_i^2$</td><td>minimum variance; Stevens' regression identity made a path</td><td>the inner dial of the HERC note; one inverse per cluster</td></tr>
-      </tbody>
-    </table>
-    </div>
     <p>
-      Two rules keep the family honest. A bridge is named by its endpoints and earns the plain
+      Block inversion says that at $(\gamma,\eta)=(1,1)$ this is
+      $\Sigma^{-1}u$ <em>exactly</em>, for any partition, with $u=\mathbf 1$ minimum variance,
+      $u=\sigma$ maximum diversification and $u=\mu$ the tangency portfolio. The
+      far end is <a href="./generality.html">minimum variance in disguise</a>. The near ends are the
+      methods people already use: inverse variance, hierarchical risk parity, hierarchical minimum
+      variance, HERC and NCO. The <a href="./taxonomy.html">taxonomy</a> gives the split rule and
+      the conditioning path for each.
+    </p>
+    <p>
+      Two naming rules apply. A bridge is named by its endpoints and carries the plain
       name only if both ends are exact; anything else is a variant labelled by the end it misses,
       which is where the collapsed encoding of the reference implementations sits. And an encoding
       is never named, because it is either exact or an approximation of the exact one. The
@@ -195,7 +191,7 @@
       to the same floor.
     </p>
     <p>
-      The inner dial deserves a sentence of its own. Conditioning one asset on its cluster mates
+      Conditioning one asset on its cluster mates
       is Stevens' identity, the minimum-variance weight as one minus the hedge sum over the residual
       variance. Damping it gives a weight whose numerator and denominator are each linear in $\eta$
       between the naive quantity and the regression quantity, so the whole path costs one inverse,
@@ -248,17 +244,20 @@
       exposes all of this with constructors named by their endpoints.
     </p>
 
-    <h2>Why this is one idea and not three</h2>
+    <h2>One idea in three fields</h2>
     <p>
       The fields solved complementary halves. Finance contributed the <em>bridge</em>: the
       observation that $\gamma$ connects two allocation philosophies previously seen as rivals.
       Spatial statistics contributed <em>scale and fitting</em>: orderings, conditioning sets, and
-      empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other
-      &mdash; the <a href="https://arxiv.org/abs/2606.14798">
+      empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other.
+      The <a href="https://arxiv.org/abs/2606.14798">
       Two Sides</a> paper makes the correspondence precise, and the
-      <a href="./timeline.html">timeline</a> shows the idea arriving in each field. What remains
-      open &mdash; robust conditional regressions, massive-scale semi-local maintenance, the
-      completion-theory connection &mdash; is drawn as the dashed red edges on the
+      <a href="./timeline.html">timeline</a> shows the idea arriving in each field.
+    </p>
+    <p>
+      Three questions
+      remain open: robust conditional regressions, massive-scale semi-local maintenance, and the
+      completion-theory connection. They are the dashed red edges on the
       <a href="./map.html">literature map</a>.
     </p>
 
@@ -267,8 +266,8 @@
         For the recursion at arbitrary hierarchy depth and the empirical comparisons, see the
         <a href="https://arxiv.org/abs/2411.05807">paper</a>; for the family, the
         <a href="./papers.html">2026 notes</a> and the <a href="./taxonomy.html">taxonomy</a>.
-        To use it today, head to the
-        <a href="./implementations.html">implementations</a>: skfolio for batch portfolios,
+        The
+        <a href="./implementations.html">implementations</a> are skfolio for batch portfolios,
         <code>allocation</code> for streaming universes, <code>precise</code> for online covariance
         estimation and the Schur pseudo-likelihood.
       </p>

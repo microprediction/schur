@@ -1,0 +1,98 @@
+
+Minimum variance in disguise
+
+The generality of the minimum-variance solution, and why every bridge lands on it.
+
+The far end of every bridge is written as minimum variance. The object the bridges reach is
+the direction $\Sigma^{-1}b$ for a constraint vector $b$, and many portfolio problems, and
+problems outside portfolios, are exactly that with a different $b$. Whatever is a precision matrix times a
+vector is reachable by the same recursion, and the block-inversion identity that makes the
+far end exact is indifferent to which $b$ is in the numerator.
+
+Every symmetric linear system has a financial reading
+
+The
+2022
+blog post and the 2024 paper build on one
+observation. Take any symmetric positive-definite $Q$ and any
+vector $b$, and ask for the solution of $Qx=b$. Read $Q$ as a covariance and $b$ as a vector
+of exposures, one per asset. The portfolio that minimizes variance $x^\top Qx$ subject to unit
+exposure $b^\top x=1$ is
+
+$$ w(Q,b) = \frac{Q^{-1}b}{b^\top Q^{-1}b}, \qquad\text{with variance}\qquad
+\nu(Q,b) = \frac{1}{b^\top Q^{-1}b}, \qquad\text{so}\qquad Q^{-1}b = \frac{w(Q,b)}{\nu(Q,b)}. $$
+
+The solution of the linear system is that portfolio scaled by the inverse of its own
+variance: a holding, and the capital it deserves. Linear algebra does not care what $b$ is,
+so neither does the reading. Ones give the fully invested minimum-variance portfolio,
+volatilities give the most diversified one, expected returns give the tangency portfolio,
+and a hedge ratio, a regression coefficient or a forecast combination are the same object
+with $Q$ and $b$ renamed.
+
+The reading makes hierarchy possible. Block inversion says the solution splits by
+blocks, $(\Sigma^{-1}b)_C = (\Sigma^c_C)^{-1}\big(b_C - \Sigma_{C,-C}\Sigma_{-C,-C}^{-1}b_{-C}\big)$:
+each block is the same problem again on its Schur complement, with its part of $b$
+conditioned on the rest as a companion vector. Read financially, each block holds
+the minimum-variance portfolio of its conditional covariance and is budgeted by the inverse of
+that portfolio's variance. That is the inverse-variance rule of every hierarchical heuristic,
+applied to conditioned rather than raw blocks, and it is why the far end of every bridge is
+exact for every $b$ at once.
+
+Who is in the family
+
+problem$Q$$b$solution
+
+Minimum variance, fully invested$\Sigma$$\mathbf 1$$\Sigma^{-1}\mathbf 1$, normalized
+
+Maximum diversification (Choueifaty and Coignard)$\Sigma$$\sigma$, the volatilities$\Sigma^{-1}\sigma$: maximizes $\sigma^\top w/\sqrt{w^\top\Sigma w}$
+
+Tangency, maximum Sharpe ratio$\Sigma$$\mu$, the excess means$\Sigma^{-1}\mu$, normalized when $\mathbf 1^\top\Sigma^{-1}\mu>0$
+
+Kelly, growth-optimal under Gaussian returns$\Sigma$$\mu$$\Sigma^{-1}\mu$, unnormalized: the same direction with its scale kept
+
+Maximum decorrelation$R$, the correlation$\mathbf 1$$R^{-1}\mathbf 1$: minimum variance with the volatilities stripped out
+
+Optimal forecast combination (Bates and Granger)the forecast-error covariance$\mathbf 1$the same formula, on forecasts instead of assets
+
+Minimum tracking error with one exposure target$\Sigma$$c$, the exposurebenchmark plus a multiple of $\Sigma^{-1}c$: minimum variance in active weights
+
+Hedging one position with several instruments$\Sigma_{yy}$$\Sigma_{yx}$$\Sigma_{yy}^{-1}\Sigma_{yx}$, the regression coefficients
+
+Generalized least squares, one regressor$\Sigma$, the error covariance$x$, the regressor$\Sigma^{-1}x$ up to scale: the estimator is a portfolio of observations
+
+Bayes rule under quadratic loss$\bar\Sigma$, the posterior mean$\mathbf 1$$\bar\Sigma^{-1}\mathbf 1$: the direct out-of-sample optimum is still in the family
+
+Two extensions cost nothing. Mean-variance with a budget has solution
+$\Sigma^{-1}(a\mathbf 1 + c\,\mu)$, two directions from the family combined, and a bridge run
+with the companion matrix $[\mathbf 1,\ \mu]$ delivers both columns at once, since block
+inversion applies columnwise. Several affine constraints $B^\top w = c$ give
+$w = \Sigma^{-1}B\,(B^\top\Sigma^{-1}B)^{-1}c$, which again needs only $\Sigma^{-1}B$.
+
+Who is not
+
+Three families of problems are not a precision matrix times a vector, and no bridge is exact
+for them at the far end. Long-only and box-constrained problems have an active
+set, and their solutions are $\Sigma^{-1}b$ only on the assets left free, with $b$ adjusted by
+multipliers that depend on the data; the recursion still runs, and the
+HERC square has a closed-form frontier for how far the inner
+dial can turn before the first short appears, but the far end is not the constrained optimum.
+Risk parity and its budgeted variants are fixed points of $w_i(\Sigma w)_i = \beta_i$, not
+linear solves. And objectives that are not quadratic forms, expected shortfall, drawdown,
+utilities beyond the second moment, have no companion vector at all; hierarchical versions of
+them exist, HERC admits them, but the far end is exact only through the identity above, which
+needs a quadratic form.
+
+Consequences for the bridges
+
+Every construction catalogued in the taxonomy is defined for a
+pair $(Q_C, b_C)$, and the choice of $b$ is a parameter of the recipe, not of the theory.
+So the same family that runs from HRP, HERC or NCO to minimum variance runs, with $b=\sigma$,
+to maximum diversification, and with $b=\mu$ to the tangency portfolio; the HERC note's
+companion-vector remark states the corners, and the allocation package exposes
+them as companion='vol' and companion='mean'. The far end is exact in
+every case for the same reason. The near end changes with $b$, since the heuristic
+one starts from must carry $b$ in its numerator to be on the bridge at all: inverse volatility
+rather than inverse variance for $b=\sigma$, per-asset Kelly $\mu_i/\sigma_i^2$ for $b=\mu$.
+That is a useful test of a heuristic. If it cannot be written with a $b$ in the numerator, it
+is not the near end of anything that reaches an optimizer.
+
