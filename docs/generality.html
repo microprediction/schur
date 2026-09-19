@@ -42,20 +42,33 @@
       far end exact is indifferent to which $b$ is in the numerator.
     </p>
 
-    <h2>The one problem</h2>
+    <h2>Every symmetric linear system has a financial reading</h2>
     <p>
-      For positive-definite $Q$ and a vector $b$, the problem of minimizing $x^\top Q x$ subject to
-      $b^\top x = 1$ has solution and attained value
+      This is the observation the <a href="https://arxiv.org/abs/2411.05807">2024 paper</a> builds
+      on, and it is worth stating on its own. Take any symmetric positive-definite $Q$ and any
+      vector $b$, and ask for the solution of $Qx=b$. Read $Q$ as a covariance and $b$ as a vector
+      of exposures, one per asset. The portfolio that minimizes variance $x^\top Qx$ subject to unit
+      exposure $b^\top x=1$ is
     </p>
-    $$ x^\star = \frac{Q^{-1}b}{b^\top Q^{-1}b}, \qquad \nu = \frac{1}{b^\top Q^{-1}b},
-       \qquad\text{so}\qquad Q^{-1}b = \frac{x^\star}{\nu}. $$
+    $$ w(Q,b) = \frac{Q^{-1}b}{b^\top Q^{-1}b}, \qquad\text{with variance}\qquad
+       \nu(Q,b) = \frac{1}{b^\top Q^{-1}b}, \qquad\text{so}\qquad Q^{-1}b = \frac{w(Q,b)}{\nu(Q,b)}. $$
     <p>
-      The third form is the one the bridges use: a linear solve is a normalized portfolio divided
-      by its variance, which is why an inverse-variance budget rule reproduces the optimizer. Block
-      inversion carries $b$ along as a <em>companion vector</em>: on a partition into a block and
-      its complement, $(\Sigma^{-1}b)_C = (\Sigma^c_C)^{-1}\big(b_C - \Sigma_{C,-C}\Sigma_{-C,-C}^{-1}b_{-C}\big)$,
-      the block's complement against a conditioned copy of its own part of $b$. Nothing in that
-      identity cares whether $b$ is a vector of ones.
+      The solution of the linear system is that portfolio scaled by the inverse of its own
+      variance: a holding, and the capital it deserves. Linear algebra does not care what $b$ is,
+      so neither does the reading. Ones give the fully invested minimum-variance portfolio,
+      volatilities give the most diversified one, expected returns give the tangency portfolio,
+      and a hedge ratio, a regression coefficient or a forecast combination are the same object
+      with $Q$ and $b$ renamed.
+    </p>
+    <p>
+      The reading is what makes hierarchy possible. Block inversion says the solution splits by
+      blocks, $(\Sigma^{-1}b)_C = (\Sigma^c_C)^{-1}\big(b_C - \Sigma_{C,-C}\Sigma_{-C,-C}^{-1}b_{-C}\big)$:
+      each block is the same problem again on its Schur complement, with its part of $b$
+      conditioned on the rest as a <em>companion vector</em>. Read financially, each block holds
+      the minimum-variance portfolio of its conditional covariance and is budgeted by the inverse of
+      that portfolio's variance. That is the inverse-variance rule of every hierarchical heuristic,
+      applied to conditioned rather than raw blocks, and it is why the far end of every bridge is
+      exact for every $b$ at once.
     </p>
 
     <h2>Who is in the family</h2>
