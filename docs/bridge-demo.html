@@ -156,9 +156,12 @@
 
   <p>The dendrogram portfolio pays about 40% more turnover for the same recursion on the same
   covariance — the extra trades are pure reordering, not information. The gap is the point of
-  replacing the combinatorial step with a spectral one: the allocation becomes a continuous
-  function of the covariance end to end, which is what makes a streaming
-  <code>partial_fit</code> cheap to follow in practice.</p>
+  replacing the combinatorial step with a spectral one. The Fiedler vector is a continuous
+  function of the covariance, but the sorted order is not: when two of its coordinates cross,
+  the bisection changes and the allocation can move by a finite amount, exactly as a dendrogram
+  can. What the spectral step buys is fewer such events, a coordinate crossing rather than a
+  linkage reordering, and the lower turnover above is an empirical result, not a continuity
+  theorem.</p>
 
   <p class="muted">Reproducible: <code>experiments/gen_schur_gamma_data.py</code> computes
   everything shown here (orders, weight grid, turnover series) with the

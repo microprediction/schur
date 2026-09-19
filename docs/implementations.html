@@ -52,8 +52,9 @@
     <h2>allocation &mdash; streaming, changing universe</h2>
     <p>
       Online Schur allocation for universes that evolve: assets are ordered by <em>Fiedler
-      seriation</em> (a continuous function of the covariance away from eigenvalue crossings, so
-      <code>partial_fit</code> stays low-turnover at moderate universe sizes), covariance is maintained incrementally, and names can enter or leave without a
+      seriation</em> (the Fiedler vector is continuous in the covariance, and the order changes only
+      when two of its coordinates cross, each crossing a finite jump in the allocation; the lower
+      turnover is empirical, not a continuity result), covariance is maintained incrementally, and names can enter or leave without a
       refit.
     </p>
     <ul>
