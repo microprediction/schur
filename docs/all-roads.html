@@ -98,7 +98,7 @@
   <section class="read">
     <div>
       <h2>What the axes are</h2>
-      <p>Thirty-two assets in four correlated sectors, one factor per sector plus a weak market factor. Height is how much worse a portfolio is than the far-end optimum, in percent of its objective: variance for minimum variance, the inverse squared diversification ratio for maximum diversification, the inverse squared Sharpe ratio for tangency. The violet floor is the optimum itself, at zero.</p>
+      <p>Thirty-two assets in four correlated sectors, one factor per sector plus a weak market factor. Height is how much worse a portfolio is than the far-end optimum, in percent of its objective: variance for minimum variance, the inverse squared diversification ratio for maximum diversification, the inverse squared Sharpe ratio for tangency. The violet floor is the optimum under perfect knowledge, the portfolio built from the true covariance, at zero. It is the yardstick, not a contestant: nothing built from ninety days of data can reach it, and the gap between a ribbon's far end and the floor is the price of estimating the covariance.</p>
       <p>Depth is the method. Along the length of each ribbon the dial runs from 0, the method as published, to 1, the far end. The dial damps a Schur complement: it conditions each cluster on the assets outside it, and, for HERC, each asset on its cluster mates.</p>
     </div>
     <div>
@@ -329,7 +329,7 @@
     yMax = Math.max(5, Math.ceil(top * 1.05 / 5) * 5);
     floorMesh(); axes();
     const farName = { ones: 'minimum variance', vol: 'maximum diversification', mean: 'tangency' }[state.far];
-    label('the floor: ' + farName, 'floor', new THREE.Vector3(0.2, 0.0, DEP / 2 + 0.1));
+    label('the floor: ' + farName + (state.cov === 'true' ? '' : ' with perfect knowledge'), 'floor', new THREE.Vector3(0.2, 0.0, DEP / 2 + 0.1));
     const legend = document.getElementById('legend'); legend.innerHTML = '';
     if (state.view === 'bridges') {
       const lane = DEP / ribbons.length;
@@ -341,7 +341,7 @@
         label(r.m.name, 'start', new THREE.Vector3(-W / 2, toY(r.pts[0]), zc));
         const li = document.createElement('li'); li.innerHTML = '<i style="background:var(' + r.m.color + ')"></i>' + r.m.name + ' <span class="num">' + r.pts[0].toFixed(0) + '% → best ' + r.pts[r.lo].toFixed(0) + '% at ' + (r.lo / (GRID - 1)).toFixed(2) + ' → ' + r.pts[r.pts.length - 1].toFixed(0) + '%</span>'; legend.appendChild(li);
       });
-      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + ' <span class="num">0%</span>'; legend.appendChild(fl);
+      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + ' from the true covariance, unreachable from data <span class="num">0%</span>'; legend.appendChild(fl);
     } else {
       const sq = data.square, G = sq.G; const pos = new Float32Array(G * G * 3); const colors = new Float32Array(G * G * 3); const idx = [];
       const c0 = cssColor('--s4'), c1 = cssColor('--floor');
