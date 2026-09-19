@@ -1,0 +1,29 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Entrywise noise: enumerate every sign state
+
+ Exchangeability is broken entirely: each correlation moves by &plusmn;&tau;
+ and each variance by a factor (1 &plusmn; &tau;), independently. The browser
+ enumerates all 2&#8310; = 64 (off-diagonals) or 2&sup1;&#8304; = 1024 (all ten
+ entries) sign states through the recursion and averages them, which is the same
+ computation the exact certificates do in rational arithmetic. HRP's anchor is
+ gone (F(0) rises with &tau;), and the minimizer stays interior.
+
+ noised entries
+ six off-diagonal
+ all ten
+ &tau;
+
+ 0.100
+
+ What to look for: F(0) is not flat in &tau; here, unlike Lemma 1, because
+ the diagonal channels charge HRP too. The minimum still stays strictly inside;
+ a minimum at either end would refute the claim. Push &tau; toward 0.12 with all ten entries: the &gamma; = 1 end blows
+ up by orders of magnitude as branches go near-singular, exactly as in the
+ paper.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.

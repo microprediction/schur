@@ -11,36 +11,46 @@
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./implementations.html">Implementations</a>
         <a href="./taxonomy.html">Taxonomy</a>
-        <a href="./index.html#bibliography">Bibliography</a>
-        <a href="./map.html">Literature map</a>
-        <a href="./timeline.html">Timeline</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
   <main>
     <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>An introduction</h1>
-    <p class="subtitle">One damped Schur complement &mdash; discovered separately by portfolio
+    <p class="subtitle">One damped Schur complement, discovered separately by portfolio
     managers, spatial statisticians, and (almost) machine learners.</p>
 
     <p class="lead">
       Whenever a covariance matrix is too large or too noisy to trust whole, every field reaches
       for the same first move: split the variables into groups and handle the groups separately.
       A portfolio manager clusters assets. A meteorologist conditions each weather station on a few
-      neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows &mdash;
-      how much of the <em>coupling between groups</em> to put back &mdash; turns out to be the same
-      object in every case, and this site is about that object.
+      neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows,
+      how much of the <em>coupling between groups</em> to put back, is the same
+      object in every case.
     </p>
 
     <h2>The shared object</h2>
@@ -53,7 +63,7 @@
       other produces two quantities that carry all of $B$&apos;s information: a regression
       $b = A^{-1}B$ and a <em>Schur complement</em> $S_D = D - B^\top A^{-1} B$, the covariance of
       the second group once the first is known. The coupling $B$ is also the noisiest part of any
-      estimated $\hat\Sigma$ &mdash; so the practical question, in every field, is how much of it
+      estimated $\hat\Sigma$, so the practical question, in every field, is how much of it
       to believe.
     </p>
 
@@ -64,11 +74,13 @@
        \qquad
        S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
     </div>
-    <p><strong>Finance.</strong> Allocate top-down between clusters using the damped complements
-      and recurse. At $\gamma=0$ the cross block is set aside and you have
-      <strong>hierarchical risk parity</strong> &mdash; robust, and deliberately blind to $B$. At
-      $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: the recursion
-      reproduces the global <strong>minimum-variance portfolio</strong>. The dial turns a heuristic
+    <p><em>Finance.</em> Allocate top-down between clusters using the damped complements
+      and recurse. At $\gamma=0$ the cross block is set aside and the recursion is
+      <em>hierarchical risk parity</em>, blind to $B$ by construction. At
+      $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: when each split is
+      budgeted by the child's conditioned variance, the recursion reproduces the global
+      <em>minimum-variance portfolio</em> (the collapsed encoding in the reference
+      implementations only approaches it; see the <a href="./taxonomy.html">taxonomy</a>). The dial turns a heuristic
       into an identity, with everything in between a tunable trade-off between estimation noise and
       information.
     </p>
@@ -82,11 +94,11 @@
           </marker>
         </defs>
         <rect x="8" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Top-down</text>
+        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Heuristic</text>
         <text x="120" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Hierarchical Risk Parity</text>
         <text x="120" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">allocate on diagonal blocks</text>
         <rect x="528" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Bottom-up</text>
+        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Global optimization</text>
         <text x="640" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Minimum-Variance</text>
         <text x="640" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">invert the full covariance</text>
         <line x1="300" y1="72" x2="236" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
@@ -107,23 +119,23 @@
       </svg>
       <p class="caption">
         The finance reading of the dial: $\gamma = 0$ recovers hierarchical risk parity,
-        $\gamma = 1$ recovers the minimum-variance portfolio, and the interior interpolates.
-        The spatial-statistics reading replaces the endpoints with &ldquo;independent
+        $\gamma = 1$ recovers the minimum-variance portfolio with the dial-tied split, and the
+        interior interpolates. The spatial-statistics reading replaces the endpoints with &ldquo;independent
         conditionals&rdquo; and &ldquo;full Vecchia conditioning.&rdquo;
       </p>
     </div>
-    <p><strong>Spatial statistics.</strong> The Vecchia approximation &mdash; the workhorse for
-      fitting Gaussian fields over tens of thousands of locations &mdash; writes the likelihood as
+    <p><em>Spatial statistics.</em> The Vecchia approximation, the workhorse for
+      fitting Gaussian fields over tens of thousands of locations, writes the likelihood as
       a product of per-location conditionals. Each conditional <em>is</em> a Schur complement, and
       each is estimated, hence noisy. Shrinking those conditionals (as ShrinkTM does toward a
       parametric base, or as the damped form above does toward independence, base-free) is the same
       $\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
       variance a weather model keeps after conditioning on neighbours.
     </p>
-    <p><strong>Machine learning.</strong> The natural gradient is the minimum-variance operation
+    <p><em>Machine learning.</em> The natural gradient is the minimum-variance operation
       applied to the <em>gradient</em> covariance, and the optimizer hierarchy lines up with the
       portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC&apos;s
-      block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices &mdash;
+      block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices:
       trust a cross-layer coupling completely or zero it exactly. KFAC&apos;s own
       &ldquo;damping&rdquo; (&lambda;I) is spectrum loading, not coupling attenuation. Every rung
       of the ladder is discrete; the continuous dial is unoccupied there.
@@ -131,40 +143,124 @@
 
     <h2>How much to trust the coupling: a closed form</h2>
     <p>
-      The right $\gamma$ is not a style preference; it is the <em>reliability</em> of the estimated
-      coupling &mdash; a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
+      The right $\gamma$ is the <em>reliability</em> of the estimated
+      coupling, a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
       two-block case with conditional correlation $\rho$ estimated from $n$ observations,
     </p>
     <div class="equation-card">
       $\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}$
     </div>
     <p>
-      More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation deserves your
-      trust. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
-      heuristic was right all along. Empirically &mdash; on portfolios, crypto correlation,
-      weather fields, and simulated processes &mdash; the sweet spot is interior, and the closed
-      form tracks the validation-tuned optimum with zero tuning.
+      More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation is the right
+      choice. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
+      heuristic is the right choice. Empirically the optimum is interior: on daily asset
+      returns in <em>Two Sides of Schur Damping</em>, and on crypto correlations, weather-forecast
+      residuals and simulated fields in the earlier Schur pseudo-likelihood work in
+      <code>precise</code>. The closed form gets most of the gain with zero tuning, and a single
+      held-out-fitted intensity does better still.
     </p>
 
-    <h2>Why this is one idea and not three</h2>
+    <h2>A family of bridges</h2>
+    <p>
+      The 2024 recursion runs on one bisection tree. Three notes in 2026 show that the same
+      move works on any partition and that the familiar heuristics are the near ends of a whole
+      family.
+    </p>
+    <p>
+      The recipe has four parts. Partition the assets into clusters. Give each cluster a
+      <em>pair</em> $(Q_C, b_C)$: its covariance block and a companion vector, both conditioned on
+      the assets outside the cluster and damped by $\gamma$. Inside the cluster, condition each
+      asset on its cluster mates, damped by a second dial $\eta$. Then budget each cluster by the
+      inverse variance of what it holds.
+    </p>
+    <p>
+      Block inversion says that at $(\gamma,\eta)=(1,1)$ this is
+      $\Sigma^{-1}u$ <em>exactly</em>, for any partition, with $u=\mathbf 1$ minimum variance,
+      $u=\sigma$ maximum diversification and $u=\mu$ the tangency portfolio. The
+      far end is <a href="./generality.html">minimum variance in disguise</a>. The near ends are the
+      methods people already use: inverse variance, hierarchical risk parity, hierarchical minimum
+      variance, HERC and NCO. The <a href="./taxonomy.html">taxonomy</a> gives the split rule and
+      the conditioning path for each, and <a href="./all-roads.html">one 3D picture</a> shows the
+      five near ends descending to the same floor.
+    </p>
+    <p>
+      Conditioning one asset on its cluster mates
+      is Stevens' identity, the minimum-variance weight as one minus the hedge sum over the residual
+      variance. Damping it gives a weight whose numerator and denominator are each linear in $\eta$
+      between the naive quantity and the regression quantity, so the whole path costs one inverse,
+      and there is an explicit frontier $\eta_+$ beyond which the first short appears. On an
+      equicorrelated cluster the path is the straight segment from inverse variance to the
+      cluster's minimum-variance portfolio.
+    </p>
+
+    <h2>Where to sit: what is proved</h2>
+    <p>
+      With the true covariance the far end wins and the question is empty. With an estimate
+      $\widehat\Sigma_\tau=\Sigma+\tau E$ the expected out-of-sample objective is
+      $F(\gamma,\tau)=V_0(\gamma)+\tau^2 G(\gamma)+O(\tau^4)$, and three facts decide where to
+      stand. The far end is flat in the population, $V_0'(1)=0$, so only the noise term has a slope
+      there: the optimum moves inside exactly when $G'(1)>0$, to
+      $\tilde\gamma=1-\big(G'(1)/V_0''(1)\big)\tau^2$, and the gain from moving is of fourth order.
+      The near end is blind to the cross-cluster block, so its estimation cost does not grow with
+      $\gamma$ and moving away from it costs $\gamma\tau^2$; if the population objective falls at
+      the near end, the near end is strictly suboptimal for small noise. And the sign of $G'(1)$ is
+      not fixed by the structure: both signs occur, each on an open set.
+    </p>
+    <p>
+      The examples are exact, in rational arithmetic. Identical clusters coupled through their
+      knots have a closed-form optimum $\gamma_\star=\big(1+2(k-2)c\big)/\big(2[1+(k-3)c]\big)$;
+      for two clusters and $c=\tfrac14$ it is $\tfrac23$, with gaps $1/576$ and $1/900$ to the two
+      ends. An equicorrelated cluster on the inner dial has optimum $\eta_\star=\tfrac35$ for
+      volatilities $(1,2,2)$ and $\rho=\tfrac14$, with gaps $1/45$ and $1/20$. A threshold in the
+      member variance ($\delta=8$) or in the cluster size and correlation ($q^2-1$ against
+      $r\rho(2+q)$) separates the interior case from the case where full coupling stays optimal.
+      Every claim has a certificate script, and the <a href="./demos.html">demos</a> recompute
+      the conditions live.
+    </p>
+
+    <h2>What the partition costs</h2>
+    <p>
+      At the far end the weights do not depend on the partition at all, so the price of a wrong
+      or changing clustering is a continuous function of the dials that vanishes at $(1,1)$. The
+      dials that damp estimation noise damp reclustering churn too. Along the way the partition is
+      taken from the Fiedler vector of the correlation graph, which is continuous in the covariance
+      and reorders only when two of its coordinates cross; each crossing is a finite jump, fewer
+      than a dendrogram's, and the lower turnover is an empirical result rather than a theorem.
+    </p>
+    <p>
+      Conditioning a cluster on everything outside it is the inverse a two-level method exists to
+      avoid. Two devices make it cheap. Composing the conditioning down a tree, each block on its
+      sibling, is exact because Schur complements compose. Conditioning on one factor-mimicking
+      portfolio per other cluster is exact whenever cross-cluster dependence runs through one
+      latent factor per cluster, of which the NCO note's knot asset is the special case, and costs
+      only cluster-sized solves. The <code>allocation</code> package's <code>SchurBridge</code>
+      exposes all of this with constructors named by their endpoints.
+    </p>
+
+    <h2>One idea in three fields</h2>
     <p>
       The fields solved complementary halves. Finance contributed the <em>bridge</em>: the
       observation that $\gamma$ connects two allocation philosophies previously seen as rivals.
       Spatial statistics contributed <em>scale and fitting</em>: orderings, conditioning sets, and
-      empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other
-      &mdash; the <a href="https://arxiv.org/abs/2606.14798">
+      empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other.
+      The <a href="https://arxiv.org/abs/2606.14798">
       Two Sides</a> paper makes the correspondence precise, and the
-      <a href="./timeline.html">timeline</a> shows the idea arriving in each field. What remains
-      open &mdash; robust conditional regressions, massive-scale semi-local maintenance, the
-      completion-theory connection &mdash; is drawn as the dashed red edges on the
+      <a href="./timeline.html">timeline</a> shows the idea arriving in each field.
+    </p>
+    <p>
+      Three questions
+      remain open: robust conditional regressions, massive-scale semi-local maintenance, and the
+      completion-theory connection. They are the dashed red edges on the
       <a href="./map.html">literature map</a>.
     </p>
 
     <div class="next-steps">
       <p>
         For the recursion at arbitrary hierarchy depth and the empirical comparisons, see the
-        <a href="https://arxiv.org/abs/2411.05807">paper</a>. To use it today, head to the
-        <a href="./implementations.html">implementations</a>: skfolio for batch portfolios,
+        <a href="https://arxiv.org/abs/2411.05807">paper</a>; for the family, the
+        <a href="./papers.html">2026 notes</a> and the <a href="./taxonomy.html">taxonomy</a>.
+        The
+        <a href="./implementations.html">implementations</a> are skfolio for batch portfolios,
         <code>allocation</code> for streaming universes, <code>precise</code> for online covariance
         estimation and the Schur pseudo-likelihood.
       </p>

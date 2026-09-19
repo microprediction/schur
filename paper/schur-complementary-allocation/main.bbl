@@ -1,0 +1,169 @@
+\begin{thebibliography}{}
+
+\bibitem[Bunn, 2001]{bunn2001statistical}
+Bunn, D.~W. (2001).
+\newblock Statistical efficiency in the linear combination of forecasts.
+\newblock {\em Journal of forecasting}, 20(2):87--94.
+
+\bibitem[Chubb, 2021]{pyportfoliopt}
+Chubb, T.~P. (2021).
+\newblock {PyPortfolioOpt}: Financial portfolio optimization in {Python}.
+\newblock \url{https://pyportfolioopt.readthedocs.io}.
+\newblock Software.
+
+\bibitem[Cochrane, 2022]{cochrane2022portfolios}
+Cochrane, J.~H. (2022).
+\newblock Portfolios for long-term investors.
+\newblock {\em Review of Finance}, pages 1--42.
+
+\bibitem[Cotton, 2022]{cottonprecise}
+Cotton, P. (2022).
+\newblock {Precise: A Python Package for Streaming Covariance Prediction}.
+
+\bibitem[De~Prado, 2016]{DePrado2016BuildingSample}
+De~Prado, M.~L. (2016).
+\newblock {Building diversified portfolios that outperform out of sample}.
+\newblock {\em Journal of Portfolio Management}, 42(4).
+
+\bibitem[DeMiguel et~al., 2009]{DeMiguel2009ANorms}
+DeMiguel, V., Garlappi, L., Nogales, F.~J., and Uppal, R. (2009).
+\newblock {A generalized approach to portfolio optimization: Improving
+  performance by constraining portfolio norms}.
+\newblock {\em Management Science}, 55(5).
+
+\bibitem[Egozcue et~al., 2020]{egozcue2020riskfoliolib}
+Egozcue, M.~S., Draper, L.~F., and Corrada~Bravo, H.~W. (2020).
+\newblock {Riskfolio-Lib}: Portfolio optimization and risk analysis in
+  {Python}.
+\newblock {\em Journal of Open Source Software}, 5(54):2164.
+\newblock Software.
+
+\bibitem[Friedman et~al., 2008]{friedman2008sparse}
+Friedman, J., Hastie, T., and Tibshirani, R. (2008).
+\newblock Sparse inverse covariance estimation with the graphical lasso.
+\newblock {\em Biostatistics}, 9(3):432--441.
+
+\bibitem[Graham, 1949]{graham1949intelligent}
+Graham, B. (1949).
+\newblock {\em The Intelligent Investor}.
+\newblock Harper \& Brothers.
+
+\bibitem[Jobson and Korkie, 1980]{jobson1980estimation}
+Jobson, J. and Korkie, B. (1980).
+\newblock Estimation for markowitz efficient portfolios.
+\newblock {\em Journal of the American Statistical Association},
+  75(371):544--554.
+
+\bibitem[Kaczmarek and Perez, 2022]{Kaczmarek2022BuildingPredictions}
+Kaczmarek, T. and Perez, K. (2022).
+\newblock {Building portfolios based on machine learning predictions}.
+\newblock {\em Economic Research-Ekonomska Istrazivanja}, 35(1).
+
+\bibitem[Ledoit and Wolf, 2003]{ledoit2003improved}
+Ledoit, O. and Wolf, M. (2003).
+\newblock Improved estimation of the covariance matrix of stock returns with an
+  application to portfolio selection.
+\newblock {\em Journal of empirical finance}, 10(5):603--621.
+
+\bibitem[Liiv, 2010]{Liiv2010ReviewOverview}
+Liiv, I. (2010).
+\newblock {Review seriation and matrix reordering methods: An historical
+  overview}.
+
+\bibitem[Lohre et~al., 2020]{Lohre2020HierarchicalAllocations}
+Lohre, H., Rother, C., and Sch{\"{a}}fer, K.~A. (2020).
+\newblock {Hierarchical Risk Parity: Accounting for Tail Dependencies in
+  Multi-Asset Multi-Factor Allocations}.
+\newblock {\em SSRN Electronic Journal}.
+
+\bibitem[L{\'{o}}pez~de Prado, 2019]{LopezdePrado2019EstimationMatrices}
+L{\'{o}}pez~de Prado, M. (2019).
+\newblock {Estimation of Theory-Implied Correlation Matrices}.
+\newblock {\em SSRN Electronic Journal}.
+
+\bibitem[Markov and Markov, 2023]{markov2023portfolio}
+Markov, M. and Markov, V. (2023).
+\newblock Portfolio optimization rules beyond the mean-variance approach.
+\newblock manuscript in preparation.
+
+\bibitem[Markowitz, 1952]{Markowitz1952PortfolioFinance}
+Markowitz, H. (1952).
+\newblock {Portfolio Selection, Journal of Finance}.
+\newblock {\em Markowitz HM—1952}.
+
+\bibitem[Marti et~al., 2021]{Marti2021AMarkets}
+Marti, G., Nielsen, F., Bi{\'{n}}kowski, M., and Donnat, P. (2021).
+\newblock {A review of two decades of correlations, hierarchies, networks and
+  clustering in financial markets}.
+\newblock In {\em Signals and Communication Technology}.
+
+\bibitem[Merton, 1969]{merton1969lifetime}
+Merton, R.~C. (1969).
+\newblock Lifetime portfolio selection under uncertainty.
+\newblock {\em The Review of Economics and Statistics}, 51(3):247--257.
+
+\bibitem[Michaud, 1989]{michaud1989markowitz}
+Michaud, R. (1989).
+\newblock The markowitz optimization enigma: is 'optimized' optimal?
+\newblock {\em Financial Analysts Journal}, 45(1):31--42.
+
+\bibitem[Molyboga, 2020]{Molyboga2020AManagement}
+Molyboga, M. (2020).
+\newblock {A Modified Hierarchical Risk Parity Framework for Portfolio
+  Management}.
+\newblock {\em Journal of Financial Data Science}, 2(3).
+
+\bibitem[Nourahmadi and Sadeqi, 2021]{Nourahmadi2021HierarchicalExchange}
+Nourahmadi, M. and Sadeqi, H. (2021).
+\newblock {Hierarchical Risk Parity as an Alternative to Conventional Methods
+  of Portfolio Optimization: (A Study of Tehran Stock Exchange)}.
+\newblock {\em Iranian Journal of Finance}, 5(4).
+
+\bibitem[Pedregosa et~al., 2011]{scikit-learn}
+Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel,
+  O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., Vanderplas, J.,
+  Passos, A., Cournapeau, D., Brucher, M., Perrot, M., and Duchesnay, {\'E}.
+  (2011).
+\newblock Scikit-learn: Machine learning in {Python}.
+\newblock {\em Journal of Machine Learning Research}, 12:2825--2830.
+
+\bibitem[Pfitzinger and Katzke, 2019]{pfitzinger2019constrained}
+Pfitzinger, J. and Katzke, N. (2019).
+\newblock A constrained hierarchical risk parity algorithm with cluster-based
+  capital allocation.
+
+\bibitem[Pfitzinger and Katzke, 2021]{Pfitzinger2021AAllocation}
+Pfitzinger, J. and Katzke, N. (2021).
+\newblock {A Constrained Hierarchical Risk Parity Algorithm with Cluster-based
+  Capital Allocation}.
+\newblock Technical report.
+
+\bibitem[Raffinot, 2016]{Raffinot2016HierarchicalAllocation}
+Raffinot, T. (2016).
+\newblock {Hierarchical Clustering Based Asset Allocation}.
+\newblock {\em SSRN Electronic Journal}.
+
+\bibitem[Raffinot, 2018]{Raffinot2018ThePortfolio}
+Raffinot, T. (2018).
+\newblock {The Hierarchical Equal Risk Contribution Portfolio}.
+\newblock {\em SSRN Electronic Journal}.
+
+\bibitem[Rane et~al., 2022]{Rane2022FinancialAnalysis}
+Rane, C., Pai, S., Dani, M., and Dhage, S. (2022).
+\newblock {Financial Portfolio Management and Optimization to Maximize Returns
+  Using a Combination of HRP and Sentiment Analysis}.
+\newblock In {\em Lecture Notes in Networks and Systems}, volume 237.
+
+\bibitem[Sen et~al., 2021]{Sen2021HierarchicalStocks}
+Sen, J., Mehtab, S., Dutta, A., and Mondal, S. (2021).
+\newblock {Hierarchical Risk Parity and Minimum Variance Portfolio Design on
+  NIFTY 50 Stocks}.
+\newblock In {\em 2021 International Conference on Decision Aid Sciences and
+  Application, DASA 2021}.
+
+\bibitem[Sun and Palomar, 2023]{SunPalomar2023}
+Sun, Y. and Palomar, D.~P. (2023).
+\newblock Regularized tyler's scatter estimator: Existence, uniqueness, and
+  algorithms.
+
+\end{thebibliography}

@@ -1,0 +1,25 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Theorem 3: small noise pushes the optimum off the minimum-variance end
+
+ At an exact minimum-variance endpoint the population curve is flat
+ (V&#8320;&prime;(1) = 0), so any positive marginal noise sensitivity wins
+ locally and the optimizer moves inside by order &tau;&sup2;:
+ 1 &minus; &gamma;*(&tau;) &asymp; (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;.
+ For Family A the paper computes the coefficient exactly: with e = 2&tau;,
+ 1 &minus; &gamma;* &asymp; (1025/153)e&sup2;.
+
+ Dots: minimizers of the exact F found by search, plotted
+ as 1 &minus; &gamma;* against e&sup2;. Line: slope 1025/153 from the
+ theorem.
+
+ What to look for: the dots approach the line as
+ e &darr; 0. The theorem is a small-noise statement, and the curvature away from
+ the line at larger e is the O(e&#8308;) term. Dots approaching a different slope
+ as e &darr; 0 would refute the coefficient.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.

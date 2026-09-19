@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bibliography &mdash; Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>Bibliography</h1>
+    <div class="bib">
+      <p>Works on, citing, or directly extending Schur complementary allocation, plus the
+      spatial-statistics side of the same idea. Every paper below also appears on the
+      <a href="./map.html">literature map</a>; the dated story is on the
+      <a href="./timeline.html">timeline</a>.</p>
+
+      <h3>The core</h3>
+      <ul>
+        <li>
+          Cotton, P. (2022). &ldquo;Schur Complementary Portfolios &mdash; A Unification of Machine Learning and Optimization-Based Allocation.&rdquo;
+          <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
+          Culture (Medium)</a>. <em>Where the &gamma;-bridge first appeared, November 2022.</em>
+        </li>
+        <li>
+          Cotton, P. (2023). <em>Schur Complementary Portfolios &mdash; CQF slides</em>.
+          <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">PDF</a>.
+          <em>Compact derivation with the interpolation argument.</em>
+        </li>
+        <li>
+          Cotton, P. (2024).
+          <a href="https://arxiv.org/abs/2411.05807"><em>Schur Complementary Allocation: A
+          Unification of Hierarchical Risk Parity and Minimum Variance Portfolios</em></a>.
+          arXiv:2411.05807. <em>The canonical write-up; the recursion at arbitrary depth.</em>
+          Original version: October 29, 2024. Latest version: September 19, 2026
+          (<a href="./schur-complementary-allocation.pdf">PDF</a>,
+          <a href="https://github.com/microprediction/schur/tree/main/paper/schur-complementary-allocation">source</a>):
+          corrects two misprinted companion vectors, states the intra-group step in pair form, and
+          gives the split-rule condition under which &gamma;=1 is exact.
+        </li>
+        <li>
+          Cotton, P. (2026). <em>Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods
+          and Portfolio Allocation</em>.
+          <a href="https://arxiv.org/abs/2606.14798">arXiv:2606.14798</a>.
+          <em>The cross-field identity: the same damping, and the same closed-form reliability
+          &gamma;*, in allocation and in spatial pseudo-likelihoods.</em>
+        </li>
+        <li>
+          Cotton, P. (2026). <em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em>.
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738">SSRN 7480738</a>,
+          <a href="./schur-nco-bridge.pdf">PDF</a>. <em>The flat-partition
+          bridge: nested clustered optimization at &gamma;=0, unconstrained minimum variance at
+          &gamma;=1, made cheap by conditioning each cluster on one knot from every other
+          cluster.</em>
+        </li>
+        <li>
+          Cotton, P. (2026). <em>Hierarchical Equal Risk Contribution Is a Corner of a Schur Square, and Two Dials Lead to Minimum Variance</em>.
+          Working paper: <a href="./schur-herc-square.pdf">PDF</a>. <em>HERC's budget rule is
+          the global minimum-variance rule; it lacks two Schur complements. Damping them by
+          &gamma; and &eta; gives a square with HERC at one corner and the global optimum at the
+          opposite corner, and the inner dial makes Stevens' identity a one-parameter path.</em>
+        </li>
+        <li>
+          Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its
+          Optimal Strength Is a Sampling-Error Correction</em>.
+          Working paper: <a href="./localization-is-schur-damping.pdf">PDF</a>. <em>A
+          block-constant taper in an ensemble Kalman filter is the &gamma;-dial; the
+          optimal &gamma; is interior at every noise level and in closed form.</em>
+        </li>
+        <li>
+          Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
+          Working paper: <a href="./schur-damping-pdlp.pdf">PDF</a>,
+          <a href="./damping-in-pdlps.html">web note</a>. <em>Brings the interior &gamma;-dial to the
+          single-pool-vs-two-pools decision of Chitra et al.; &gamma;* set by the reliability of the
+          cross-pool covariance, pulled toward 0 in the undersampled DeFi regime.</em>
+        </li>
+      </ul>
+
+      <h3>Data assimilation</h3>
+      <p>The same dial under another name. Ensemble filters estimate a forecast
+      covariance from a small ensemble and damp its cross-covariances by a
+      distance taper, choosing the radius empirically. A block-constant taper
+      has the damped Schur complement as its conditional, and for that case the
+      optimal &gamma; is a closed-form sampling-error correction (see the working
+      paper above). Distance tapers and radius selection in operational filters
+      remain untreated.</p>
+      <ul>
+        <li>
+          Evensen, G. (1994). &ldquo;Sequential data assimilation with a nonlinear
+          quasi-geostrophic model using Monte Carlo methods to forecast error
+          statistics.&rdquo; <em>Journal of Geophysical Research</em> 99(C5),
+          10143&ndash;10162. <a href="https://doi.org/10.1029/94JC00572">doi</a>.
+          <em>The ensemble Kalman filter: a small ensemble stands in for the
+          forecast covariance.</em>
+        </li>
+        <li>
+          Gaspari, G., and Cohn, S. E. (1999). &ldquo;Construction of correlation
+          functions in two and three dimensions.&rdquo; <em>Quarterly Journal of the
+          Royal Meteorological Society</em> 125(554), 723&ndash;757.
+          <a href="https://doi.org/10.1002/qj.49712555417">doi</a>. <em>The taper
+          that localization multiplies the sample covariance by.</em>
+        </li>
+        <li>
+          Houtekamer, P. L., and Mitchell, H. L. (2001). &ldquo;A sequential ensemble
+          Kalman filter for atmospheric data assimilation.&rdquo; <em>Monthly Weather
+          Review</em> 129(1), 123&ndash;137.
+          <a href="https://doi.org/10.1175/1520-0493(2001)129&lt;0123:ASEKFF&gt;2.0.CO;2">doi</a>.
+          <em>Covariance localization by a Schur product with a distance taper:
+          Schur&apos;s name, but the elementwise product, not the complement.</em>
+        </li>
+        <li>
+          Hamill, T. M., Whitaker, J. S., and Snyder, C. (2001). &ldquo;Distance-dependent
+          filtering of background error covariance estimates in an ensemble Kalman
+          filter.&rdquo; <em>Monthly Weather Review</em> 129(11), 2776&ndash;2790.
+          <a href="https://doi.org/10.1175/1520-0493(2001)129&lt;2776:DDFOBE&gt;2.0.CO;2">doi</a>.
+          <em>The localization radius is tuned empirically.</em>
+        </li>
+        <li>
+          Anderson, J. L. (2007). &ldquo;Exploring the need for localization in
+          ensemble data assimilation using a hierarchical ensemble filter.&rdquo;
+          <em>Physica D</em> 230(1&ndash;2), 99&ndash;111.
+          <a href="https://doi.org/10.1016/j.physd.2006.02.011">doi</a>. <em>Adaptive
+          localization from the sampling error of regression coefficients: the
+          nearest thing to a reliability argument.</em>
+        </li>
+        <li>
+          Houtekamer, P. L., and Zhang, F. (2016). &ldquo;Review of the ensemble Kalman
+          filter for atmospheric data assimilation.&rdquo; <em>Monthly Weather Review</em>
+          144(12), 4489&ndash;4532. <a href="https://doi.org/10.1175/MWR-D-15-0440.1">doi</a>.
+          <em>Localization and inflation as the two dials of the field.</em>
+        </li>
+      </ul>
+
+      <h3>Antecedents</h3>
+      <ul>
+        <li>
+          L&oacute;pez de Prado, M. (2016). &ldquo;Building Diversified Portfolios that Outperform
+          Out of Sample.&rdquo; <em>Journal of Portfolio Management</em> 42(4), 59&ndash;69.
+          <em>Hierarchical risk parity: the &gamma;=0 endpoint.</em>
+        </li>
+        <li>
+          Antonov, A., Lipton, A., and L&oacute;pez de Prado, M. (2024).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151"><em>Overcoming
+          Markowitz&apos;s Instability with the Help of the Hierarchical Risk Parity (HRP):
+          Theoretical Evidence</em></a>. SSRN 4748151. <em>Analytical noise comparison of HRP vs
+          Markowitz.</em>
+        </li>
+        <li>
+          Palomar, D. P. (2025). <em>Portfolio Optimization: Theory and Application</em>, Cambridge
+          University Press, &sect;12.3.4 &ldquo;From Portfolio Risk Minimization to Hierarchical
+          Portfolios&rdquo; (the Schur-complement form of the GMVP versus HRP).
+          <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online
+          edition</a>. <em>Textbook treatment alongside HRP and global minimum variance.</em>
+        </li>
+      </ul>
+
+      <h3>Theory and extensions</h3>
+      <ul>
+        <li>
+          Mograby, G. (2025).
+          <a href="https://arxiv.org/abs/2503.12328"><em>Hierarchical Minimum Variance Portfolios:
+          A Theoretical and Algorithmic Approach</em></a>. arXiv:2503.12328.
+          <em>Exact Schur separator recursion on hierarchical graphs: the &gamma;=1
+          skeleton, made rigorous.</em>
+        </li>
+        <li>
+          Wuebben, B. J. (2026).
+          <a href="https://arxiv.org/abs/2604.23833"><em>Beyond De Prado and Cotton: Hierarchical
+          and Iterative Methods for General Mean-Variance Portfolios</em></a>. arXiv:2604.23833.
+          <em>HRP-&mu;, HRP-&Sigma;&mu;, CRISP: signal-aware extensions past minimum variance.</em>
+        </li>
+        <li>
+          Kne&zcaron;evi&cacute;, P., and Posedel &Scaron;imovi&cacute;, P. (2026).
+          <a href="https://doi.org/10.1142/S2705109926700013"><em>Bridging Risk Parity and
+          Variance Optimization: A Schur Complement Approach to Recursive Asset
+          Allocation</em></a>. <em>The Journal of FinTech</em> 2670001, open access
+          (<a href="https://github.com/microprediction/schur/blob/main/assets/pdf/Bridging%20Risk%20Parity%20and%20Variance%20Optimization_%20A%20Schur%20Complement%20Approach%20to%20Recursive%20Asset%20Allocation.pdf">PDF</a>).
+          <em>Cites both the 2022 blog post and the 2024 paper.</em>
+        </li>
+        <li>
+          Noguer i Alonso, M. (2025).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624"><em>Return-Adjusted
+          Hierarchical Risk Parity and Schur Portfolios: A Comprehensive Theoretical and Empirical
+          Study</em></a>. SSRN 5370624.
+        </li>
+        <li>
+          Noguer i Alonso, M. (2026).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220"><em>Reinforcement
+          Learning Portfolio Optimization (RLPO): From Markowitz to Risk-Sensitive Control</em></a>.
+          SSRN 6447220.
+        </li>
+      </ul>
+
+      <h3>The spatial-statistics side</h3>
+      <ul>
+        <li>
+          Vecchia, A. V. (1988). &ldquo;Estimation and Model Identification for Continuous Spatial
+          Processes.&rdquo; <em>JRSS-B</em> 50(2). <em>The neighbour-conditioned factorization;
+          the conditionals are Schur complements.</em>
+        </li>
+        <li>
+          Katzfuss, M., and Guinness, J. (2021). &ldquo;A General Framework for Vecchia
+          Approximations of Gaussian Processes.&rdquo;
+          <a href="https://doi.org/10.1214/19-STS755"><em>Statistical Science</em> 36(1)</a>.
+        </li>
+        <li>
+          Chakraborty, A., and Katzfuss, M. (2025).
+          <a href="https://arxiv.org/abs/2409.19208"><em>Learning Non-Gaussian Spatial
+          Distributions via Bayesian Transport Maps with Parametric Shrinkage</em></a> (ShrinkTM).
+          arXiv:2409.19208. <em>Damping arrives in spatial statistics: conditionals shrunk toward a
+          parametric base.</em>
+        </li>
+      </ul>
+
+      <h3>Applications and empirical studies</h3>
+      <ul>
+        <li>
+          Chitra, T., Diamandis, T., Sheng, N., Sterle, L., and Yusubov, K. (2025).
+          <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual Demand Lending Pools</em></a>.
+          arXiv:2502.06028. <em>Appendix B decides single vs multiple DeFi lending pools via the
+          <em>undamped</em> Schur complement of the pool covariance (the exact
+          conditional covariance, no &gamma;). The &gamma;=0 vs &gamma;=1 architecture
+          question, posed for billions of dollars of pooled assets. The note on
+          <a href="./damping-in-pdlps.html">damping in PDLPs</a> adds the interior dial.</em>
+        </li>
+        <li>
+          Salas-Molina, F., Pla-Santamaria, D., Garcia-Bernabeu, A., and Reig-Mullor, J. (2025).
+          <a href="https://doi.org/10.1007/978-3-031-78241-1_5"><em>Estimation Windows in
+          Hierarchical Risk Parity Methods for Portfolio Selection</em></a>. LNCS Decision
+          Sciences. <em>Empirical HRP study; best out-of-sample Sharpe near five years of daily
+          data.</em>
+        </li>
+        <li>
+          Pergher, K. G. R., Soldera, J., and Scharcanski, J. (2026).
+          <a href="https://doi.org/10.1109/ACCESS.2026.3656702"><em>An Orthogonal Hierarchical
+          Risk Parity Allocation Method for Improved Portfolio Out-of-Sample Performance</em></a>.
+          IEEE Access.
+        </li>
+        <li>
+          Bergmeier, J. (2026).
+          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678"><em>The Risk Parity
+          Zoo: Which Risk Contributions Should Multi-Asset Investors Equalize?</em></a>.
+          SSRN 6536678. <em>Out-of-sample comparison of risk-based allocation models.</em>
+        </li>
+        <li>
+          Nicolini, C., Manzi, M., and Delatte, H. (2025).
+          <a href="https://arxiv.org/abs/2507.04176"><em>skfolio: Portfolio Optimization in
+          Python</em></a>. arXiv:2507.04176. <em>The library that ships the SchurComplementary
+          optimizer (v0.12.0, September 2025).</em>
+        </li>
+      </ul>
+
+      <p class="muted" style="font-size:0.9rem; margin-top:16px;">
+        Citation list maintained from
+        <a href="https://scholar.google.com/scholar?cites=7287366636726005592">Google Scholar
+        forward citations</a>. Working on a related paper or implementation? Open an issue on
+        <a href="https://github.com/microprediction/schur">the schur repo</a> and we&apos;ll add it.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>
