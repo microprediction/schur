@@ -65,7 +65,8 @@
     <p>
       while an <em>isolated</em> pool hedges against $A$ (or $C$) alone, as if the other pool did not
       exist. Claim&nbsp;B.1 then gives a spectral sufficient condition &mdash;
-      $\sigma_{\max}(A) < \sigma_{\min}(\Sigma/A)$ &mdash; under which the single merged pool delta-hedges
+      $\sigma_{\max}(A) < \sigma_{\min}(A - BC^{-1}B^\top)$, with the mirror condition for $C$
+      (Chitra et al.\ write the complement as $\Sigma/A$; in this page's notation it is $\Sigma/C$) &mdash; under which the single merged pool delta-hedges
       better than the two isolated ones, and the authors note these conditions are
       &ldquo;similar to hierarchical risk-parity methods&rdquo; ([Cot24], [LdP16]).
     </p>
@@ -122,7 +123,7 @@
       Concretely, a damped PDLP delta-hedges pool 1 against $A(\gamma^\star)$ rather than against
       either $A$ or $\Sigma/C$ &mdash; a soft sharing of risk across pools, with the sharing fraction
       a function of data, not a governance flag. This speaks directly to the paper&rsquo;s closing
-      observation that GMX V2&rsquo;s dynamic-pricing upgrade &ldquo;does not take into account pool
+      observation that GMX V2&rsquo;s dynamic-pricing upgrade &ldquo;doesn't take into account pool
       asset covariance&rdquo;: a target-weight mechanism that sets inter-pool collateral sharing in
       proportion to $\gamma^\star$ would put exactly that covariance information back, at the
       reliability-weighted amount, and would degrade gracefully as histories shorten instead of

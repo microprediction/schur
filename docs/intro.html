@@ -67,8 +67,10 @@
     <p><strong>Finance.</strong> Allocate top-down between clusters using the damped complements
       and recurse. At $\gamma=0$ the cross block is set aside and you have
       <strong>hierarchical risk parity</strong> &mdash; robust, and deliberately blind to $B$. At
-      $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: the recursion
-      reproduces the global <strong>minimum-variance portfolio</strong>. The dial turns a heuristic
+      $\gamma=1$ the block-inverse identity makes the hierarchy <em>exact</em>: when each split is
+      budgeted by the child's conditioned variance, the recursion reproduces the global
+      <strong>minimum-variance portfolio</strong> (the collapsed encoding in the reference
+      implementations only approaches it; see the <a href="./taxonomy.html">taxonomy</a>). The dial turns a heuristic
       into an identity, with everything in between a tunable trade-off between estimation noise and
       information.
     </p>
@@ -107,8 +109,8 @@
       </svg>
       <p class="caption">
         The finance reading of the dial: $\gamma = 0$ recovers hierarchical risk parity,
-        $\gamma = 1$ recovers the minimum-variance portfolio, and the interior interpolates.
-        The spatial-statistics reading replaces the endpoints with &ldquo;independent
+        $\gamma = 1$ recovers the minimum-variance portfolio with the dial-tied split, and the
+        interior interpolates. The spatial-statistics reading replaces the endpoints with &ldquo;independent
         conditionals&rdquo; and &ldquo;full Vecchia conditioning.&rdquo;
       </p>
     </div>
@@ -141,9 +143,11 @@
     <p>
       More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation deserves your
       trust. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
-      heuristic was right all along. Empirically &mdash; on portfolios, crypto correlation,
-      weather fields, and simulated processes &mdash; the sweet spot is interior, and the closed
-      form tracks the validation-tuned optimum with zero tuning.
+      heuristic was right all along. Empirically the sweet spot is interior: on daily asset
+      returns in <em>Two Sides of Schur Damping</em>, and on crypto correlations, weather-forecast
+      residuals and simulated fields in the earlier Schur pseudo-likelihood work in
+      <code>precise</code>. The closed form gets most of the gain with zero tuning, and a single
+      held-out-fitted intensity does better still.
     </p>
 
     <h2>Why this is one idea and not three</h2>

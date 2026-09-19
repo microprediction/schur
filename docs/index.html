@@ -43,7 +43,9 @@
     <p>
       The <strong>Schur complement</strong> connects them. Augment each cluster&apos;s covariance
       with the Schur complement of the others before allocating, and the hierarchical construction
-      reproduces the global optimisation exactly. A single dial $\gamma \in [0, 1]$ slides smoothly
+      reproduces the global optimisation exactly, when each split is budgeted by the child's
+      conditioned variance (the <a href="./taxonomy.html">taxonomy</a> says which encodings do this
+      and which only approach it). A single dial $\gamma \in [0, 1]$ slides smoothly
       between the two worlds &mdash; and, encouragingly, the best out-of-sample portfolios usually
       live somewhere in between.
     </p>
@@ -92,7 +94,8 @@
       </svg>
       <p class="caption">
         One dial: $\gamma = 0$ recovers hierarchical risk parity, $\gamma = 1$ recovers the
-        minimum-variance portfolio, and the interior interpolates between them.
+        minimum-variance portfolio with the dial-tied split of the
+        <a href="./taxonomy.html">taxonomy page</a>, and the interior interpolates between them.
       </p>
     </div>
 
@@ -118,7 +121,8 @@
         site, with the block-inverse identity and the $\gamma$ interpolation.
       </li>
       <li>
-        Cotton, P. (2022). &ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo;
+        Cotton, P. (2022). &ldquo;Schur Complementary Portfolios &mdash; A Unification of Machine
+        Learning and Optimization-Based Allocation.&rdquo;
         <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
         Culture (Medium)</a> &mdash; the original, informal introduction that started it all.
       </li>
@@ -285,8 +289,9 @@
           Markowitz.</em>
         </li>
         <li>
-          Palomar, D. P. <em>Portfolio Optimization</em>, &sect;12.3.4
-          &ldquo;Schur complementary portfolios&rdquo;.
+          Palomar, D. P. (2025). <em>Portfolio Optimization: Theory and Application</em>, Cambridge
+          University Press, &sect;12.3.4 &ldquo;From Portfolio Risk Minimization to Hierarchical
+          Portfolios&rdquo; (the Schur-complement form of the GMVP versus HRP).
           <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online
           edition</a>. <em>Textbook treatment alongside HRP and global minimum variance.</em>
         </li>
@@ -316,13 +321,13 @@
           <em>Cites both the 2022 blog post and the 2024 paper.</em>
         </li>
         <li>
-          Alonso, N. I. (2025).
+          Noguer i Alonso, M. (2025).
           <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624"><em>Return-Adjusted
           Hierarchical Risk Parity and Schur Portfolios: A Comprehensive Theoretical and Empirical
           Study</em></a>. SSRN 5370624.
         </li>
         <li>
-          Alonso, N. I. (2026).
+          Noguer i Alonso, M. (2026).
           <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220"><em>Reinforcement
           Learning Portfolio Optimization (RLPO): From Markowitz to Risk-Sensitive Control</em></a>.
           SSRN 6447220.
@@ -383,8 +388,8 @@
         <li>
           Nicolini, C., Manzi, M., and Delatte, H. (2025).
           <a href="https://arxiv.org/abs/2507.04176"><em>skfolio: Portfolio Optimization in
-          Python</em></a>. arXiv:2507.04176. <em>The library shipping the SchurComplementary
-          optimizer.</em>
+          Python</em></a>. arXiv:2507.04176. <em>The library that now ships the SchurComplementary
+          optimizer (v0.12.0, September 2025).</em>
         </li>
       </ul>
 

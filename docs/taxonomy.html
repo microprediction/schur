@@ -60,7 +60,7 @@
     $$Q_I \leftarrow Q_{II} - g\,Q_{IJ}Q_{JJ}^{-1}Q_{JI}, \qquad b_I \leftarrow b_I - g\,Q_{IJ}Q_{JJ}^{-1}b_J .$$
     <p>
       Two dials: $\gamma$ conditions a cluster on the outside, $\eta$ conditions an asset on its
-      cluster mates. Each cluster is budgeted by the inverse of a variance. Block inversion gives
+      cluster mates. Each cluster is budgeted by the inverse of a variance, or by NCO's outer optimizer. Block inversion gives
       $\Sigma^{-1}u$ exactly at $(\gamma,\eta)=(1,1)$ for any partition, with $u=\mathbf 1$ minimum
       variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. What the near end
       is depends on the partition and on the <em>split rule</em>, the variance used for budgeting.
@@ -77,43 +77,43 @@
           <td>HRP to minimum variance</td>
           <td>HRP, exactly</td>
           <td>minimum variance, exactly</td>
-          <td>Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's $\gamma$-damped naive portfolio on its conditioned pair. <code>SchurBridge.hrp_to_min_variance</code>. New: no published object had HRP at one end and minimum variance at the other.</td>
+          <td>Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's damped naive portfolio on its conditioned pair, the damping tied to $\gamma$. <code>SchurBridge.hrp_to_min_variance</code>. New in the sense that earlier constructions were exact at one end only: the 2024 pair form starts at the min-variance split's near end, and its collapsed implementations start at HRP and miss minimum variance (Wuebben 2026 makes the $\gamma=0$ point).</td>
         </tr>
         <tr>
-          <td>HMV to minimum variance</td>
-          <td>hierarchical minimum variance: HRP's tree with each block's minimum variance as its fitness</td>
+          <td>Min-variance split to minimum variance</td>
+          <td>HRP's tree with each block's minimum variance as its fitness</td>
           <td>minimum variance, exactly</td>
-          <td>Bisection tree, sibling conditioning, one dial. Split: the child pair's minimum variance $1/(b^\top Q^{-1}b)$. Cotton (2024), <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>, which names the near end HMV. <code>SchurBridge.hmv_to_min_variance</code>.</td>
+          <td>Bisection tree, sibling conditioning, one dial. Split: the child pair's minimum variance $1/(b^\top Q^{-1}b)$. The exact object of Cotton (2024), <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>, which calls the whole family hierarchical minimum variance, HMV; this row is that family with the min-variance split. <code>SchurBridge.hmv_to_min_variance</code>.</td>
         </tr>
         <tr>
           <td>HRP to minimum variance, <em>collapsed encoding</em></td>
           <td>HRP, exactly</td>
-          <td><strong>approximate</strong>: approaches minimum variance without reaching it</td>
-          <td>Bisection tree, sibling conditioning, one dial, with the pair collapsed into one matrix $(I-\gamma BD^{-1}M)^{-1}A^c(\gamma)$, symmetrized, and a step-up matrix for unequal blocks. Split: HRP's naive rule, the variance of the child block's inverse-variance portfolio. <code>precise</code>, skfolio <code>SchurComplementary</code>, <code>allocation.SchurComplementary</code> and <code>StreamingSchur</code>; the variant analysed in <a href="./neither-end-of-the-bridge.pdf">the tree paper</a>. Kept for compatibility, never called the bridge.</td>
+          <td><strong>approximate</strong>: moves toward minimum variance when the optimum is long-only, and does not reach it</td>
+          <td>Bisection tree, sibling conditioning, one dial, with the pair collapsed into one matrix $(I-\gamma BD^{-1}M^\top)^{-1}A^c(\gamma)$, symmetrized, with a step-up matrix $M$ for unequal blocks. Split: HRP's naive rule, the variance of the inverse-variance portfolio of the collapsed child block. <code>precise</code>, skfolio <code>SchurComplementary</code>, <code>allocation.SchurComplementary</code> and <code>StreamingSchur</code>; the variant analysed in <a href="./neither-end-of-the-bridge.pdf">the tree paper</a>. Kept for compatibility, never called the bridge.</td>
         </tr>
         <tr>
           <td>NCO to minimum variance</td>
           <td>NCO: minimum variance inside each cluster, an optimizer across cluster portfolios</td>
-          <td>minimum variance, exactly; via knots, under the gateway model</td>
-          <td>Flat clusters, conditioned on all other assets or on one knot asset per other cluster (Vecchia), one dial. No split: the outer step is an optimizer over cluster directions. <a href="./schur-nco-bridge.pdf">The NCO bridge note</a>, SSRN 7480738. <code>SchurBridge.nco_to_min_variance</code> with factor knots.</td>
+          <td>minimum variance, exactly with all-asset or sibling conditioning; via knots, under the note's gateway model</td>
+          <td>Flat clusters, conditioned on all other assets or on one knot asset per other cluster (in the manner of Vecchia), one dial. No split: the outer step is an optimizer over cluster directions. <a href="./schur-nco-bridge.pdf">The NCO bridge note</a>, SSRN 7480738. <code>SchurBridge.nco_to_min_variance</code>; its optional factor-knot path conditions on one factor-mimicking portfolio per other cluster and is exact under a block one-factor model, of which the knot asset is the special case $a_C=e_p$.</td>
         </tr>
         <tr>
           <td>HERC to minimum variance, a square</td>
           <td>HERC: inverse variance inside, inverse cluster variance across</td>
           <td>minimum variance, exactly</td>
-          <td>Flat clusters from a dendrogram cut, conditioned on all other assets (or siblings, or factor knots), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. <a href="./schur-herc-square.pdf">The HERC square note</a>. <code>SchurBridge.herc_to_min_variance</code>.</td>
+          <td>Flat clusters, from a dendrogram cut in the note and from the Fiedler order or fixed labels in the code, conditioned on all other assets or on siblings (exact) or on factor knots (exact under a block one-factor model), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. <a href="./schur-herc-square.pdf">The HERC square note</a>. <code>SchurBridge.herc_to_min_variance</code>.</td>
         </tr>
         <tr>
           <td>Inverse variance to minimum variance</td>
           <td>inverse variance</td>
           <td>minimum variance, exactly</td>
-          <td>One cluster, or every asset its own cluster; the inner dial alone, closed form from one inverse; Stevens (1998) at the far end. The inner dial of the HERC note. <code>SchurBridge.inverse_variance_to_min_variance</code>.</td>
+          <td>One cluster and the inner dial, or every asset its own cluster and the outer dial; closed form from one inverse; Stevens (1998) at the far end. The inner dial of the HERC note. <code>SchurBridge.inverse_variance_to_min_variance</code>.</td>
         </tr>
         <tr>
           <td>Any of the above to maximum diversification or tangency</td>
           <td>the same near ends with $\sigma$ or $\mu$ in the numerator</td>
           <td>$\Sigma^{-1}\sigma$ or $\Sigma^{-1}\mu$, exactly</td>
-          <td>As above with the companion vector $u=\sigma$ or $u=\mu$: <code>companion='vol'</code> / <code>'mean'</code>. The HERC note's remark on companion vectors; Wuebben (2026) for HRP with $\mu$.</td>
+          <td>As above with the companion vector $u=\sigma$ or $u=\mu$: <code>companion='vol'</code> / <code>'mean'</code>. The HERC note's remark on companion vectors. Compare Wuebben (2026), whose HRP-$\mu$ carries a signal through the tree but is exact at neither end.</td>
         </tr>
       </tbody>
     </table>
@@ -134,8 +134,8 @@
     <p>
       On a tree the budget between siblings decides the near end. HRP's naive rule, the variance of
       the child block's inverse-variance portfolio, starts at HRP and misses the far end. The
-      minimum-variance rule starts at HMV and reaches the far end. The dial-tied rule, the variance of
-      the child's $\gamma$-damped naive portfolio on its conditioned pair, starts at HRP and reaches
+      minimum-variance rule starts at the 2024 paper's near end and reaches the far end. The dial-tied rule, the variance of
+      the child's damped naive portfolio on its conditioned pair with the damping tied to $\gamma$, starts at HRP and reaches
       the far end: it is the only rule exact at both, which is why it defines the HRP bridge. On a flat
       partition the same rule budgets the clusters; HERC's rule is the variance of what the cluster
       holds, and the reference implementations' sum of cluster variances departs from it at three or
@@ -146,7 +146,7 @@
     <p>
       Three papers ask where on a bridge to sit when the covariance is estimated:
       <a href="./neither-end-of-the-bridge.pdf">the tree paper</a> for the collapsed HRP variant under
-      cross-block noise, <a href="./schur-nco-bridge.pdf">the NCO note</a> for the flat bridge with
+      cross-block and then whole-matrix noise, <a href="./schur-nco-bridge.pdf">the NCO note</a> for the flat bridge with
       knots, and <a href="./schur-herc-square.pdf">the HERC note</a> for the square and the inner
       dial. The same second-order machinery applies to every exact bridge, because at the far end the
       noiseless objective is flat and only the noise cost has a slope.
@@ -154,14 +154,18 @@
 
     <h2>Other uses of the word</h2>
     <p>
-      <strong>Schur damping</strong> in <a href="./localization-is-schur-damping.pdf">the
-      localization note</a> refers to a Schur <em>product</em>, the tapering of a covariance by an
-      entrywise mask, which the note shows has the conditional structure $A-\gamma BD^{-1}B^\top$.
-      It is the same damping arrived at from the other side and is not a bridge in the sense above.
+      <strong>Localization</strong> in <a href="./localization-is-schur-damping.pdf">the
+      localization note</a> is a Schur <em>product</em>, an entrywise taper of the covariance; the note
+      shows that a block-constant taper is the same damped complement $A-\gamma BD^{-1}B^\top$, so
+      &ldquo;Schur damping&rdquo; there means what it means here. Same dial, no portfolio endpoints.
+      <strong>Damping in PDLPs</strong> (<a href="./damping-in-pdlps.html">the DeFi note</a>) is the
+      same complement with isolated pools at $\gamma=0$ and one merged pool at $\gamma=1$.
       <strong>Hierarchical minimum variance on graphs</strong> (Mograby, 2025) is the far end made exact
-      by separator recursion, not a bridge. <strong>Schur-RA-HRP</strong> (Noguer i Alonso, 2026)
-      uses the exact bisection identity with HRP's substitutions named; its near end is HRP and its
-      far end is minimum variance in the sense of this page.
+      by separator recursion, not a bridge. <strong>Noguer i Alonso (2026)</strong> states the exact
+      bisection identity and names HRP's three substitutions; his Schur-RA-HRP is a fixed return-aware
+      rule that swaps standalone for conditional cluster variance inside RA-HRP's split, with no dial,
+      reducing to RA-HRP when the hedge terms vanish, and aimed at tangency rather than at a bridge in
+      the sense above.
     </p>
 
     <h2>Glossary</h2>
