@@ -63,7 +63,7 @@
 <main class="roads">
   <h1>All roads lead to minimum variance</h1>
   <p class="subtitle">Five heuristics, one dial each, one floor.</p>
-  <p class="thesis">Inverse variance, HRP, hierarchical minimum variance, HERC and NCO look like different families. Each is the near end of a <b>Schur bridge</b>: turn one dial and every one of them lands on the same optimizer. With an estimated covariance the far end lifts off the floor and every ribbon dips first: the best place to stand is <b>part way across</b>, and the dot marks it.</p>
+  <p class="thesis">Inverse variance, HRP, hierarchical minimum variance, HERC and NCO look like different families. Each is the near end of a <b>Schur bridge</b>: turn one dial and every one of them lands on the same optimizer. With an estimated covariance the far end lifts off the floor and, for minimum variance, almost every ribbon dips first: the best place to stand is <b>part way across</b>, and the dot marks it.</p>
 
   <div class="controls">
     <div class="ctl"><label id="lbl-far">Far end</label>
@@ -99,13 +99,13 @@
     <div>
       <h2>What the axes are</h2>
       <p>Thirty-two assets in four correlated sectors, one factor per sector plus a weak market factor. Height is how much worse a portfolio is than the far-end optimum, in percent of its objective: variance for minimum variance, the inverse squared diversification ratio for maximum diversification, the inverse squared Sharpe ratio for tangency. The violet floor is the optimum under perfect knowledge, the portfolio built from the true covariance, at zero. It is the yardstick, not a contestant: nothing built from ninety days of data can reach it, and the gap between a ribbon's far end and the floor is the price of estimating the covariance.</p>
-      <p>Depth is the method. Along the length of each ribbon the dial runs from 0, the method as published, to 1, the far end. The dial damps a Schur complement: it conditions each cluster on the assets outside it, and, for HERC, each asset on its cluster mates.</p>
+      <p>Depth is the method. Along the length of each ribbon the dial runs from 0, the method as published, to 1, the far end. The dial damps a Schur complement: for inverse variance each asset on all the others; for HRP and hierarchical minimum variance each block on its sibling down the tree; for HERC and NCO each cluster on the assets outside it, and for HERC each asset on its cluster mates as well.</p>
     </div>
     <div>
       <h2>How to read it</h2>
-      <p>The recipes see ninety days of returns, not the truth. The far end lifts off the floor, because the estimated optimizer is not the true one, and every ribbon dips before it ends. The dot on each ribbon is its lowest point: where to stand, and it is neither end. More data pulls the dots toward the far end; switch to the truth and every ribbon descends all the way to the floor, which is the theorem.</p>
-      <p>NCO starts far lower than the others because it is an optimizer at both tiers, minimum variance inside each cluster and across the cluster portfolios; it discards only the part of the optimum outside the span of its clusters. The other four discard covariance entries. With a quarter of the names filed in the wrong sector, as here by default, its head start shrinks; with exact sectors it grows.</p>
-      <p>The HERC square view shows HERC with both of its dials, the cluster dial across and the asset dial along. HERC is the near corner; minimum variance is the far corner; the surface between is the square.</p>
+      <p>The recipes see ninety days of returns, not the truth. The far end lifts off the floor, because the estimated optimizer is not the true one, and for minimum variance nearly every ribbon dips before it ends (in 98 of 100 random markets). The dot on each ribbon is its lowest point: where to stand, and usually neither end. Maximum diversification behaves the same way a little less often; tangency less often again, because a mean vector is the noisier input, so for it the recipes are handed the true means and only the covariance is estimated. More data pulls the dots toward the far end; switch to the truth and every ribbon descends all the way to the floor, which is the theorem.</p>
+      <p>For minimum variance NCO starts far lower than the others, because it is an optimizer at both tiers, minimum variance inside each cluster and across the cluster portfolios; it discards only the part of the optimum outside the span of its clusters. The other four discard covariance entries. With a quarter of the names filed in the wrong sector, as here by default, its head start shrinks; with exact sectors it grows. For maximum diversification the head start is small, and for tangency it is gone.</p>
+      <p>The HERC square view shows HERC with both of its dials, the cluster dial along the same axis as the bridges and the asset dial across the depth. HERC is the near corner; minimum variance is the far corner; the surface between is the square.</p>
     </div>
   </section>
   <p class="foot">Definitions, proofs and the taxonomy of which Schur is which: <a href="https://schur.microprediction.org/taxonomy.html">schur.microprediction.org</a>. Engine: <code>allocation.SchurBridge</code>.</p>
@@ -205,7 +205,7 @@
     const r = rng(seed);
     // sector factor correlation: market mode plus noise
     const F = zeros(K, K); const g = [...Array(K).keys()].map(() => 0.45 + 0.3 * r());
-    for (let a = 0; a < K; a++) for (let b = 0; b < K; b++) F[a][b] = a === b ? 1 : g[a] * g[b] * (0.5 + 0.3 * r());
+    for (let a = 0; a < K; a++) { F[a][a] = 1; for (let b = 0; b < a; b++) { const c = g[a] * g[b] * (0.5 + 0.3 * r()); F[a][b] = c; F[b][a] = c; } }
     const beta = new Float64Array(N), bm = new Float64Array(N), vol = new Float64Array(N);
     for (let i = 0; i < N; i++) { vol[i] = 0.12 + 0.28 * r(); beta[i] = 0.35 + 0.4 * r(); bm[i] = GM * (0.6 + 0.8 * r()); }
     const S = zeros(N, N);
@@ -246,7 +246,7 @@
     order = clusters.flat();   // HRP and HMV bisect this order, so the tree sees the same grouping
     let seen;
     if (state.cov === 'true') seen = { S: market.S, mu: market.mu };
-    else seen = sampleCov(market.S, market.mu, state.cov === '250' ? 250 : 90, rng(seed * 31 + 5));
+    else { seen = sampleCov(market.S, market.mu, state.cov === '250' ? 250 : 90, rng(seed * 31 + 5)); seen.mu = market.mu; }
     const uTrue = companion(market.S, market.mu), uSeen = companion(seen.S, seen.mu);
     const wOpt = normalize(matvec(inv(market.S), uTrue)); const best = objective(wOpt, market.S, uTrue);
     const ribbons = methods.map(m => {
@@ -341,7 +341,7 @@
         label(r.m.name, 'start', new THREE.Vector3(-W / 2, toY(r.pts[0]), zc));
         const li = document.createElement('li'); li.innerHTML = '<i style="background:var(' + r.m.color + ')"></i>' + r.m.name + ' <span class="num">' + r.pts[0].toFixed(0) + '% → best ' + r.pts[r.lo].toFixed(0) + '% at ' + (r.lo / (GRID - 1)).toFixed(2) + ' → ' + r.pts[r.pts.length - 1].toFixed(0) + '%</span>'; legend.appendChild(li);
       });
-      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + ' from the true covariance, unreachable from data <span class="num">0%</span>'; legend.appendChild(fl);
+      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + (state.cov === 'true' ? '' : ' from the true covariance, unreachable from data') + ' <span class="num">0%</span>'; legend.appendChild(fl);
     } else {
       const sq = data.square, G = sq.G; const pos = new Float32Array(G * G * 3); const colors = new Float32Array(G * G * 3); const idx = [];
       const c0 = cssColor('--s4'), c1 = cssColor('--floor');
