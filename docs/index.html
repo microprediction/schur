@@ -34,10 +34,12 @@
 
     <p class="lead">
       Portfolio construction has long had two camps. One is <strong>global optimization</strong>:
-      a single objective over the whole covariance matrix, exact when the inputs are right and
-      brittle when they are not. The other is <strong>heuristic</strong>, motivated through
-      hierarchies, clusters, risk budgets and the like: recipes that use the covariance piecemeal
-      and are valued for surviving a noisy estimate of it.
+      a single objective over the whole covariance matrix, with estimation error dealt with before
+      the optimizer sees it, by shrinkage, factor structure and the like. The other is
+      <strong>heuristic</strong>, motivated through hierarchies, clusters and risk budgets, and
+      deals with estimation error inside the construction itself, by using the covariance
+      piecemeal. The question that separates them is where to handle estimation uncertainty: at
+      the estimation level, at the construction level, or both.
     </p>
 
     <p>
@@ -46,8 +48,9 @@
       reproduces the global optimisation exactly, when each split is budgeted by the child's
       conditioned variance (the <a href="./taxonomy.html">taxonomy</a> says which encodings do this
       and which only approach it). A single dial $\gamma \in [0, 1]$ slides smoothly
-      between the two worlds &mdash; and, encouragingly, the best out-of-sample portfolios usually
-      live somewhere in between.
+      between the two worlds, a construction-level answer that sits on top of whatever
+      estimation-level answer is in use &mdash; and, encouragingly, the best out-of-sample
+      portfolios usually live somewhere in between.
     </p>
 
     <p>
