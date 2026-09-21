@@ -532,6 +532,36 @@ def part3():
     check("HRP beats the raw optimizer only near the singular point",
           sum(1 for v in kept.values() if v[0] < v[1]) <= 2)
 
+    # --- The rank-deficient corner, which Table 4 does not reach.
+    print("\n  Table 5  below the table's range, n = 40")
+    print(f"  {'T/n':>6s}{'HRP':>10s}{'filtered':>11s}{'beats HRP':>11s}"
+          f"{'inv var':>10s}{'beats HRP':>11s}")
+    deep = {}
+    for T in (4, 8, 12, 20):
+        a, b, c = [], [], []
+        for _ in range(300):
+            Sig = market(rng)
+            X = rng.normal(size=(T, 40)) @ np.linalg.cholesky(Sig).T
+            S = np.cov(X, rowvar=False)
+            F, _ = block_filter(S, 5)
+            wh = hrp(S); a.append(wh @ Sig @ wh)
+            wf = min_var(F, 1e-10); b.append(wf @ Sig @ wf)
+            iv = inv_var(S); c.append(iv @ Sig @ iv)
+        a, b, c = map(np.array, (a, b, c))
+        deep[T] = (np.median(a), np.median(b), float(np.mean(b < a)),
+                   np.median(c), float(np.mean(c < a)))
+        print(f"  {T/40:6.2f}{deep[T][0]:10.4f}{deep[T][1]:11.4f}{deep[T][2]:10.0%}"
+              f"{deep[T][3]:11.4f}{deep[T][4]:10.0%}")
+    check("at T/n = 1/10 the filtered optimizer is WORSE than HRP",
+          deep[4][1] > deep[4][0] and deep[4][2] < 0.5,
+          f"filtered {deep[4][1]:.4f} against HRP {deep[4][0]:.4f}, wins {deep[4][2]:.0%}")
+    check("the lead reverses between T/n = 1/10 and 1/5",
+          deep[8][1] < deep[8][0] < deep[4][1],
+          f"ratio HRP/filtered {deep[8][0]/deep[8][1]:.2f} at 1/5")
+    check("inverse variance beats HRP at every ratio from 1/10 to 1/2",
+          all(v[4] > 0.5 for v in deep.values()),
+          "win rates " + ", ".join(f"{v[4]:.0%}" for v in deep.values()))
+
 
 if __name__ == "__main__":
     print("Certificates for 'The implied covariance of an allocator'")

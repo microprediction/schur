@@ -2115,13 +2115,52 @@ parity uses.}
 \label{tab:controlled}
 \end{table}
 
-Hierarchical risk parity leads the raw optimizer in one row, at $T = n$,
-where the sample covariance is singular and the inverse is meaningless. Hand
-the optimizer the block structure that the hierarchical rule helps itself to
-and it leads at every sample size by a factor between three and four,
-including that row. The comparison that reports an advantage for the
-hierarchical rule is reporting the cost of inverting a raw sample
-covariance.
+Hierarchical risk parity leads the raw optimizer in the two rows where the
+sample covariance is singular, at $T/n = 3/4$ and at $T = n$, and the inverse
+there is worthless. Hand the optimizer the block structure that the
+hierarchical rule helps itself to and it leads at every row of the table, by a
+factor between three and four and a half, including those two. On this market
+the comparison that reports an advantage for the hierarchical rule is
+reporting the cost of inverting a raw sample covariance.
+
+Two limits on that reading, and the first reverses it.
+Table~\ref{tab:deep} continues below the range of
+Table~\ref{tab:controlled}, and the ordering turns over.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+$T/n$ & HRP & filtered & beats HRP & inverse variance & beats HRP \\
+\midrule
+0.10 & 0.2420 & 0.3509 & 22\% & 0.2093 & 80\% \\
+0.20 & 0.2031 & 0.1695 & 69\% & 0.1869 & 81\% \\
+0.30 & 0.1886 & 0.0922 & 95\% & 0.1769 & 74\% \\
+0.50 & 0.1794 & 0.0571 & 100\% & 0.1758 & 71\% \\
+\bottomrule
+\end{tabular}
+\caption{The rank-deficient corner on the same market, median over 300 draws
+at each size, $n = 40$.}
+\label{tab:deep}
+\end{table}
+
+At $T/n = 1/5$ the filtered optimizer leads by a factor of $1.2$ rather than
+$3$, and at $T/n = 1/10$ it is \emph{worse} than the hierarchical rule and
+wins barely a fifth of draws, because by then the filter's own blocks are
+themselves rank-deficient and inverting them is no better than inverting the
+whole. The deep rank-deficient corner, which is the case the hierarchical
+rule is usually defended on, is the one place where an optimizer does not
+beat it.
+
+It is beaten there by something else. Inverse variance, which inverts nothing
+either and consults no tree, beats the hierarchical rule in between $71$ and
+$81$ percent of draws at every size in the table. Whatever the recursion
+earns in that corner, the hierarchy is not what earns it.
+
+Second, the dominance of a shrunk estimate is a property of a stationary
+market. When the covariance itself switches regime a single shrinkage target
+cannot represent two dependence structures, and Ledoit--Wolf minimum variance
+falls behind the hierarchical rule.
 
 This is the older lesson of \cite{tola2008}, who filtered the correlation
 matrix by clustering and then optimised, eight years before the hierarchical
