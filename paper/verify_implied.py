@@ -452,6 +452,30 @@ def part3():
     check("fitting a shrinkage buys little over not fitting at all", best > 0.7 * base,
           f"best fit {best:.4f} against an unfitted inverse-variance baseline of {base:.4f}")
 
+    # --- The parsimony bound: a free taper is underdetermined, so it fits.
+    from scipy.optimize import least_squares
+    rng = np.random.default_rng(404)
+    iu = np.triu_indices(40, 1)
+    miss = []
+    for _ in range(10):
+        Sig = market(rng)
+        X = rng.normal(size=(120, 40)) @ np.linalg.cholesky(Sig).T
+        S = np.cov(X, rowvar=False)
+        w = hrp(S)
+        def resid(t):
+            T = np.ones((40, 40))
+            T[iu] = t
+            T = np.triu(T, 1)
+            T = T + T.T + np.eye(40)
+            return min_var(S * T, 1e-10) - w
+        r = least_squares(resid, np.ones(len(iu[0])), method="trf",
+                          xtol=1e-14, ftol=1e-14, max_nfev=200)
+        miss.append(np.abs(resid(r.x)).sum())
+    print(f"\n  free symmetric taper: {40*39//2} parameters against 40 constraints, "
+          f"median L1 miss {np.median(miss):.1e}")
+    check("a free taper reproduces HRP, so the negative result is about parsimony",
+          np.median(miss) < 1e-5, f"median miss {np.median(miss):.1e}")
+
     # --- Table 3: the bridge
     try:
         import os, sys

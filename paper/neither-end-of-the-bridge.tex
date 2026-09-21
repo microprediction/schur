@@ -1902,6 +1902,17 @@ and the equally weighted portfolio are each the exact minimum-variance
 portfolio of some positive definite matrix, as is every interior point of
 the bridge.
 
+The construction buys less than it appears to, and the reason is worth
+stating exactly. $\Sigma'$ is built from $w$, so it cannot be computed until
+the allocator has already run. By composition $S \mapsto \Sigma'(A(S))$ is a
+function of the data alone, which makes it an estimator in the formal sense
+and in no other, since it was reverse-engineered to return the answer. The
+correction in \cite{jagannathanma2003} has exactly this standing too: its
+multipliers are the dual variables of the problem one has just solved. Both
+are identities read off a computed portfolio rather than recipes for
+computing one. What they supply is a common coordinate system in which
+allocators can be compared, and the distance defined below.
+
 Uniqueness fails, and fails by a wide margin. The symmetric matrices
 consistent with a given $w$ form the affine set
 $\{X = X^\top : Xw = c\mathbf{1}\}$, of dimension $n(n-1)/2$ once the scale
@@ -1949,8 +1960,10 @@ constrained optimizer is the case in which the dual variables write it down
 in closed form.
 
 Call $\delta(A, S) = \|\Delta\|_F / \|S\|_F$, evaluated at $w = A(S)$, the
-\emph{distortion} of the allocator $A$ at $S$. Minimum variance has
-distortion zero at every $S$. Table~\ref{tab:distortion} reports medians
+\emph{distortion} of the allocator $A$ at $S$. It measures how far the
+allocator's answer sits from any minimum-variance reading of the input it was
+handed, so it is a diagnostic of an output and not an estimator. Minimum
+variance has distortion zero at every $S$. Table~\ref{tab:distortion} reports medians
 over sample covariances of a forty-asset market in five blocks of eight,
 within-block correlation $0.7$, cross-block correlation $0.15$, lognormal
 volatilities and $T = 120$.
@@ -1980,6 +1993,16 @@ exists. It sits further away than the projection.
 
 \subsection{Which shrinkage hierarchical risk parity is}
 \label{sec:whichshrinkage}
+
+The question with content is not the identity above. It is whether some
+\emph{estimator}, a map from $S$ to a covariance that never consults the
+weights, has the hierarchical portfolio as its minimum-variance solution.
+The size of the class settles this before any data is seen. A free symmetric
+taper $S \circ T$ carries $n(n-1)/2$ parameters against $n$ constraints, so
+it is underdetermined and reproduces any target: at $n = 40$ least squares
+matches the hierarchical weights to $4.5 \times 10^{-7}$ in $L^1$. The
+question is therefore one of parsimony, and this subsection asks it of four
+named families.
 
 Distortion measures how far the implied covariance lies, not in which
 direction. The natural guess about direction is that hierarchical risk
@@ -2016,7 +2039,7 @@ is one.}
 \label{tab:fits}
 \end{table}
 
-No family reproduces the rule. The best of them still misplaces nineteen
+No parsimonious family reproduces the rule. The best of them still misplaces nineteen
 percent of the portfolio, and fitting a whole family of covariances buys
 less than a fifth over the unfitted inverse-variance portfolio. Both
 one-parameter shrinkages that improve on nothing do so by collapsing to the
