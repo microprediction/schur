@@ -261,7 +261,7 @@ In the notation of \eqref{eq:family} the trial matrix is $D_0$, whose columns ar
 the cluster portfolios up to scale, and the test matrix is $E$. The outer
 matrix, however, is $E^\top\Sigma E$ and not the pairing $E^\top\Sigma D_0$. The
 method is therefore adjacent to the family rather than inside it, and the
-difference is exactly one factor.
+difference is one factor, which the rest of this section makes precise.
 
 \begin{proposition}[When the two coincide]
 \label{prop:hcoa}
@@ -283,16 +283,30 @@ itself. Under a one-factor model within each cluster it says that each holding
 carries the same factor exposure as its core. It does not hold in general, and
 the certificate exhibits a case where it fails.
 
-\paragraph{The trade this represents.} Pricing with $E^\top\Sigma E$ rather than
-with $E^\top\Sigma D_0$ costs the exactness of \cref{prop:far}, since the
-method is then outside the family. It buys back exactly what
-\cref{sec:interior} says is at risk: $E^\top\Sigma E$ is a principal submatrix
-of $\Sigma$, hence symmetric positive definite, hence never singular. The
-construction is pole-free for the same reason the matched case is, without being
-matched. Read this way the choice in \cite{bajo2026} is the conservative one,
-and the alternative, substituting the pairing $E^\top\Sigma D_\gamma$ and
-sweeping $\gamma$, is what turns the architecture into a bridge with an exact far
-end and a fragile interior.
+\paragraph{Which matrix to price with.} Pricing with $E^\top\Sigma E$ rather
+than with $E^\top\Sigma D_0$ places the method outside the family, so
+\cref{prop:far} does not apply to it. That is not a defect to be repaired. A
+method fixed at $\gamma=0$ never visits the far end, so the exactness it forgoes
+is of no use to it, while $E^\top\Sigma E$ is a principal submatrix of $\Sigma$
+and therefore symmetric positive definite, which is exactly what
+\cref{sec:interior} shows the pairing is not. Substituting the pairing at
+$\gamma=0$ on estimated covariances lowers the median excess variance and raises
+the worst case by an order of magnitude in our runs, so the substitution is not
+one we would recommend.
+
+\paragraph{What the choice does cost.} Under a one-factor model within each
+cluster the covariance of the holdings satisfies $V^\top\Sigma V=K\Sigma_{\mathcal{R}
+\mathcal{R}}K+\Delta$, with $K$ diagonal in each cluster's factor exposure and
+$\Delta$ diagonal, so pricing by the cores omits both. Minimum variance is
+invariant to a common scaling, so the omission is immaterial when the clusters
+carry similar exposures and grows with their dispersion. On simulated universes
+whose clusters resemble one another, as the maturity and credit segments of a
+bond curve do, the two price vectors differ by half a percentage point of weight
+and their out-of-sample variances by a fraction of a percent; on universes whose
+clusters differ sharply in exposure and volatility the gap is several times
+larger. The comparability with nested clustered optimization reported in
+\cite{bajo2026} on a fixed-income universe is what this predicts, and an equity
+universe with dispersed cluster exposures is where the prediction could fail.
 
 \section{Closing}
 
