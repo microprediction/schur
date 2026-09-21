@@ -20,9 +20,9 @@
 \newcommand{\smin}{\sigma_{\min}}
 \newcommand{\smax}{\sigma_{\max}}
 
-\title{\textbf{Schur Damping for Perpetual Demand Lending Pools}}
+\title{{Schur Damping for Perpetual Demand Lending Pools}}
 \author{Peter Cotton}
-\date{June 2026}
+\date{June 18, 2026}
 
 \begin{document}
 \maketitle
@@ -39,8 +39,8 @@ $A-\gamma\,B C^{-1} B\T$, with the coupling fraction $\gamma$ set not by a
 threshold but by the statistical reliability of the cross-pool covariance block
 $B$. We give the closed-form $\gamma^\star$ implied by viewing the choice as a
 James--Stein shrinkage problem \citep{cotton2026}. Because PDLPs live in an acute
-undersampled regime---short on-chain return histories, fast rebalancing, asset
-counts that rival or exceed the number of return samples---$\gamma^\star$ is
+undersampled regime, short on-chain return histories, fast rebalancing, asset
+counts that rival or exceed the number of return samples, $\gamma^\star$ is
 pulled toward $0$: the theory predicts pools should stay \emph{mostly} split,
 merging only as cross-pool coupling proves both strong and well-sampled. The
 result is a graded, data-driven target-weight mechanism that degrades gracefully
@@ -51,7 +51,7 @@ covariance that GMX~V2's dynamic-pricing upgrade is noted to omit.
 \section{Introduction}
 
 Perpetual futures are the most liquid crypto markets, and a growing share trades
-on decentralized venues---GMX, Jupiter, Hyperliquid---that fund market-maker
+on decentralized venues, GMX, Jupiter, Hyperliquid, that fund market-maker
 leverage through on-chain liquidity pools. \citet{chitra2025} formalize this
 mechanism as a \emph{perpetual demand lending pool} (PDLP): liquidity providers
 deposit assets into a pool with a target composition, traders borrow against it
@@ -62,14 +62,14 @@ assets.
 
 A recurring architectural question, raised explicitly in their Appendix~B, is
 when several pools should be combined into one. GMX itself migrated from a single
-pool to a multi-pool system; the inverse question---when to re-aggregate---is
+pool to a multi-pool system; the inverse question, when to re-aggregate, is
 decided in \citet{chitra2025} by partitioning the asset covariance into blocks and
 comparing a pool's own covariance against its Schur complement. The comparison is
 binary: a spectral inequality either holds, and one merged pool delta hedges
 better, or it fails, and the pools should stay apart.
 
 This note makes a single observation and develops its consequence. The two
-options being compared---the isolated pool and the merged pool---are not two
+options being compared, the isolated pool and the merged pool, are not two
 unrelated architectures. They are the $\gamma=0$ and $\gamma=1$ endpoints of the
 damped Schur complement that interpolates hierarchical risk parity and minimum
 variance \citep{cotton2024,cotton2022}. The interesting regime for a PDLP is the
@@ -78,7 +78,7 @@ across pools in proportion to how reliably that shared risk can be estimated. In
 the data-poor conditions typical of DeFi, that proportion is small, and the
 interior solution differs materially from either endpoint.
 
-\section{The pool-merging decision is the $\gamma$-bridge endpoints}
+\section{The pool-merging decision is the \texorpdfstring{$\gamma$}{gamma}-bridge endpoints}
 
 We recall the setup of \citet[App.~B]{chitra2025}. A PDLP holds risky assets with
 covariance $\Sig \succ 0$. To ask whether two pools should be one, partition the
@@ -154,7 +154,7 @@ simulated processes \citep{cotton2024,cotton2026}.
 
 The binary test of Claim~\ref{claim:b1} silently assumes $B$ is known. In a PDLP
 it is the least-known part of the model. The pools are disjoint by construction,
-so $B$ is a cross-\emph{block} covariance---the entries with the fewest joint
+so $B$ is a cross-\emph{block} covariance, the entries with the fewest joint
 observations and the most estimation noise. On-chain return histories are short,
 pools rebalance on the order of hours, and the number of pooled assets can rival
 or exceed the number of return samples $n$. Trusting $B$ completely (merge)
@@ -203,8 +203,8 @@ both available on chain.
 The contribution is a dial. \citet{chitra2025} already reach for the
 Schur complement and already note its kinship with hierarchical risk parity; what
 is missing is the damping parameter that turns a binary architectural test into a
-continuous, self-tuning one. The same move---occupying the interior of a dial that
-a field has only used at its endpoints---recurs in portfolio construction (HRP
+continuous, self-tuning one. The same move, occupying the interior of a dial that
+a field has only used at its endpoints, recurs in portfolio construction (HRP
 versus minimum variance), in spatial statistics (base-shrunk versus full Vecchia
 conditionals), and in optimization (KFAC's binary block-coupling choices)
 \citep{cotton2024,cotton2026}. DeFi lending pools are, if anything, the cleanest

@@ -510,6 +510,40 @@ def part3():
         check("distortion is monotone in gamma", mono)
         check("distortion vanishes at the far end", np.median(dd[1.0]) < 1e-12)
 
+        # The crossing into the positive definite cone, on a finer grid, and
+        # whether it selects a gamma. These numbers appear in the prose, so
+        # they are computed here rather than asserted.
+        fine = np.linspace(0.0, 1.0, 101)
+        cross, best = [], []
+        rng2 = np.random.default_rng(23)
+        for _ in range(200):
+            Sig = market(rng2)
+            X = rng2.normal(size=(120, 40)) @ np.linalg.cholesky(Sig).T
+            S = np.cov(X, rowvar=False)
+            tr = bisection_tree(seriate(S)[0], leaf_size=1)
+            rat, var = [], []
+            for g in fine:
+                w = bridge_weights(S, tr, gamma=float(g), eta=1.0, split="dial")
+                _, c, _, _ = implied(S, w)
+                rat.append(c); var.append(float(w @ Sig @ w))
+            rat = np.asarray(rat)
+            ok = np.where(rat > 0)[0]
+            cross.append(fine[ok[0]] if len(ok) else np.nan)
+            best.append(fine[int(np.argmin(var))])
+        cross = np.asarray(cross, dtype=float); best = np.asarray(best)
+        fin = np.isfinite(cross)
+        q = np.nanpercentile(cross, [10, 50, 90])
+        corr = float(np.corrcoef(cross[fin], best[fin])[0, 1])
+        print(f"\n  positive-definite crossing, 101-point grid, 200 markets")
+        print(f"    crosses in {int(fin.sum())} of {len(cross)} markets")
+        print(f"    median crossing {q[1]:.2f}, deciles {q[0]:.2f} and {q[2]:.2f}")
+        print(f"    median variance-minimising gamma {np.median(best):.2f}")
+        print(f"    correlation between the two {corr:+.3f}")
+        check("the crossing is a stable interval", 0.2 < q[0] and q[2] < 0.7,
+              f"deciles {q[0]:.2f} to {q[2]:.2f}")
+        check("the crossing does not select the best gamma", abs(corr) < 0.2,
+              f"correlation {corr:+.3f} against a median optimum of {np.median(best):.2f}")
+
     # --- Table 4: the controlled comparison
     rng = np.random.default_rng(3)
     print("\n  Table 4  one market, one covariance, two allocators and two estimators")

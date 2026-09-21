@@ -46,7 +46,7 @@ reference to be the block-diagonal part of the estimate makes that blend
 exactly the estimate with its cross-cluster entries scaled by $\phi$, and for a
 two-block partition the conditional covariance of that matrix is the damped
 Schur complement at $\gamma=\phi^2$. The tilt dial is therefore the Schur dial
-under a square root. What is new is the pair of endpoints. Every bridge
+under a square root. The pair of endpoints is new. Every bridge
 catalogued so far ends at $\Sigma^{-1}u$, a linear solve that can short any
 asset without bound; this one ends at a race, which lies on the simplex, splits
 a duplicated position rather than doubling it, and stays bounded. The taper is
@@ -152,7 +152,8 @@ With three or more clusters the taper also damps the cross-block entries
 \emph{inside} the complement $B$, so $\big(\widehat C\circ T_\phi\big)_{BB}$ is
 no longer $\widehat C_{BB}$ and \eqref{eq:identity} becomes an approximation.
 On random correlations of twelve assets in three clusters the two sides differ
-by about $10^{-3}$ at $\phi=\tfrac12$, against $10^{-17}$ for two clusters. The
+by about $2\times10^{-5}$ at $\phi=\tfrac12$, against exact equality for two
+clusters. The
 flat construction of \cite{cotton2026nco}, which conditions each cluster on the
 others without damping inside them, is the exact multi-cluster analogue.
 \end{remark}
