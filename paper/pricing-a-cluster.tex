@@ -1,0 +1,356 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{cleveref}
+
+% Run-in headings italic, never bold.
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}{-1em}%
+  {\normalfont\normalsize\itshape}}
+\makeatother
+
+\title{The Far End of a Schur Bridge Does Not Care How Its Clusters\\
+Are Priced, and the Interior Does}
+\author{Peter Cotton\thanks{Microprediction.
+Email: \texttt{peter.cotton@microprediction.com}. A companion verification
+script is \texttt{paper/verify\_test\_space.py} at
+\texttt{github.com/microprediction/schur}. Every claim below is checked there
+in exact rational arithmetic.}}
+\date{September 20, 2026}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ones}{\mathbf{1}}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\spn}{span}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+A two-tier allocation holds a portfolio inside each cluster and then decides
+how much capital each cluster gets. The second decision needs a $k\times k$
+matrix, and every construction in this family so far builds that matrix from
+the same cluster portfolios it holds. It need not. Separating what is held
+from what it is priced against gives a family with two spaces rather than one,
+and the far end of the bridge is exact for every choice of the pricing space:
+the $k$ conditioned directions already sum to $\Sigma^{-1}u$, so any
+non-degenerate pairing recovers it. Choosing one representative asset per
+cluster, as hierarchical core-orbital allocation does, therefore cannot affect
+the far end. The interior is a different matter. Once the two spaces differ the
+$k\times k$ matrix is no longer symmetric, and it can pass through singularity
+inside the dial: we give a positive-definite $6\times6$ example where it does,
+and on estimated covariances it does so in about a quarter of markets. Pricing
+against the cluster portfolios keeps the matrix a Gram matrix of $\Sigma$ and
+removes the possibility.
+\end{abstract}
+
+\section{Introduction}
+
+A two-tier allocation makes two decisions. Inside cluster $C$ it holds some
+portfolio, and across clusters it decides how much capital each one gets. The
+second decision is an allocation problem in $k$ dimensions, and it needs a
+$k\times k$ matrix to work with.
+
+Every construction in this family builds that matrix from the cluster
+portfolios themselves. Nested clustered optimization \cite{lopezdeprado2020}
+uses the covariance of the cluster portfolios; hierarchical risk parity
+\cite{lopezdeprado2016} and hierarchical equal risk contribution
+\cite{raffinot2018} use variances computed from the same holdings. Written in
+the pair form of \cite{cotton2024schur}, all of them set the pricing object
+equal to the holding.
+
+Hierarchical core-orbital allocation \cite{bajo2026} does not. It selects one
+physical asset per cluster, allocates across those $k$ assets, and only then
+redistributes each cluster's capital among its members. What is priced and what
+is held are different objects, and the reason given is institutional: the
+strategic decision is expressed in instruments a desk can trade.
+
+This note takes that separation seriously and asks what it costs. The answer is
+nothing at the far end and something in the interior. \Cref{sec:far} shows that
+the far end is exact for every pricing space, because the $k$ conditioned
+directions already sum to the global optimum. \Cref{sec:interior} shows that
+once the two spaces differ the $k\times k$ matrix loses its symmetry and can
+become singular inside the dial. \Cref{sec:hcoa} reads core-orbital allocation
+in these terms.
+
+\section{Two spaces}
+
+Let $\Sigma\succ0$ be the covariance of $n$ assets, let $u\in\R^n$ be a
+companion vector, and let $C_1,\dots,C_k$ partition the assets. For a cluster
+$C$ write $-C$ for its complement and, for $\gamma\in[0,1]$, define the
+conditioned pair
+\begin{equation}
+  Q_C(\gamma)=\Sigma_{CC}-\gamma\,\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}\Sigma_{-C,C},
+  \qquad
+  b_C(\gamma)=u_C-\gamma\,\Sigma_{C,-C}\Sigma_{-C,-C}^{-1}u_{-C},
+  \label{eq:pair}
+\end{equation}
+and the direction $d_C(\gamma)=Q_C(\gamma)^{-1}b_C(\gamma)$, embedded in $\R^n$
+with support $C$. Collect these as the columns of $D_\gamma\in\R^{n\times k}$.
+
+\begin{definition}[Trial and test spaces]
+The \emph{trial} matrix is $D_\gamma$: its column span is what the portfolio is
+built from. The \emph{test} matrix is any $R\in\R^{n\times k}$: it is what the
+trial directions are priced against. The allocation is
+\begin{equation}
+  w(\gamma,R)\;\propto\;D_\gamma\big(R^\top\Sigma D_\gamma\big)^{-1}R^\top u ,
+  \label{eq:family}
+\end{equation}
+normalized to sum to one, and defined when $R^\top\Sigma D_\gamma$ is
+invertible.
+\end{definition}
+
+Taking $R=D_\gamma$ recovers the constructions already in the literature. The
+$k\times k$ matrix is then $D_\gamma^\top\Sigma D_\gamma$, and \eqref{eq:family}
+is the minimum-variance portfolio on the span of the trial directions. At
+$\gamma=0$ with $u=\ones$ that is nested clustered optimization. We call this
+the \emph{matched} case, and any $R\neq D_\gamma$ an \emph{unmatched} one.
+
+\section{The far end}
+\label{sec:far}
+
+\begin{proposition}[The far end is free of the test space]
+\label{prop:far}
+Suppose $R^\top\Sigma D_1$ is invertible. Then
+$w(1,R)\propto\Sigma^{-1}u$, whatever $R$ is.
+\end{proposition}
+
+\begin{proof}
+Block inversion on the partition $(C,-C)$ gives
+$(\Sigma^{-1}u)_C=Q_C(1)^{-1}b_C(1)=d_C(1)$
+\cite[App.~A]{cotton2024schur}. The supports $C_1,\dots,C_k$ partition the
+index set, so summing the columns of $D_1$ reconstructs the whole vector:
+$D_1\ones_k=\Sigma^{-1}u$. Multiplying on the left by $R^\top\Sigma$,
+\[
+  R^\top\Sigma D_1\ones_k=R^\top\Sigma\Sigma^{-1}u=R^\top u ,
+\]
+so $\big(R^\top\Sigma D_1\big)^{-1}R^\top u=\ones_k$ and the right side of
+\eqref{eq:family} is $D_1\ones_k=\Sigma^{-1}u$.
+\end{proof}
+
+The proposition says something slightly surprising about where the work is
+done. At $\gamma=1$ the trial directions are not merely a subspace containing
+the answer, they are its blocks, and the coefficients that assemble them are all
+one. Any invertible pairing recovers those coefficients, so the pricing space
+carries no information at the far end at all.
+
+\begin{corollary}[Representative selection does not reach the far end]
+\label{cor:rep}
+Let $E\in\R^{n\times k}$ have $E_{p_c,c}=1$ for one chosen asset $p_c$ per
+cluster and zeros elsewhere. Then $w(1,E)\propto\Sigma^{-1}u$ for every
+selection $p_1,\dots,p_k$ for which $E^\top\Sigma D_1$ is invertible.
+\end{corollary}
+
+A rule that chooses the representative, whether by medoid, by alignment with the
+cluster's first principal component, or by maximal squared correlation with the
+rest of the cluster \cite{bajo2026}, therefore decides where the interior of the
+bridge runs and nothing about its far end. The certificate checks
+\cref{prop:far} for five test spaces, including two different representative
+selections and a dense random one, and for a general companion vector as well as
+$u=\ones$.
+
+\begin{remark}[Which far ends]
+With $u=\ones$ the far end is minimum variance, with $u=\sigma$ maximum
+diversification, and with $u=\mu$ the tangency direction; the proof uses no
+property of $u$. \Cref{prop:far} needs the conditioning of \eqref{eq:pair} to be
+on every other asset. Conditioning instead on one knot per other cluster is
+exact under the model of \cite{cotton2026nco}, and \cref{prop:far} then holds
+under that model.
+\end{remark}
+
+\section{The interior}
+\label{sec:interior}
+
+The freedom of \cref{prop:far} does not extend inward, and the reason is
+structural rather than statistical.
+
+\begin{proposition}[The matched case has no pole]
+\label{prop:nopole}
+If $D_\gamma$ has full column rank then $D_\gamma^\top\Sigma D_\gamma$ is
+symmetric positive definite. Hence \eqref{eq:family} with $R=D_\gamma$ is
+defined at every $\gamma$ for which the pairs \eqref{eq:pair} exist.
+\end{proposition}
+
+\begin{proof}
+It is a Gram matrix: $x^\top D_\gamma^\top\Sigma D_\gamma x=(D_\gamma x)^\top
+\Sigma(D_\gamma x)>0$ for $x\neq0$ since $\Sigma\succ0$ and $D_\gamma x\neq0$.
+\end{proof}
+
+When $R\neq D_\gamma$ the matrix $R^\top\Sigma D_\gamma$ is not symmetric and
+\cref{prop:nopole} does not apply. Its determinant is a rational function of
+$\gamma$ and may vanish in $[0,1]$ on ordinary positive-definite input. Take
+\[
+  \Sigma=\begin{pmatrix}
+    20 & 8 & -5 & 5 & 5 & -6\\
+    8 & 36 & -11 & 8 & 7 & -12\\
+    -5 & -11 & 33 & 2 & 6 & 16\\
+    5 & 8 & 2 & 16 & 3 & 9\\
+    5 & 7 & 6 & 3 & 29 & -18\\
+    -6 & -12 & 16 & 9 & -18 & 50
+  \end{pmatrix},
+\]
+with clusters $\{1,2,3\}$ and $\{4,5,6\}$, representatives $3$ and $4$, and
+$u=\ones$. Its leading principal minors are positive. The determinant of
+$E^\top\Sigma D_\gamma$ is positive at $\gamma=\tfrac12$ and negative at
+$\gamma=\tfrac35$, so it vanishes between them and the allocation has a pole
+strictly inside the dial. On the same input the matched determinant stays
+positive throughout. Both facts are certified in exact arithmetic.
+
+\paragraph{How often this bites.} A pole is not a curiosity of a constructed
+example. Take twenty-four assets in four clusters of six, drawn from a
+one-factor-per-cluster model, estimate the covariance from one hundred and
+twenty observations, and scan the dial on a grid of four hundred points. The
+determinant of the outer matrix changes sign somewhere in $[0,1]$ in $28\%$ of
+markets when the test space is one asset per cluster and in $35\%$ when it is
+dense random. In the matched case it never does, as \cref{prop:nopole} requires.
+
+\paragraph{What it costs out of sample.} The same markets, scored by the true
+variance of the estimated portfolio in excess of the true optimum, give the
+median profile in \cref{tab:oos}. At the far end all four agree, exactly as
+\cref{prop:far} says, and they agree on a number well above zero because the
+covariance is estimated. Away from it the unmatched choices are not merely worse
+on average, they are occasionally enormous, and the excursions sit where the
+determinant crosses.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+test space & $\gamma=0$ & $\gamma=0.2$ & $\gamma=0.6$ & $\gamma=1$ \\
+\midrule
+cluster portfolios (matched) & 10.5 & 9.9 & 12.2 & 23.4 \\
+one asset per cluster, maximal squared correlation & 37.3 & 57.0 & 112.9 & 23.4 \\
+one asset per cluster, chosen at random & 21.8 & 20.5 & 289.3 & 23.4 \\
+dense random & 751.4 & 265.5 & 1112.0 & 23.4 \\
+\bottomrule
+\end{tabular}
+\caption{Excess variance over the true optimum, in percent, mean over thirty
+estimated markets. The far-end column is identical across rows by
+\cref{prop:far}.}
+\label{tab:oos}
+\end{table}
+
+So the separation of the two spaces buys exactness that is free and stability
+that is not. A test space chosen for interpretability is safe at the far end and
+exposed everywhere else.
+
+\section{Core-orbital allocation}
+\label{sec:hcoa}
+
+Hierarchical core-orbital allocation \cite{bajo2026} selects a core asset $p_c$
+in each cluster, allocates capital $W$ across the $k$ cores using their own
+covariance $\Sigma_{\mathcal{R}\mathcal{R}}=E^\top\Sigma E$, and then
+redistributes each $W_c$ among the members of cluster $c$ in proportion to a
+portfolio computed from that cluster's own block. Writing $V$ for the matrix of
+those normalized cluster portfolios, the result is $w=VW$.
+
+In the notation of \eqref{eq:family} the trial matrix is $D_0$, whose columns are
+the cluster portfolios up to scale, and the test matrix is $E$. The outer
+matrix, however, is $E^\top\Sigma E$ and not the pairing $E^\top\Sigma D_0$. The
+method is therefore adjacent to the family rather than inside it, and the
+difference is exactly one factor.
+
+\begin{proposition}[When the two coincide]
+\label{prop:hcoa}
+Let $N=\diag(\ones^\top d_{C_c}(0))$, so that $D_0=VN$. Then
+$E^\top\Sigma D_0=(E^\top\Sigma V)N$, and core-orbital allocation agrees with
+the member $w(0,E)$ of \eqref{eq:family} for every companion vector if and only
+if
+\begin{equation}
+  E^\top\Sigma\,(V-E)=0 ,
+  \label{eq:gap}
+\end{equation}
+that is, if and only if each cluster's holding has the same covariance with
+every core as that core has.
+\end{proposition}
+
+Condition \eqref{eq:gap} holds trivially when every cluster is a singleton,
+where the holding is its own core and core-orbital allocation is the far end
+itself. Under a one-factor model within each cluster it says that each holding
+carries the same factor exposure as its core. It does not hold in general, and
+the certificate exhibits a case where it fails.
+
+\paragraph{The trade this represents.} Pricing with $E^\top\Sigma E$ rather than
+with $E^\top\Sigma D_0$ costs the exactness of \cref{prop:far}, since the
+method is then outside the family. It buys back exactly what
+\cref{sec:interior} says is at risk: $E^\top\Sigma E$ is a principal submatrix
+of $\Sigma$, hence symmetric positive definite, hence never singular. The
+construction is pole-free for the same reason the matched case is, without being
+matched. Read this way the choice in \cite{bajo2026} is the conservative one,
+and the alternative, substituting the pairing $E^\top\Sigma D_\gamma$ and
+sweeping $\gamma$, is what turns the architecture into a bridge with an exact far
+end and a fragile interior.
+
+\section{Closing}
+
+The bridges catalogued so far are named by their two ends, and each assumes that
+a cluster is priced by the portfolio held in it. Dropping that assumption adds a
+second axis rather than another row. Along it the far end is not a point but a
+face: any non-degenerate pricing space reaches $\Sigma^{-1}u$, so the choice of
+representative is a statement about the interior alone.
+
+Two questions are left open. The first is whether any pricing space improves on
+the matched one in the interior, where the evidence here is that none of the
+three tried does. The second is whether a pricing space can be chosen to avoid
+the pole while keeping exactness, for instance by requiring
+$R^\top\Sigma D_\gamma$ to be positive definite along the path; the matched
+choice satisfies this by construction, and whether any other does is not settled
+here.
+
+\begin{thebibliography}{99}
+
+\bibitem{bajo2026}
+M. Bajo Traver.
+Hierarchical core-orbital allocation: decoupling clustering from optimization in
+portfolio construction.
+\emph{The Journal of Financial Data Science}, forthcoming, 2026.
+
+\bibitem{cotton2024schur}
+P. Cotton.
+Schur complementary allocation: a unification of hierarchical risk parity and
+minimum variance portfolios.
+arXiv:2411.05807, 2024.
+
+\bibitem{cotton2026nco}
+P. Cotton.
+Nested clustered optimization is one end of a Schur bridge, and the interior is
+sometimes provably better.
+SSRN 7480738, 2026.
+
+\bibitem{cotton2026herc}
+P. Cotton.
+Hierarchical equal risk contribution is a corner of a Schur square, and two
+dials lead to minimum variance.
+Working paper, \texttt{schur.microprediction.org}, 2026.
+
+\bibitem{lopezdeprado2016}
+M. L\'opez de Prado.
+Building diversified portfolios that outperform out of sample.
+\emph{Journal of Portfolio Management}, 42(4):59--69, 2016.
+
+\bibitem{lopezdeprado2020}
+M. L\'opez de Prado.
+\emph{Machine Learning for Asset Managers}.
+Cambridge University Press, 2020.
+
+\bibitem{raffinot2018}
+T. Raffinot.
+The hierarchical equal risk contribution portfolio.
+SSRN 3237540, 2018.
+
+\end{thebibliography}
+
+\end{document}
