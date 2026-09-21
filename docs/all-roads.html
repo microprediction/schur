@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>All roads lead to minimum variance — Schur Complementary Portfolios</title>
+  <meta name="description" content="A 3D view of five heuristic portfolios each descending its Schur bridge to the same optimizer." />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+<style>
+  main.roads {
+    --ink: #1a1a1a; --ink-2: #5a5a5a; --line: #e2e2e2; --panel: #ffffff;
+    --floor: #4a3aff; --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --stage: #f3f3f7; --grid: #cfcfda; --muted: #9a9a9a; --bg: #fafafa;
+    max-width: 1080px; margin: 32px auto; padding: 0 24px 60px;
+  }
+  main.roads .thesis { font-size: 1.07rem; color: var(--ink-2); max-width: 62ch; margin: 0 0 20px; }
+  main.roads .thesis b { color: var(--ink); font-weight: 600; }
+  main.roads .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 12px; }
+  main.roads .ctl { display: flex; flex-direction: column; gap: 5px; }
+  main.roads .ctl label { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  main.roads .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--panel); }
+  main.roads .seg button { appearance: none; border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 0.88rem; padding: 7px 12px; cursor: pointer; }
+  main.roads .seg button + button { border-left: 1px solid var(--line); }
+  main.roads .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  main.roads .seg button:focus-visible { outline: 2px solid var(--floor); outline-offset: -2px; }
+  main.roads .btn { appearance: none; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 0.88rem; padding: 7px 12px; border-radius: 8px; cursor: pointer; }
+  main.roads .stage { position: relative; background: var(--stage); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; height: min(68vh, 620px); min-height: 380px; }
+  main.roads .stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  main.roads .tag { position: absolute; transform: translate(-50%, -100%); pointer-events: none; font-size: 0.8rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: rgba(243,243,247,0.82); color: var(--ink); white-space: nowrap; box-shadow: 0 0 0 1px rgba(0,0,0,0.06); }
+  main.roads .tag.floor { color: var(--floor); font-size: 0.95rem; transform: translate(-50%, 0); }
+  main.roads .tag.start { transform: translate(-108%, -50%); }
+  main.roads .tag.axis { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-weight: 400; font-size: 0.76rem; color: var(--ink-2); background: transparent; box-shadow: none; }
+  main.roads .hint { position: absolute; right: 12px; bottom: 10px; font-size: 0.78rem; color: var(--muted); pointer-events: none; }
+  main.roads .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 0.88rem; color: var(--ink-2); }
+  main.roads .legend li { display: flex; align-items: center; gap: 8px; margin: 0; }
+  main.roads .legend i { display: inline-block; width: 22px; height: 6px; border-radius: 3px; }
+  main.roads .legend .num { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+  main.roads .legend .fl i { background: var(--floor); height: 3px; }
+  main.roads .read { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 36px; margin-top: 10px; }
+  main.roads .read h2 { margin-top: 1.4em; }
+  main.roads .read p { color: var(--ink-2); max-width: 60ch; }
+  main.roads .foot { margin-top: 26px; font-size: 0.85rem; color: var(--muted); }
+</style>
+
+<main class="roads">
+  <h1>All roads lead to minimum variance</h1>
+  <p class="subtitle">Five heuristics, one dial each, one floor.</p>
+  <p class="thesis">Inverse variance, HRP, hierarchical minimum variance, HERC and NCO look like different families. Each is the near end of a <em>Schur bridge</em>: turn one dial and every one of them lands on the same optimizer. With an estimated covariance the far end lifts off the floor and, for minimum variance, almost every ribbon dips first: the best place to stand is <em>part way across</em>, and the dot marks it.</p>
+
+  <div class="controls">
+    <div class="ctl"><label id="lbl-far">Far end</label>
+      <div class="seg" role="group" aria-labelledby="lbl-far">
+        <button id="far-ones" aria-pressed="true">Minimum variance</button>
+        <button id="far-vol" aria-pressed="false">Maximum diversification</button>
+        <button id="far-mean" aria-pressed="false">Tangency</button>
+      </div></div>
+    <div class="ctl"><label id="lbl-cov">Covariance the recipes see</label>
+      <div class="seg" role="group" aria-labelledby="lbl-cov">
+        <button id="cov-90" aria-pressed="true">Estimated, 90 days</button>
+        <button id="cov-250" aria-pressed="false">Estimated, 250 days</button>
+        <button id="cov-true" aria-pressed="false">The truth</button>
+      </div></div>
+    <div class="ctl"><label id="lbl-cl">Clusters</label>
+      <div class="seg" role="group" aria-labelledby="lbl-cl">
+        <button id="cl-mixed" aria-pressed="true">A quarter misfiled</button>
+        <button id="cl-sectors" aria-pressed="false">Exact sectors</button>
+      </div></div>
+    <div class="ctl"><label id="lbl-view">View</label>
+      <div class="seg" role="group" aria-labelledby="lbl-view">
+        <button id="view-bridges" aria-pressed="true">Five bridges</button>
+        <button id="view-square" aria-pressed="false">The HERC square</button>
+      </div></div>
+    <div class="ctl"><label>&nbsp;</label><button class="btn" id="reseed">New random market</button></div>
+  </div>
+
+  <div class="stage" id="stage"><canvas id="c"></canvas><div class="hint">drag to orbit · scroll to zoom</div></div>
+
+  <ul class="legend" id="legend"></ul>
+
+  <section class="read">
+    <div>
+      <h2>The axes</h2>
+      <p>Thirty-two assets in four correlated sectors, one factor per sector plus a weak market factor. Height is how much worse a portfolio is than the far-end optimum, in percent of its objective: variance for minimum variance, the inverse squared diversification ratio for maximum diversification, the inverse squared Sharpe ratio for tangency. The violet floor is the optimum under perfect knowledge, the portfolio built from the true covariance, at zero. It is the yardstick, not a contestant: nothing built from ninety days of data can reach it, and the gap between a ribbon's far end and the floor is the price of estimating the covariance.</p>
+      <p>Depth is the method. Along the length of each ribbon the dial runs from 0, the method as published, to 1, the far end. The dial damps a Schur complement: for inverse variance each asset on all the others; for HRP and hierarchical minimum variance each block on its sibling down the tree; for HERC and NCO each cluster on the assets outside it, and for HERC each asset on its cluster mates as well.</p>
+    </div>
+    <div>
+      <h2>The estimated covariance</h2>
+      <p>The recipes see ninety days of returns, not the truth. The far end lifts off the floor, because the estimated optimizer is not the true one, and for minimum variance nearly every ribbon dips before it ends (in 98 of 100 random markets). The dot on each ribbon is its lowest point: where to stand, and usually neither end. Maximum diversification behaves the same way a little less often; tangency less often again, because a mean vector is the noisier input, so for it the recipes are handed the true means and only the covariance is estimated. More data pulls the dots toward the far end; with the true covariance every ribbon descends all the way to the floor, which is the theorem. Dots at the far end in most random markets would refute the claim.</p>
+      <p>For minimum variance NCO starts far lower than the others, because it is an optimizer at both tiers, minimum variance inside each cluster and across the cluster portfolios; it discards only the part of the optimum outside the span of its clusters. The other four discard covariance entries. With a quarter of the names filed in the wrong sector, as here by default, its head start shrinks; with exact sectors it grows. For maximum diversification the head start is small, and for tangency it is gone.</p>
+      <p>In the HERC square view HERC has both of its dials, the cluster dial along the same axis as the bridges and the asset dial across the depth. HERC is the near corner; minimum variance is the far corner; the surface between is the square.</p>
+    </div>
+  </section>
+  <p class="foot">Definitions, proofs and the taxonomy of which Schur is which: <a href="https://schur.microprediction.org/taxonomy.html">schur.microprediction.org</a>. Engine: <code>allocation.SchurBridge</code>.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  'use strict';
+  // ------------------------------------------------------------ linear algebra
+  function zeros(n, m) { const A = new Array(n); for (let i = 0; i < n; i++) A[i] = new Float64Array(m); return A; }
+  function clone(A) { return A.map(r => Float64Array.from(r)); }
+  function sub(A, I, J) { const B = zeros(I.length, J.length); for (let a = 0; a < I.length; a++) for (let b = 0; b < J.length; b++) B[a][b] = A[I[a]][J[b]]; return B; }
+  function solveMulti(A, B) { // A^{-1} B, B is n x k (array of rows)
+    const n = A.length, k = B[0].length; const M = A.map((r, i) => { const row = new Float64Array(n + k); row.set(r); for (let j = 0; j < k; j++) row[n + j] = B[i][j]; return row; });
+    for (let c = 0; c < n; c++) {
+      let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+      const t = M[c]; M[c] = M[p]; M[p] = t;
+      const pv = M[c][c] || 1e-300; for (let j = 0; j < n + k; j++) M[c][j] /= pv;
+      for (let r = 0; r < n; r++) if (r !== c) { const f = M[r][c]; if (f !== 0) for (let j = c; j < n + k; j++) M[r][j] -= f * M[c][j]; }
+    }
+    return M.map(r => r.subarray(n));
+  }
+  function inv(A) { const n = A.length; const I = zeros(n, n); for (let i = 0; i < n; i++) I[i][i] = 1; return solveMulti(A, I); }
+  function matvec(A, x) { return A.map(r => { let s = 0; for (let j = 0; j < x.length; j++) s += r[j] * x[j]; return s; }); }
+  function dot(a, b) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; }
+  function quad(x, Q) { return dot(x, matvec(Q, x)); }
+  function chol(A) { const n = A.length, L = zeros(n, n); for (let i = 0; i < n; i++) for (let j = 0; j <= i; j++) { let s = A[i][j]; for (let k = 0; k < j; k++) s -= L[i][k] * L[j][k]; L[i][j] = i === j ? Math.sqrt(Math.max(s, 1e-12)) : s / L[j][j]; } return L; }
+
+  // ------------------------------------------------------------ the bridge
+  function conditionPair(Q, b, I, J, g) {
+    const A = sub(Q, I, I); const bI = I.map(i => b[i]);
+    if (g === 0 || J.length === 0) return { Q: A, b: Float64Array.from(bI) };
+    const B = sub(Q, I, J), D = sub(Q, J, J);
+    const rhs = B[0].length ? J.map((j, r) => { const row = new Float64Array(I.length + 1); for (let a = 0; a < I.length; a++) row[a] = B[a][r]; row[I.length] = b[j]; return row; }) : [];
+    const X = solveMulti(D, rhs); // (|J|) x (|I|+1)
+    const Qc = zeros(I.length, I.length); const bc = new Float64Array(I.length);
+    for (let a = 0; a < I.length; a++) { for (let c = 0; c < I.length; c++) { let s = 0; for (let k = 0; k < J.length; k++) s += B[a][k] * X[k][c]; Qc[a][c] = A[a][c] - g * s; } let s2 = 0; for (let k = 0; k < J.length; k++) s2 += B[a][k] * X[k][I.length]; bc[a] = bI[a] - g * s2; }
+    return { Q: Qc, b: bc };
+  }
+  function leafDirection(Q, b, eta) {
+    const n = Q.length; const z = new Float64Array(n);
+    if (eta === 0) { for (let i = 0; i < n; i++) z[i] = b[i] / Q[i][i]; return z; }
+    const Qi = inv(Q); const Qb = matvec(Qi, b);
+    for (let i = 0; i < n; i++) { const d = Qi[i][i]; const q = 1 / d, s = Qb[i] / d; z[i] = ((1 - eta) * b[i] + eta * s) / ((1 - eta) * Q[i][i] + eta * q); }
+    return z;
+  }
+  function rescale(z, Q, b, split, eta) { // stacking children = inverse-fitness budgets
+    const bz = dot(b, z); if (bz === 0) return z.map(() => 0);
+    let nu;
+    if (split === 'minvar') { nu = 1 / dot(b, matvec(inv(Q), b)); }
+    else { const v = leafDirection(Q, b, eta); const bv = dot(b, v); nu = quad(v, Q) / (bv * bv); }
+    return z.map(x => x / (bz * nu));
+  }
+  function recurseTree(Q, b, lo, hi, gamma, eta, split) { // bisection tree over local indices lo..hi-1
+    const n = hi - lo; if (n === 1) return Float64Array.from([b[0] / Q[0][0]]);
+    const mid = n >> 1; const I = [...Array(mid).keys()], J = [...Array(n - mid).keys()].map(k => k + mid);
+    const L = conditionPair(Q, b, I, J, gamma), R = conditionPair(Q, b, J, I, gamma);
+    const zL = recurseTree(L.Q, L.b, 0, mid, gamma, eta, split), zR = recurseTree(R.Q, R.b, 0, n - mid, gamma, eta, split);
+    const out = new Float64Array(n); out.set(rescale(zL, L.Q, L.b, split, eta), 0); out.set(rescale(zR, R.Q, R.b, split, eta), mid); return out;
+  }
+  function normalize(w) { let s = 0; for (const x of w) s += x; return w.map(x => x / s); }
+  // weights of a method at (gamma, eta) on covariance S with companion u
+  function bridge(S, u, clusters, spec, gamma, eta) {
+    const n = S.length; const w = new Float64Array(n);
+    if (spec.tree) {
+      const P = sub(S, order, order); const uP = Float64Array.from(order.map(i => u[i]));
+      const zP = recurseTree(P, uP, 0, n, gamma, spec.split === 'minvar' ? 1 : eta, spec.split);
+      order.forEach((i, k) => w[i] = zP[k]); return normalize(w);
+    }
+    const all = [...Array(n).keys()];
+    const cols = [];
+    for (const C of clusters) {
+      const J = all.filter(j => !C.includes(j));
+      const P = conditionPair(S, u, C, J, gamma);
+      const zc = leafDirection(P.Q, P.b, spec.eta === undefined ? eta : spec.eta);
+      if (spec.outer === 'optimize') { const col = new Float64Array(n); C.forEach((i, k) => col[i] = zc[k]); cols.push(col); }
+      else { const r = rescale(zc, P.Q, P.b, 'dial', spec.eta === undefined ? eta : spec.eta); C.forEach((i, k) => w[i] = r[k]); }
+    }
+    if (spec.outer === 'optimize') { // w = D (D^T S D)^{-1} D^T u
+      const k = cols.length; const M = zeros(k, k); const rhs = cols.map(c => [dot(c, u)]);
+      for (let a = 0; a < k; a++) for (let c = 0; c < k; c++) M[a][c] = dot(cols[a], matvec(S, cols[c]));
+      const alpha = solveMulti(M, rhs).map(r => r[0]);
+      for (let a = 0; a < k; a++) for (let i = 0; i < n; i++) w[i] += cols[a][i] * alpha[a];
+    }
+    return normalize(w);
+  }
+
+  // ------------------------------------------------------------ market
+  let seed = 7;
+  function rng(s) { return function () { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function gauss(r) { let u = 0, v = 0; while (u === 0) u = r(); while (v === 0) v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+  const N = 32, K = 4, M = 8, GM = 0.25, MIX = 0.25;
+  let clusters, order;
+  let market;
+  function makeMarket() {
+    const r = rng(seed);
+    // sector factor correlation: market mode plus noise
+    const F = zeros(K, K); const g = [...Array(K).keys()].map(() => 0.45 + 0.3 * r());
+    for (let a = 0; a < K; a++) { F[a][a] = 1; for (let b = 0; b < a; b++) { const c = g[a] * g[b] * (0.5 + 0.3 * r()); F[a][b] = c; F[b][a] = c; } }
+    const beta = new Float64Array(N), bm = new Float64Array(N), vol = new Float64Array(N);
+    for (let i = 0; i < N; i++) { vol[i] = 0.12 + 0.28 * r(); beta[i] = 0.35 + 0.4 * r(); bm[i] = GM * (0.6 + 0.8 * r()); }
+    const S = zeros(N, N);
+    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const ci = (i / M) | 0, cj = (j / M) | 0; let c = beta[i] * beta[j] * F[ci][cj] + bm[i] * bm[j]; if (i === j) c += Math.max(1 - c, 0.15); S[i][j] = c * vol[i] * vol[j]; }
+    // the partition the recipes use: the sectors, with a quarter of the names misfiled
+    const perm = [...Array(N).keys()]; const idx = []; while (idx.length < Math.round(MIX * N)) { const k = (r() * N) | 0; if (!idx.includes(k)) idx.push(k); }
+    const vals = idx.map(k => perm[k]); for (let a = vals.length - 1; a > 0; a--) { const b = (r() * (a + 1)) | 0; [vals[a], vals[b]] = [vals[b], vals[a]]; } idx.forEach((k, t) => perm[k] = vals[t]);
+    const sectors = [...Array(K).keys()].map(k => [...Array(M).keys()].map(i => k * M + i));
+    const mixed = [...Array(K).keys()].map(k => perm.slice(k * M, (k + 1) * M));
+    const mu = new Float64Array(N); for (let i = 0; i < N; i++) mu[i] = 0.02 + 0.08 * vol[i] * beta[i] + 0.02 * gauss(r);
+    return { S, mu, r, sectors, mixed, perm };
+  }
+  function sampleCov(Strue, muTrue, T, r) {
+    const L = chol(Strue); const X = []; const mean = new Float64Array(N);
+    for (let t = 0; t < T; t++) { const z = new Float64Array(N); for (let i = 0; i < N; i++) z[i] = gauss(r); const x = new Float64Array(N); for (let i = 0; i < N; i++) { let s = 0; for (let k = 0; k <= i; k++) s += L[i][k] * z[k]; x[i] = s / Math.sqrt(252) + muTrue[i] / 252; mean[i] += x[i] / T; } X.push(x); }
+    const S = zeros(N, N);
+    for (const x of X) for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) S[i][j] += (x[i] - mean[i]) * (x[j] - mean[j]) * 252 / (T - 1);
+    return { S, mu: mean.map(m => m * 252) };
+  }
+
+  // ------------------------------------------------------------ methods
+  const css = getComputedStyle(document.querySelector('main.roads'));
+  const methods = [
+    { key: 'ivp', name: 'Inverse variance', spec: { tree: false, eta: undefined, outer: 'stack' }, one: true, color: '--s1' },
+    { key: 'hrp', name: 'HRP', spec: { tree: true, split: 'dial' }, color: '--s2' },
+    { key: 'hmv', name: 'Hierarchical min-var', spec: { tree: true, split: 'minvar' }, color: '--s3' },
+    { key: 'herc', name: 'HERC', spec: { tree: false, outer: 'stack' }, color: '--s4' },
+    { key: 'nco', name: 'NCO', spec: { tree: false, eta: 1, outer: 'optimize' }, color: '--s5' },
+  ];
+  const state = { far: 'ones', cov: '90', view: 'bridges', cl: 'mixed' };
+  function companion(S, mu) { if (state.far === 'vol') return Float64Array.from(S.map((r, i) => Math.sqrt(r[i]))); if (state.far === 'mean') return Float64Array.from(mu); return new Float64Array(N).fill(1); }
+  function objective(w, Strue, uTrue) { const e = dot(uTrue, w); return quad(w, Strue) / (e * e); }
+  const GRID = 49;
+  let data;
+  function compute() {
+    market = market || makeMarket();
+    clusters = state.cl === 'sectors' ? market.sectors : market.mixed;
+    order = clusters.flat();   // HRP and HMV bisect this order, so the tree sees the same grouping
+    let seen;
+    if (state.cov === 'true') seen = { S: market.S, mu: market.mu };
+    else { seen = sampleCov(market.S, market.mu, state.cov === '250' ? 250 : 90, rng(seed * 31 + 5)); seen.mu = market.mu; }
+    const uTrue = companion(market.S, market.mu), uSeen = companion(seen.S, seen.mu);
+    const wOpt = normalize(matvec(inv(market.S), uTrue)); const best = objective(wOpt, market.S, uTrue);
+    const ribbons = methods.map(m => {
+      const pts = [];
+      for (let g = 0; g < GRID; g++) {
+        const t = g / (GRID - 1);
+        const cl = m.one ? [[...Array(N).keys()]] : clusters;
+        // inverse variance: one cluster, the inner dial alone; HERC: both dials together; NCO/HRP/HMV: the outer dial
+        const w = m.one ? bridge(seen.S, uSeen, cl, { tree: false, eta: t, outer: 'stack' }, 0, t) : bridge(seen.S, uSeen, cl, m.spec, t, t);
+        pts.push(100 * (objective(w, market.S, uTrue) / best - 1));
+      }
+      let lo = 0; for (let g = 1; g < GRID; g++) if (pts[g] < pts[lo]) lo = g;
+      return { m, pts, lo };
+    });
+    let square = null;
+    if (state.view === 'square') {
+      const G = 33; square = { G, z: [] };
+      for (let a = 0; a < G; a++) { const row = []; for (let b = 0; b < G; b++) { const w = bridge(seen.S, uSeen, clusters, { tree: false, outer: 'stack' }, a / (G - 1), b / (G - 1)); row.push(100 * (objective(w, market.S, uTrue) / best - 1)); } square.z.push(row); }
+    }
+    data = { ribbons, square };
+  }
+
+  // ------------------------------------------------------------ scene
+  const stage = document.getElementById('stage'), canvas = document.getElementById('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(2, 4, 3); scene.add(key);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+  const group = new THREE.Group(); scene.add(group);
+  const W = 4.2, H = 2.0, DEP = 4.2; // x length, max height, depth
+  let orbit = { theta: -0.42, phi: 0.98, dist: 9.0, tx: 0.2, ty: 0.45 };
+  function cssColor(v) { return new THREE.Color(css.getPropertyValue(v).trim() || '#888'); }
+  function resize() { const r = stage.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+  function placeCamera() { const x = orbit.dist * Math.sin(orbit.phi) * Math.sin(orbit.theta), y = orbit.dist * Math.cos(orbit.phi), z = orbit.dist * Math.sin(orbit.phi) * Math.cos(orbit.theta); camera.position.set(x + orbit.tx, y + orbit.ty, z); camera.lookAt(orbit.tx, orbit.ty, 0); }
+  const labels = []; // {el, pos}
+  function label(text, cls, pos) { const el = document.createElement('div'); el.className = 'tag ' + (cls || ''); el.textContent = text; stage.appendChild(el); labels.push({ el, pos }); return el; }
+  function clearScene() { while (group.children.length) { const c = group.children.pop(); c.geometry && c.geometry.dispose(); c.material && c.material.dispose(); } for (const l of labels) l.el.remove(); labels.length = 0; }
+  let yScale = 1;
+  function toY(v) { return Math.min(v, yMax) / yMax * H; }
+  let yMax = 30;
+  function ribbonMesh(pts, color, zc, width) {
+    const n = pts.length; const pos = new Float32Array(n * 2 * 3); const idx = [];
+    for (let i = 0; i < n; i++) { const x = -W / 2 + W * i / (n - 1), y = toY(pts[i]); pos.set([x, y, zc - width / 2], i * 6); pos.set([x, y, zc + width / 2], i * 6 + 3); if (i < n - 1) { const a = 2 * i; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); } }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+    const mat = new THREE.MeshStandardMaterial({ color, side: THREE.DoubleSide, roughness: 0.55, metalness: 0.05, transparent: true, opacity: 0.92 });
+    const mesh = new THREE.Mesh(geo, mat); group.add(mesh);
+    // spine line for crispness
+    const lp = new Float32Array(n * 3); for (let i = 0; i < n; i++) lp.set([-W / 2 + W * i / (n - 1), toY(pts[i]) + 0.004, zc], i * 3);
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.BufferAttribute(lp, 3)); group.add(new THREE.Line(lg, new THREE.LineBasicMaterial({ color: color.clone().offsetHSL(0, 0, -0.12) })));
+    // drop to the floor at the far end
+    const dp = new Float32Array([W / 2, toY(pts[n - 1]), zc, W / 2, 0, zc]); const dg = new THREE.BufferGeometry(); dg.setAttribute('position', new THREE.BufferAttribute(dp, 3));
+    group.add(new THREE.Line(dg, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5 })));
+    return mesh;
+  }
+  function floorMesh() {
+    const fc = cssColor('--floor');
+    const geo = new THREE.PlaneGeometry(W + 0.5, DEP + 0.6); geo.rotateX(-Math.PI / 2);
+    const mat = new THREE.MeshBasicMaterial({ color: fc, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+    group.add(new THREE.Mesh(geo, mat));
+    const edge = new THREE.EdgesGeometry(geo); group.add(new THREE.LineSegments(edge, new THREE.LineBasicMaterial({ color: fc, transparent: true, opacity: 0.8 })));
+    // grid on the floor
+    const gc = cssColor('--grid'); const gp = [];
+    for (let i = 0; i <= 8; i++) { const x = -W / 2 + W * i / 8; gp.push(x, 0.001, -DEP / 2 - 0.3, x, 0.001, DEP / 2 + 0.3); }
+    const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(gp), 3)); group.add(new THREE.LineSegments(gg, new THREE.LineBasicMaterial({ color: gc, transparent: true, opacity: 0.6 })));
+  }
+  function axes() {
+    const ac = cssColor('--grid');
+    const ap = new Float32Array([-W / 2, 0, DEP / 2 + 0.3, W / 2, 0, DEP / 2 + 0.3, -W / 2, 0, -DEP / 2 - 0.3, -W / 2, H, -DEP / 2 - 0.3]);
+    const ag = new THREE.BufferGeometry(); ag.setAttribute('position', new THREE.BufferAttribute(ap, 3)); group.add(new THREE.LineSegments(ag, new THREE.LineBasicMaterial({ color: ac })));
+    label('dial 0: the method as published', 'axis', new THREE.Vector3(-W / 2 + 0.6, -0.02, DEP / 2 + 0.55));
+    label('dial 1: the far end', 'axis', new THREE.Vector3(W / 2 - 0.4, -0.02, DEP / 2 + 0.55));
+    label('+' + yMax.toFixed(0) + '% worse than the optimum', 'axis', new THREE.Vector3(-W / 2, H + 0.14, -DEP / 2 - 0.3));
+  }
+  function build() {
+    clearScene();
+    const ribbons = data.ribbons;
+    const top = Math.max(...ribbons.map(r => Math.max(...r.pts)), data.square ? Math.max(...data.square.z.flat()) : 0);
+    yMax = Math.max(5, Math.ceil(top * 1.05 / 5) * 5);
+    floorMesh(); axes();
+    const farName = { ones: 'minimum variance', vol: 'maximum diversification', mean: 'tangency' }[state.far];
+    label('the floor: ' + farName + (state.cov === 'true' ? '' : ' with perfect knowledge'), 'floor', new THREE.Vector3(0.2, 0.0, DEP / 2 + 0.1));
+    const legend = document.getElementById('legend'); legend.innerHTML = '';
+    if (state.view === 'bridges') {
+      const lane = DEP / ribbons.length;
+      ribbons.forEach((r, i) => {
+        const zc = -DEP / 2 + lane * (i + 0.5); const col = cssColor(r.m.color);
+        ribbonMesh(r.pts, col, zc, lane * 0.5);
+        const dot = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 12), new THREE.MeshStandardMaterial({ color: col.clone().offsetHSL(0, 0, -0.18), roughness: 0.4 }));
+        dot.position.set(-W / 2 + W * r.lo / (GRID - 1), toY(r.pts[r.lo]) + 0.03, zc); group.add(dot);
+        label(r.m.name, 'start', new THREE.Vector3(-W / 2, toY(r.pts[0]), zc));
+        const li = document.createElement('li'); li.innerHTML = '<i style="background:var(' + r.m.color + ')"></i>' + r.m.name + ' <span class="num">' + r.pts[0].toFixed(0) + '% → best ' + r.pts[r.lo].toFixed(0) + '% at ' + (r.lo / (GRID - 1)).toFixed(2) + ' → ' + r.pts[r.pts.length - 1].toFixed(0) + '%</span>'; legend.appendChild(li);
+      });
+      const fl = document.createElement('li'); fl.className = 'fl'; fl.innerHTML = '<i></i>the floor: ' + farName + (state.cov === 'true' ? '' : ' from the true covariance, unreachable from data') + ' <span class="num">0%</span>'; legend.appendChild(fl);
+    } else {
+      const sq = data.square, G = sq.G; const pos = new Float32Array(G * G * 3); const colors = new Float32Array(G * G * 3); const idx = [];
+      const c0 = cssColor('--s4'), c1 = cssColor('--floor');
+      for (let a = 0; a < G; a++) for (let b = 0; b < G; b++) { const k = a * G + b; const x = -W / 2 + W * a / (G - 1), z = -DEP / 2 + DEP * b / (G - 1), y = toY(sq.z[a][b]); pos.set([x, y, z], k * 3); const f = Math.min(1, sq.z[a][b] / yMax); const c = c1.clone().lerp(c0, f); colors.set([c.r, c.g, c.b], k * 3); if (a < G - 1 && b < G - 1) idx.push(k, k + 1, k + G, k + 1, k + G + 1, k + G); }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(colors, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+      group.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.05, transparent: true, opacity: 0.94 })));
+      group.add(new THREE.LineSegments(new THREE.WireframeGeometry(geo), new THREE.LineBasicMaterial({ color: cssColor('--ink'), transparent: true, opacity: 0.08 })));
+      label('HERC', 'start', new THREE.Vector3(-W / 2, toY(sq.z[0][0]), -DEP / 2));
+      label('cluster min-var, inverse-variance budgets', 'start', new THREE.Vector3(-W / 2, toY(sq.z[0][G - 1]), DEP / 2));
+      label('conditioned HERC', '', new THREE.Vector3(W / 2, toY(sq.z[G - 1][0]) + 0.05, -DEP / 2));
+      label(farName, '', new THREE.Vector3(W / 2, toY(sq.z[G - 1][G - 1]) + 0.05, DEP / 2));
+      label('asset dial η →', 'axis', new THREE.Vector3(W / 2 + 0.25, 0, 0));
+      const li = document.createElement('li'); li.innerHTML = '<i style="background:var(--s4)"></i>HERC square: cluster dial γ along, asset dial η across <span class="num">' + sq.z[0][0].toFixed(1) + '% at HERC → ' + sq.z[G - 1][G - 1].toFixed(1) + '% at the far corner</span>'; legend.appendChild(li);
+    }
+  }
+  function render() {
+    placeCamera(); renderer.setClearColor(cssColor('--stage'), 1); renderer.render(scene, camera);
+    const r = stage.getBoundingClientRect();
+    for (const l of labels) { const p = l.pos.clone().project(camera); l.sx = (p.x + 1) / 2 * r.width; l.sy = (1 - p.y) / 2 * r.height; l.vis = p.z < 1; }
+    // push overlapping start labels apart vertically (they share a left edge)
+    const starts = labels.filter(l => l.el.classList.contains('start')).sort((a, b) => a.sy - b.sy);
+    const gap = 24;
+    for (let i = 1; i < starts.length; i++) if (starts[i].sy - starts[i - 1].sy < gap) starts[i].sy = starts[i - 1].sy + gap;
+    for (let i = starts.length - 2; i >= 0; i--) if (starts[i + 1].sy - starts[i].sy < gap) starts[i].sy = starts[i + 1].sy - gap;
+    for (const l of labels) { l.el.style.left = l.sx + 'px'; l.el.style.top = l.sy + 'px'; l.el.style.opacity = l.vis ? '1' : '0'; }
+  }
+  // orbit
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => { if (!drag) return; orbit.theta -= (e.clientX - drag.x) * 0.006; orbit.phi = Math.min(1.5, Math.max(0.25, orbit.phi - (e.clientY - drag.y) * 0.006)); drag = { x: e.clientX, y: e.clientY }; render(); });
+  canvas.addEventListener('pointerup', () => { drag = null; }); canvas.addEventListener('pointercancel', () => { drag = null; });
+  canvas.addEventListener('wheel', e => { e.preventDefault(); orbit.dist = Math.min(14, Math.max(4, orbit.dist * (1 + Math.sign(e.deltaY) * 0.08))); render(); }, { passive: false });
+  window.addEventListener('resize', () => { resize(); render(); });
+  // controls
+  function seg(groupIds, key) { groupIds.forEach(id => { const btn = document.getElementById(id); btn.addEventListener('click', () => { groupIds.forEach(o => document.getElementById(o).setAttribute('aria-pressed', o === id ? 'true' : 'false')); state[key] = id.split('-')[1]; refresh(); }); }); }
+  seg(['far-ones', 'far-vol', 'far-mean'], 'far'); seg(['cov-90', 'cov-250', 'cov-true'], 'cov'); seg(['cl-mixed', 'cl-sectors'], 'cl'); seg(['view-bridges', 'view-square'], 'view');
+  document.getElementById('reseed').addEventListener('click', () => { seed = (seed * 7 + 3) % 1000 + 1; market = null; refresh(); });
+  function refresh() { compute(); build(); render(); }
+  resize(); refresh();
+  // a slow settle-in turn on load, unless motion is reduced
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) { let f = 0; const t0 = orbit.theta - 0.35; orbit.theta = t0; (function spin() { f++; orbit.theta = t0 + 0.35 * (1 - Math.pow(1 - Math.min(f / 70, 1), 3)); render(); if (f < 70) requestAnimationFrame(spin); })(); }
+})();
+</script>
+
+</body>
+</html>
