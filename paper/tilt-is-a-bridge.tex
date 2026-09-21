@@ -1,0 +1,286 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise]{cleveref}
+
+% Run-in headings italic, never bold.
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{4}{\z@}%
+  {3.25ex \@plus1ex \@minus.2ex}{-1em}%
+  {\normalfont\normalsize\itshape}}
+\makeatother
+
+\title{The Thurstone Tilt Is a Schur Bridge,\\
+and Both of Its Ends Are Races}
+\author{Peter Cotton\thanks{Microprediction.
+Email: \texttt{peter.cotton@microprediction.com}. A companion verification
+script is \texttt{paper/verify\_tilt\_bridge.py} at
+\texttt{github.com/microprediction/schur}. The identities below are checked
+there in exact rational arithmetic.}}
+\date{September 20, 2026}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\ones}{\mathbf{1}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator{\diag}{diag}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{remark}{Remark}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Thurstone portfolio polishing calibrates latent abilities that reproduce a
+benchmark under a reference dependence law and re-races them under a richer
+one, with a scalar $\phi$ dialling the estimated correlation in. Choosing the
+reference to be the block-diagonal part of the estimate makes that blend
+exactly the estimate with its cross-cluster entries scaled by $\phi$, and for a
+two-block partition the conditional covariance of that matrix is the damped
+Schur complement at $\gamma=\phi^2$. The tilt dial is therefore the Schur dial
+under a square root. What is new is the pair of endpoints. Every bridge
+catalogued so far ends at $\Sigma^{-1}u$, a linear solve that can short any
+asset without bound; this one ends at a race, which lies on the simplex, splits
+a duplicated position rather than doubling it, and stays bounded. The taper is
+positive semidefinite for every $\phi$, so unlike an unmatched pricing space the
+path has no pole, and the closed-form reliability of the cross-block estimate
+transfers as $\phi^\star=\sqrt{\gamma^\star}$, which sets the dial from data
+rather than by tuning.
+\end{abstract}
+
+\section{Introduction}
+
+The bridges assembled on this site all end in the same place. Hierarchical risk
+parity, hierarchical equal risk contribution, nested clustered optimization and
+plain inverse variance are near ends, and turning a dial carries each of them to
+$\Sigma^{-1}u$: minimum variance for $u=\ones$, maximum diversification for
+$u=\sigma$, the tangency direction for $u=\mu$ \cite{cotton2024schur,
+cotton2026nco, cotton2026herc}. That far end is a linear solve. It can short an
+asset without bound, it doubles a position when an asset is duplicated, and it
+needs a matrix inverse.
+
+Thurstone portfolio polishing \cite{cotton2026thurstone} produces a portfolio of
+a different kind. Weights are read as the winning probabilities of a race among
+the assets, abilities are calibrated so that the race under a reference law
+reproduces a benchmark, and the same abilities are then re-raced under a richer
+law. The result is the gradient of an expected maximum, so it lies on the
+simplex by construction, it splits rather than doubles a duplicated position,
+and no covariance is inverted. In the Gaussian case the two laws are two
+correlation matrices and a scalar $\phi\in[0,1]$ dials between them,
+\begin{equation}
+  C_{\mathrm{tilt}}=(1-\phi)\,C_{\mathrm{calib}}+\phi\,\widehat C ,
+  \label{eq:blend}
+\end{equation}
+with $\phi=0$ reproducing the benchmark and $\phi=1$ using the full estimate.
+
+This note observes that \eqref{eq:blend} is a Schur damping for the right
+reference, so the tilt is a bridge in the sense of the other papers, and that
+its far end is a race rather than a linear solve.
+
+\section{The reference that makes the blend a taper}
+
+Fix a partition of the assets into clusters and write $\ell(i)$ for the cluster
+of asset $i$. The \emph{block taper} of a correlation $\widehat C$ at strength
+$\phi$ leaves the diagonal blocks alone and scales everything else:
+\begin{equation}
+  \big(\widehat C\circ T_\phi\big)_{ij}
+  =\begin{cases}\widehat C_{ij}, & \ell(i)=\ell(j),\\[2pt]
+                \phi\,\widehat C_{ij}, & \text{otherwise.}\end{cases}
+  \label{eq:taper}
+\end{equation}
+
+\begin{proposition}[The blend is a taper]
+\label{prop:taper}
+Let $C_{\mathrm{calib}}$ be the block-diagonal part of $\widehat C$, that is
+$\widehat C_{ij}$ when $\ell(i)=\ell(j)$ and zero otherwise. Then for every
+$\phi\in[0,1]$ the blend \eqref{eq:blend} equals the block taper
+\eqref{eq:taper}.
+\end{proposition}
+
+\begin{proof}
+Within a diagonal block both matrices carry $\widehat C_{ij}$, since
+$(1-\phi)\widehat C_{ij}+\phi\widehat C_{ij}=\widehat C_{ij}$. Off the diagonal
+blocks $C_{\mathrm{calib}}$ vanishes and the blend leaves $\phi\widehat C_{ij}$.
+\end{proof}
+
+The choice of reference matters here. The two references named in
+\cite{cotton2026thurstone} are the identity and a one-factor market correlation.
+Under the identity the blend damps the within-cluster correlations as well, and
+is not \eqref{eq:taper}; the certificate exhibits the difference. The
+block-diagonal reference is a third choice, and it is the one that aims the
+damping at the cross-cluster block alone.
+
+\section{The taper is the dial}
+
+\begin{proposition}[Two blocks]
+\label{prop:two}
+Let the partition have two clusters $A$ and $B$ and let $\widehat C\succ0$. The
+conditional covariance of $A$ given $B$ under the tapered correlation is the
+damped Schur complement of \cite{cotton2024schur} at $\gamma=\phi^2$:
+\begin{equation}
+  \big(\widehat C\circ T_\phi\big)_{AA}
+  -\big(\widehat C\circ T_\phi\big)_{AB}
+   \big(\widehat C\circ T_\phi\big)_{BB}^{-1}
+   \big(\widehat C\circ T_\phi\big)_{BA}
+  \;=\;\widehat C_{AA}-\phi^2\,\widehat C_{AB}\widehat C_{BB}^{-1}\widehat C_{BA}.
+  \label{eq:identity}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+With two clusters the taper leaves $\widehat C_{AA}$ and $\widehat C_{BB}$
+unchanged and multiplies $\widehat C_{AB}$ by $\phi$. Substituting gives
+$\widehat C_{AA}-\phi\widehat C_{AB}\widehat C_{BB}^{-1}\phi\widehat C_{BA}$.
+\end{proof}
+
+This is the identity of the localization note \cite{cotton2026loc} read in the
+other direction. There a block-constant taper of an ensemble covariance was
+shown to have a damped complement as its conditional; here the same fact says
+that the tilt's blend and the Schur dial are one dial, related by
+$\gamma=\phi^2$.
+
+\begin{remark}[Beyond two blocks]
+With three or more clusters the taper also damps the cross-block entries
+\emph{inside} the complement $B$, so $\big(\widehat C\circ T_\phi\big)_{BB}$ is
+no longer $\widehat C_{BB}$ and \eqref{eq:identity} becomes an approximation.
+On random correlations of twelve assets in three clusters the two sides differ
+by about $10^{-3}$ at $\phi=\tfrac12$, against $10^{-17}$ for two clusters. The
+flat construction of \cite{cotton2026nco}, which conditions each cluster on the
+others without damping inside them, is the exact multi-cluster analogue.
+\end{remark}
+
+\section{Both ends are races}
+
+At $\phi=0$ every cross-cluster correlation is zero, the clusters are
+independent, and the race decouples into one race per cluster with the
+benchmark reproduced inside each. At $\phi=1$ the taper is the estimate itself
+and the race is run under the full correlation. Both ends are values of
+$W_{S}(\theta)=\nabla G_S(\theta)$ with $G_S(\theta)=\E\max_i(\theta_i+\eta_i)$
+\cite{cotton2026thurstone}, so both are winning-probability vectors.
+
+That is the substance of the title. A bridge whose far end is $\Sigma^{-1}u$
+inherits the far end's pathologies at every $\gamma$ near one: unbounded shorts,
+a doubled position under duplication, and an inverse that must exist. A bridge
+whose far end is a race inherits the opposite. The whole path lies in the
+simplex, a duplicated asset splits its weight at every $\phi$, and nothing is
+inverted. The dial still governs how much of the cross-cluster estimate is
+believed; what changes is what belief is fed into.
+
+\begin{corollary}[No pole]
+\label{cor:nopole}
+$T_\phi$ is positive semidefinite for every $\phi\in[0,1]$, so
+$\widehat C\circ T_\phi$ is positive semidefinite by the Schur product theorem
+and the race is well posed along the whole dial.
+\end{corollary}
+
+\begin{proof}
+$T_\phi=\phi\,J+(1-\phi)\,\mathrm{blockdiag}(J)$ with $J$ the all-ones matrix,
+a nonnegative combination of two positive semidefinite matrices.
+\end{proof}
+
+The contrast is worth stating, because the other direction of generalization
+does not enjoy it. Pricing a cluster against something other than the portfolio
+held in it makes the outer $k\times k$ matrix asymmetric, and it can pass
+through singularity inside the dial \cite{cotton2026pricing}. Damping the law
+the race is run under cannot: the taper is a Schur product, and positive
+semidefiniteness is closed under it.
+
+\section{Setting the dial}
+
+Because $\gamma=\phi^2$, the closed-form reliability of the cross-block estimate
+carries over. Writing $\rho$ for the conditional correlation across the block
+and $n$ for the number of observations, \cite{cotton2026twosides} gives
+\begin{equation}
+  \gamma^\star=\frac{(n-2)\rho^2}{(n-2)\rho^2+(1-\rho^2)},
+  \qquad\text{hence}\qquad
+  \phi^\star=\sqrt{\gamma^\star}.
+  \label{eq:phistar}
+\end{equation}
+The tilt strength is then read off the data rather than tuned. The square root
+matters: a coupling one would damp to $\gamma^\star=\tfrac14$ on the covariance
+side corresponds to $\phi^\star=\tfrac12$ on the tilt side, so a tilt that looks
+mild is a heavier damping than it appears.
+
+\paragraph{What the evidence says.} On block-structured markets with the
+covariance estimated from returns, the block taper and the global tilt of the
+identity reference behave differently: at two hundred and fifty observations the
+block taper is the better dial, and at sixty observations neither beats racing
+the clusters independently. This is the same pattern the covariance-side
+experiments show, and the reason is the one \eqref{eq:phistar} encodes. The
+cross-cluster correlations are the part of the estimate worth least, so a dial
+aimed at them is the dial worth having.
+
+\section{Closing}
+
+Thurstone polishing was presented as a tilt by a view on dependence, and the
+Schur papers were presented as a bridge between a heuristic and an optimizer.
+With the block-diagonal reference they are one construction. The tilt's $\phi$
+is the Schur $\gamma$ under a square root, its near end is the independent
+cluster race, and its far end is the full race.
+
+The far end is what makes this worth recording. Every other bridge here reaches
+a linear solve, and the interest lies in stopping short of it. This one reaches
+a portfolio that was already wanted for its own sake, so both ends are places
+one might stand, and the dial chooses between two defensible answers rather than
+between a heuristic and an optimum.
+
+Two questions remain. The multi-cluster identity is exact only under the flat
+conditioning of \cite{cotton2026nco}, and whether the cheaper taper's error
+matters in practice is untested. And \eqref{eq:phistar} is derived for a
+quadratic loss; whether it is the right strength when the consumer is a race,
+whose loss is the conjugate of an expected maximum, is open.
+
+\begin{thebibliography}{99}
+
+\bibitem{cotton2024schur}
+P. Cotton.
+Schur complementary allocation: a unification of hierarchical risk parity and
+minimum variance portfolios.
+arXiv:2411.05807, 2024.
+
+\bibitem{cotton2026twosides}
+P. Cotton.
+Two sides of Schur damping: high-dimensional pseudo-likelihoods and portfolio
+allocation.
+arXiv:2606.14798, 2026.
+
+\bibitem{cotton2026thurstone}
+P. Cotton.
+Thurstone portfolio polishing: tail-sensitive Black--Litterman and beyond.
+Working paper, 2026.
+
+\bibitem{cotton2026nco}
+P. Cotton.
+Nested clustered optimization is one end of a Schur bridge, and the interior is
+sometimes provably better.
+SSRN 7480738, 2026.
+
+\bibitem{cotton2026herc}
+P. Cotton.
+Hierarchical equal risk contribution is a corner of a Schur square, and two
+dials lead to minimum variance.
+Working paper, 2026.
+
+\bibitem{cotton2026loc}
+P. Cotton.
+Covariance localization is Schur damping, and its optimal strength is a
+sampling-error correction.
+Working paper, 2026.
+
+\bibitem{cotton2026pricing}
+P. Cotton.
+The far end of a Schur bridge does not care how its clusters are priced, and the
+interior does.
+Working paper, 2026.
+
+\end{thebibliography}
+
+\end{document}
