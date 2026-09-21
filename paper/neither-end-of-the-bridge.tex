@@ -154,9 +154,10 @@ $\big(A^c(\gamma)^{-1} \circ b_A b_A^\top\big)^{-1}$. That encoding
 requires every coordinate of $b_A$ to be nonzero, which can fail on
 ordinary SPD input (a $4 \times 4$ example with $b_A = (0,1)^\top$ has
 leading principal minors $2, 4, \tfrac72, 3$), so we treat it as an
-optional representation and work with the pair. At $\gamma = 0$ every
-member is HRP. At $\gamma = 1$ the scheme replicates the minimum-variance
-portfolio; the one-step form of that equivalence is
+optional representation and work with the pair. At $\gamma = 0$ with HRP's
+inverse-variance split every member is HRP. At $\gamma = 1$, with each split
+budgeted by the child's conditioned minimum variance, the scheme replicates the
+minimum-variance portfolio; the one-step form of that equivalence is
 Proposition~\ref{prop:minvar}, following Appendix~A of
 \cite{cotton2024schur}.
 

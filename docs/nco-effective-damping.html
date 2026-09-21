@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>How far each group really travels: λ = γr/(1 − γ + γr) — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>How far each group really travels: &lambda; = &gamma;r / (1 &minus; &gamma; + &gamma;r)</h1>
+  <p class="subtitle">A common dial does not damp every group equally. The
+  paper gives the fraction of the journey each group has made in closed form,
+  and it explains why the bridge stalls when two representatives nearly
+  coincide.</p>
+
+  <h2>The setting</h2>
+  <p>Assets are grouped, and each group has a representative, the paper's
+  knot. The bridge has one dial &gamma;. At &gamma; = 0 each group is allocated
+  from its own covariance alone, as in nested clustered optimization. At
+  &gamma; = 1 each group is also told everything the other groups'
+  representatives explain about its own representative, and the result is the
+  global minimum-variance portfolio. In between, each group is told a fraction
+  &gamma; of that.</p>
+
+  <p>What a group does with the information is to change how much it holds of
+  its representative. The paper shows that as &gamma; runs from 0 to 1, the
+  holding of the representative travels from its NCO value to its
+  minimum-variance value, and that the fraction of the journey completed at a
+  given &gamma; is not &gamma;. It is
+  &lambda; = &gamma;r / (1 &minus; &gamma; + &gamma;r), where r is the share of the
+  representative's variance that the other representatives cannot explain.
+  If the representative is independent of the others, r = 1 and
+  &lambda; = &gamma;. If it is nearly a copy of a combination of the others, r is
+  small, and almost nothing happens until &gamma; is very close to 1.</p>
+
+  <div class="widget">
+    <canvas id="chartLam" width="820" height="280"></canvas>
+    <div class="readout"><b>The fraction travelled.</b> Each curve is one group. The
+    height is how far, as a fraction, that group's representative has travelled
+    from its NCO holding toward its minimum-variance holding. Setting the dial
+    to &frac12; moves an independent representative halfway, but a representative
+    with r = 0.01 only one percent of the way.</div>
+  </div>
+  <div class="lookfor">Every curve crosses the dashed half-way line at
+  &gamma; = 1/(1 + r); a crossing anywhere else would refute the formula. For
+  r = 0.01 that is &gamma; &asymp; 0.99, so nearly the whole journey happens in
+  the last hundredth of the dial.</div>
+
+  <h2>The extreme case: two groups whose representatives are the same asset</h2>
+  <p>Take two groups. Each has a representative and one independent asset, all
+  with variance 1. Now make the two representatives almost perfect copies of
+  each other, with correlation 1/(1 + &epsilon;). Effectively there are three
+  assets: one representative held twice, and two independent assets. The best
+  portfolio puts a third in each independent asset and a sixth in each copy of
+  the representative, for a variance of 1/3 as &epsilon; goes to 0.</p>
+
+  <p>NCO cannot see that the two representatives are nearly the same asset.
+  Inside each group the representative looks like an ordinary asset, so NCO
+  holds close to a quarter in everything, with variance near 3/8. The bridge
+  repairs this only as the dial approaches 1, and the smaller &epsilon; is, the
+  later the repair starts. The paper proposes an alternative dial &lambda; that
+  moves every group's representative by the same fraction of its journey, and
+  that path stays smooth no matter how small &epsilon; is. Both paths are built
+  from, and scored on, the same covariance with the chosen &epsilon;, so they
+  share their two ends exactly; what changes with &epsilon; is the shape between
+  them.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="leps">log&#8321;&#8320; &epsilon; (how nearly the two representatives coincide)</label><input type="range" id="leps" min="-6" max="0" step="0.25" value="-2" /><span class="val" id="lepsVal">-2.00</span>
+    </div>
+    <canvas id="barsDup" width="820" height="230"></canvas>
+    <div class="readout"><b>The weights.</b> The four assets are K1, its
+    independent partner, K2, its independent partner. NCO holds a quarter of
+    each. The optimum holds a sixth of each representative and a third of each
+    independent asset. When &epsilon; is small the bridge leaves the NCO
+    weights late in the dial.</div>
+    <canvas id="chartDup" width="820" height="300"></canvas>
+    <div class="readout" id="readDup"></div>
+  </div>
+  <div class="lookfor">The variance along the two dials. Both curves start at NCO's variance for
+  this &epsilon; and end at the optimum for this &epsilon;; the two grey lines mark
+  those values, and they tend to 3/8 and 1/3 as &epsilon; shrinks. The solid
+  curve is the bridge against its dial &gamma;; as &epsilon; falls toward
+  10<sup>&minus;6</sup> it stays flat across almost the whole dial and drops
+  only at the right end. The dashed curve is the alternative dial &lambda;,
+  and it keeps its smooth shape at every &epsilon;. The paper's phrase for the
+  solid curve's behaviour is that the two limits, &epsilon; &rarr; 0 and
+  &gamma; &rarr; 1, do not commute.</div>
+
+  <p class="muted">Both curves are the paper's two-tier formulas with a
+  two-by-two representative covariance, computed live. The verification script
+  checks the same limits.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+function draw(){
+  const rs=[1,0.5,0.1,0.01];
+  N.lineChart('chartLam',{series:rs.map(r=>({name:'group with r = '+r,points:Array.from({length:401},(_,i)=>{const g=i/400;return [g,N.lambda_of(g,r)];})})),
+    title:'fraction of the journey from NCO to minimum variance, λ, against the dial γ',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',hlines:[{y:0.5,label:'half way',color:'#999'}],height:280});
+  const le=+$('leps').value, eps=Math.pow(10,le); $('lepsVal').textContent=le.toFixed(2);
+  const gpts=Array.from({length:801},(_,i)=>{const g=i/800;return [g,N.duplicatedKnotsV0(g,eps)];});
+  const Sig4=[[1+eps,0,1,0],[0,1,0,0],[1,0,1+eps,0],[0,0,0,1]], cl4=[[0,1],[2,3]], kn4=[0,2];
+  N.barChart('barsDup',{title:'portfolio weights at four settings of the dial, ε = 10^'+le.toFixed(2),categories:['K1','m','K2','m'],clusterOf:[0,0,1,1],
+    groups:[0,0.9,0.99,1].map(g=>({name:'γ = '+g,values:N.bridge(Sig4,cl4,kn4,g).w})),height:230});
+  const lpts=Array.from({length:201},(_,i)=>{const l=i/200;return [l,N.duplicatedKnotsLambdaPath(l,eps)];});
+  const v0=gpts[0][1], v1=gpts[gpts.length-1][1];
+  N.lineChart('chartDup',{series:[{name:'bridge, against its dial γ',points:gpts},{name:'alternative dial λ',points:lpts,dash:[6,4]}],
+    title:'variance of the portfolio along the two dials, at this ε',xlabel:'position of the dial, γ or λ',xname:'dial',hlines:[{y:v0,label:'NCO at this ε: '+v0.toFixed(4)+' (→ 3/8)',color:'#999'},{y:v1,label:'optimum at this ε: '+v1.toFixed(4)+' (→ 1/3)',color:'#999'}],height:300});
+  const half=gpts.find(p=>p[1]<(v0+v1)/2);
+  $('readDup').innerHTML='<b>Result.</b> At this ε the two ends are '+v0.toFixed(5)+' and '+v1.toFixed(5)+', shared by both paths (the λ path ends at '+lpts[0][1].toFixed(5)+' and '+lpts[lpts.length-1][1].toFixed(5)+'). The bridge is only half repaired at <b>γ ≈ '+(half?half[0].toFixed(4):'—')+'</b>; its variance at γ = 0.99 is '+N.duplicatedKnotsV0(0.99,eps).toFixed(5)+'.';
+}
+$('leps').addEventListener('input',draw); window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>

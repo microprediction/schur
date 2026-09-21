@@ -32,33 +32,45 @@
 </head>
 <body>
 <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./implementations.html">Implementations</a>
-        <a href="./map.html">Literature map</a>
-        <a href="./timeline.html">Timeline</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
 <div id="map-wrap">
     <h1>Schur Damping: Research Directions</h1>
     <p>Each node is a paper (or the hub concept). Colors are literatures; solid edges are real
-    connections; <b style="color:#c0392b">dashed red edges are connections that do not yet exist</b> —
+    connections; <em style="color:#c0392b">dashed red edges are connections that do not yet exist</em>:
     verified absences as of mid-2026, i.e. the research agenda. Click a node to open the paper;
-    drag to rearrange; hover for the one-line story.</p>
+    drag to rearrange; hover for the one-line summary.</p>
     <div class="legend" id="cluster-legend"></div>
     <div class="legend">
         <span><span class="line" style="border-color:#888"></span> builds on / descends from</span>
         <span><span class="line" style="border-color:#2471a3; border-top-width:3.5px"></span> same object, two readings</span>
         <span><span class="line" style="border-color:#1e8449"></span> endpoint / special case of the γ-dial</span>
         <span><span class="line" style="border-top-style:dotted; border-color:#7d3c98"></span> contrast (competing regularizer)</span>
-        <span><span class="line" style="border-top-style:dashed; border-color:#c0392b"></span> GAP — does not exist yet</span>
+        <span><span class="line" style="border-top-style:dashed; border-color:#c0392b"></span> GAP: does not exist yet</span>
     </div>
     <div id="graph"></div>
     <p class="hint">Items marked ⚠ are provisional pending verification. Also rendered on the
@@ -79,6 +91,7 @@ const CLUSTERS = {
   portfolio:  {label: "Portfolio / econometrics",   color: "#27ae60"},
   ml:         {label: "Machine learning",           color: "#e74c8b"},
   eval:       {label: "Scoring / evaluation",       color: "#5d6d7e"},
+  da:         {label: "Data assimilation",          color: "#a04000"},
 };
 
 const NODES = [
@@ -87,14 +100,14 @@ const NODES = [
  {id:"cotton2024", label:"Cotton 2024", year:2024, c:"hub", url:"https://arxiv.org/abs/2411.05807", note:"Schur Complementary Allocation (arXiv): γ interpolates HRP ↔ min-variance."},
  {id:"wuebben2026", label:"Wuebben 2026", year:2026, c:"portfolio", url:"https://arxiv.org/abs/2604.23833", note:"'Beyond De Prado and Cotton': extends the hierarchical/Schur machinery past minimum variance to general mean-variance with alpha signals (HRP-μ, CRISP)."},
  {id:"skfolio2025", label:"skfolio 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2507.04176", note:"Nicolini–Manzi–Delatte: sklearn-ecosystem portfolio library; ships a SchurComplementary optimizer (batch/fixed-universe implementation)."},
- {id:"chitra2025", label:"Chitra et al 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2502.06028", note:"PDLPs (DeFi). Appendix B decides single vs multiple lending pools via the UNDAMPED Schur complement of the pool covariance (the exact conditional covariance, no γ) — conditions the authors note are \u2018similar to hierarchical risk-parity methods [Cot24, LdP16]\u2019. The γ=0 vs γ=1 architecture question, posed in DeFi."},
+ {id:"chitra2025", label:"Chitra et al 2025", year:2025, c:"portfolio", url:"https://arxiv.org/abs/2502.06028", note:"PDLPs (DeFi). Appendix B decides single vs multiple lending pools via the undamped Schur complement of the pool covariance (the exact conditional covariance, no γ), conditions the authors note are \u2018similar to hierarchical risk-parity methods [Cot24, LdP16]\u2019. The γ=0 vs γ=1 architecture question, posed in DeFi."},
  {id:"pergher2026", label:"Pergher et al 2026", year:2026, c:"portfolio", url:"https://doi.org/10.1109/ACCESS.2026.3656702", note:"Pergher–Soldera–Scharcanski (IEEE Access): orthogonal HRP allocation for better out-of-sample performance; cites Cotton 2024."},
  {id:"salas2025", label:"Salas-Molina et al 2025", year:2025, c:"portfolio", url:"https://doi.org/10.1007/978-3-031-78241-1_5", note:"Estimation windows in HRP methods (LNCS Decision Sciences): empirical HRP study; cites Cotton 2024; best OOS Sharpe at ~5y daily windows."},
  {id:"calle2025", label:"Calle-Saldarriaga et al 2025", year:2025, c:"spatial", url:"https://arxiv.org/abs/2509.22474", note:"Generative multi-scale modeling and downscaling via spatial autoregressive transport maps (Katzfuss group); cites Chakraborty–Katzfuss."},
  {id:"sikorski2025", label:"LatticeVision 2025", year:2025, c:"spatial", url:"https://arxiv.org/abs/2505.09803", note:"Sikorski–Ivanitskiy–Lenssen: image-to-image networks for non-stationary spatial data; cites Chakraborty–Katzfuss."},
  {id:"knezevic2026", label:"Knežević–Šimović 2026", year:2026, c:"portfolio", url:"https://doi.org/10.1142/S2705109926700013", note:"Knežević &amp; Posedel Šimović, 'Bridging Risk Parity and Variance Optimization: A Schur Complement Approach to Recursive Asset Allocation', The Journal of FinTech (2026), open access. Cites both Cotton 2022 (blog) and Cotton 2024 (arXiv)."},
- {id:"alonso2025", label:"Alonso 2025", year:2025, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624", note:"Return-Adjusted HRP and Schur Portfolios: theoretical and empirical study (SSRN 5370624)."},
- {id:"alonso2026", label:"Alonso 2026 (RLPO)", year:2026, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220", note:"Reinforcement Learning Portfolio Optimization: from Markowitz to risk-sensitive control (SSRN 6447220)."},
+ {id:"alonso2025", label:"Noguer i Alonso 2025", year:2025, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624", note:"Return-Adjusted HRP and Schur Portfolios: theoretical and empirical study (SSRN 5370624)."},
+ {id:"alonso2026", label:"Noguer i Alonso 2026 (RLPO)", year:2026, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220", note:"Reinforcement Learning Portfolio Optimization: from Markowitz to risk-sensitive control (SSRN 6447220)."},
  {id:"bergmeier2026", label:"Bergmeier 2026", year:2026, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678", note:"The Risk Parity Zoo: out-of-sample comparison of risk-based allocation models (SSRN 6536678)."},
  {id:"mograby2025", label:"Mograby 2025", year:2025, c:"hub", url:"https://arxiv.org/abs/2503.12328", note:"Exact Schur separator recursion on hierarchical graphs; the γ=1, no-noise skeleton."},
 
@@ -107,16 +120,28 @@ const NODES = [
  {id:"sko2021", label:"Schäfer–Katzfuss–Owhadi ⚠", year:2021, c:"spatial", url:"https://arxiv.org/abs/2004.14455", note:"Sparse inverse-Cholesky by KL minimization; near-linear cost with guarantees."},
  {id:"pan2024", label:"Block-Vecchia 2024", year:2024, c:"spatial", url:"https://arxiv.org/abs/2410.04477", note:"GPU block Vecchia."},
  {id:"shrinktm2025", label:"Chakraborty\u2013Katzfuss 2025", year:2025, c:"hub", url:"https://arxiv.org/abs/2409.19208", note:"Shrinks Vecchia conditionals toward a parametric base (EB intensity). Nearest relative; needs a base."},
+ {id:"evensen1994", label:"Evensen 1994", year:1994, c:"da", url:"https://doi.org/10.1029/94JC00572", note:"The ensemble Kalman filter: a small ensemble stands in for the forecast covariance, so estimation error is the central problem."},
+ {id:"gaspari1999", label:"Gaspari–Cohn 1999", year:1999, c:"da", url:"https://doi.org/10.1002/qj.49712555417", note:"Compactly supported correlation functions: the taper that localization multiplies the sample covariance by."},
+ {id:"houtekamer2001", label:"Houtekamer–Mitchell 2001", year:2001, c:"da", url:"https://doi.org/10.1175/1520-0493(2001)129<0123:ASEKFF>2.0.CO;2", note:"Covariance localization by a Schur (Hadamard) product with a distance taper. Schur's name, but the elementwise product, not the complement."},
+ {id:"hamill2001", label:"Hamill–Whitaker–Snyder 2001", year:2001, c:"da", url:"https://doi.org/10.1175/1520-0493(2001)129<2776:DDFOBE>2.0.CO;2", note:"Distance-dependent filtering of sample covariances; the localization radius is tuned empirically."},
+ {id:"anderson2007", label:"Anderson 2007", year:2007, c:"da", url:"https://doi.org/10.1016/j.physd.2006.02.011", note:"Hierarchical ensemble filter: adaptive localization from the sampling error of the regression coefficients. The nearest thing to a reliability argument."},
+ {id:"anderson2012", label:"Anderson 2012", year:2012, c:"da", url:"https://doi.org/10.1175/MWR-D-11-00013.1", note:"Localization and sampling error correction: shrink each regression coefficient by a factor set by its sampling error."},
+ {id:"lopezdeprado2020", label:"López de Prado 2020 (NCO)", year:2020, c:"portfolio", url:"https://doi.org/10.1017/9781108883658", note:"Nested clustered optimization: optimize inside clusters, then across. The gamma = 0 end of the NCO bridge."},
+ {id:"cotton2026nco", label:"Cotton 2026 (NCO bridge)", year:2026, c:"hub", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738", note:"NCO is one end of a Schur bridge whose other end is minimum variance; one knot per cluster is a sufficient conditioning set; the interior is sometimes provably optimal out of sample."},
+ {id:"raffinot2018", label:"Raffinot 2018 (HERC)", year:2018, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3237540", note:"Hierarchical equal risk contribution: a dendrogram cut into clusters, inverse variance inside, inverse cluster risk across. The (0,0) corner of the HERC square."},
+ {id:"cotton2026herc", label:"Cotton 2026 (HERC square)", year:2026, c:"hub", url:"./schur-herc-square.pdf", note:"HERC's budget rule is the minimum-variance rule; it lacks two Schur complements. Damping them gives a square with HERC at one corner and the optimum at the opposite corner; the inner dial makes Stevens' identity a path."},
+ {id:"cotton2026loc", label:"Cotton 2026 (localization)", year:2026, c:"hub", url:"./localization-is-schur-damping.pdf", note:"A block-constant taper is Schur damping; the optimal coupling is the square of a signal-to-noise shrinkage of the gain, interior at every noise level."},
+ {id:"hz2016", label:"Houtekamer–Zhang 2016", year:2016, c:"da", url:"https://doi.org/10.1175/MWR-D-15-0440.1", note:"Review of the EnKF for atmospheric data assimilation; localization and inflation as the two dials."},
  {id:"taper2006", label:"Tapering 2006", year:2006, c:"spatial", url:"https://doi.org/10.1198/106186006X132178", note:"Entrywise damping (Schur product theorem) vs factorization damping (LDL'). The instructive contrast."},
 
  {id:"besag1975", label:"Besag 1975", year:1975, c:"composite", url:"https://doi.org/10.2307/2987782", note:"Pseudo-likelihood, the origin."},
  {id:"varin2011", label:"Varin–Reid–Firth 2011", year:2011, c:"composite", url:"https://www3.stat.sinica.edu.tw/statistica/j21n1/j21n11/j21n11.html", note:"Composite likelihood survey; Godambe efficiency."},
- {id:"pakel2021", label:"CL-DCC Pakel et al ⚠", year:2021, c:"composite", url:"https://doi.org/10.1016/j.jeconom.2020.07.048", note:"Composite likelihood DCC at thousands of assets. Finance factorizes — but never damps."},
+ {id:"pakel2021", label:"CL-DCC Pakel et al ⚠", year:2021, c:"composite", url:"https://doi.org/10.1080/07350015.2020.1713795", note:"Composite likelihood DCC at thousands of assets. Finance factorizes but never damps."},
 
  {id:"pourahmadi1999", label:"Pourahmadi 1999", year:1999, c:"cholesky", url:"https://doi.org/10.1093/biomet/86.3.677", note:"Covariance = sequential regressions + innovation variances."},
  {id:"rlz2010", label:"Rothman–Levina–Zhu 2010", year:2010, c:"cholesky", url:"https://arxiv.org/abs/0903.0645", note:"Regularized Cholesky regressions are PD by construction. The plug-in license."},
  {id:"huang2006", label:"Huang et al 2006 ⚠", year:2006, c:"cholesky", url:"https://doi.org/10.1093/biomet/93.1.85", note:"Lasso on Cholesky regressions: the regularized ancestor of a sparse bridge."},
- {id:"rhee2022", label:"Rhee–Kwak–Lee 2022", year:2022, c:"cholesky", url:"https://doi.org/10.1016/j.csda.2022.107439", note:"The ONLY robustified Cholesky-regression model (multivariate-t EM, longitudinal, small p)."},
+ {id:"rhee2022", label:"Rhee–Kwak–Lee 2022", year:2022, c:"cholesky", url:"https://doi.org/10.1016/j.csda.2022.107439", note:"The only robustified Cholesky-regression model (multivariate-t EM, longitudinal, small p)."},
 
  {id:"jamesstein1961", label:"James–Stein 1961", year:1961, c:"shrinkage", url:"https://projecteuclid.org/euclid.bsmsp/1200512173", note:"The reliability ratio's ancestor."},
  {id:"lw2004", label:"Ledoit–Wolf 2004", year:2004, c:"shrinkage", url:"https://doi.org/10.1016/S0047-259X(03)00096-4", note:"Linear shrinkage; γ* is an LW intensity restricted to cross-block coupling."},
@@ -127,23 +152,23 @@ const NODES = [
  {id:"huber1964", label:"Huber 1964", year:1964, c:"robust", url:"https://doi.org/10.1214/aoms/1177703732", note:"M-estimation."},
  {id:"tyler1987", label:"Tyler 1987 ⚠", year:1987, c:"robust", url:"https://doi.org/10.1214/aos/1176350263", note:"Distribution-free scatter. Infeasible at full p, routine on (m+1)-dim bridge blocks."},
  {id:"cwh2011", label:"Regularized Tyler ⚠", year:2011, c:"robust", url:"https://doi.org/10.1109/TSP.2011.2138698", note:"Chen–Wiesel–Hero: shrinkage × robustness inside M-estimation."},
- {id:"hanliu2017", label:"Han–Liu 2017", year:2017, c:"robust", url:"https://arxiv.org/abs/1305.6916", note:"Kendall sin(πτ/2): moment-free, rate √(r_eff log d/n) — and NOT PSD. Bridges repair that for free."},
- {id:"ddc2018", label:"DDC / cellwise ⚠", year:2018, c:"robust", url:"https://arxiv.org/abs/1601.07251", note:"Rousseeuw–Van den Bossche: cellwise outliers — the contamination bridges amplify."},
- {id:"ke2019", label:"Ke et al 2019", year:2019, c:"robust", url:"https://arxiv.org/abs/1811.01520", note:"Tail-robust truncation with deviation bounds. Acts on the DENSE covariance; 'Vecchia' absent from text."},
- {id:"szf2020", label:"Adaptive Huber ⚠", year:2020, c:"robust", url:"https://arxiv.org/abs/1706.07880", note:"Sun–Zhou–Fan: per-regression rates. Composition through a conditional recursion: unstudied."},
- {id:"flw2018", label:"Fan–Liu–Wang 2018", year:2018, c:"robust", url:"https://arxiv.org/abs/1507.08377", note:"Robust plug-ins keep optimal rates inside POET. The rate-theory TEMPLATE for robust bridges."},
+ {id:"hanliu2017", label:"Han–Liu 2017", year:2017, c:"robust", url:"https://arxiv.org/abs/1305.6916", note:"Kendall sin(πτ/2): moment-free, rate √(r_eff log d/n), and not PSD. Bridges repair that for free."},
+ {id:"ddc2018", label:"DDC / cellwise ⚠", year:2018, c:"robust", url:"https://arxiv.org/abs/1601.07251", note:"Rousseeuw–Van den Bossche: cellwise outliers, the contamination bridges amplify."},
+ {id:"ke2019", label:"Ke et al 2019", year:2019, c:"robust", url:"https://arxiv.org/abs/1811.01520", note:"Tail-robust truncation with deviation bounds. Acts on the dense covariance; 'Vecchia' absent from text."},
+ {id:"szf2020", label:"Adaptive Huber ⚠", year:2020, c:"robust", url:"https://arxiv.org/abs/1706.06991", note:"Sun–Zhou–Fan: per-regression rates. Composition through a conditional recursion: unstudied."},
+ {id:"flw2018", label:"Fan–Liu–Wang 2018", year:2018, c:"robust", url:"https://arxiv.org/abs/1507.08377", note:"Robust plug-ins keep optimal rates inside POET. The rate-theory template for robust bridges."},
 
- {id:"dempster1972", label:"Dempster 1972", year:1972, c:"completion", url:"https://doi.org/10.2307/2528966", note:"Covariance selection: max-entropy with sparse precision — the implicit global matrix, named in 1972."},
- {id:"gjsw1984", label:"GJSW 1984", year:1984, c:"completion", url:"https://doi.org/10.1016/0024-3795(84)90207-6", note:"Blocks+bridges always complete to PD iff the bridge graph is CHORDAL; unique max-det completion."},
+ {id:"dempster1972", label:"Dempster 1972", year:1972, c:"completion", url:"https://doi.org/10.2307/2528966", note:"Covariance selection: max-entropy with sparse precision: the implicit global matrix, named in 1972."},
+ {id:"gjsw1984", label:"GJSW 1984", year:1984, c:"completion", url:"https://doi.org/10.1016/0024-3795(84)90207-6", note:"Blocks+bridges always complete to PD iff the bridge graph is chordal; unique max-det completion."},
  {id:"va2015", label:"Vandenberghe–Andersen 2015", year:2015, c:"completion", url:"https://www.seas.ucla.edu/~vandenbe/publications/chordalsdp.pdf", note:"Clique-tree completion ≈ one sparse factorization. Batch, non-robust, no streaming: three openings."},
- {id:"ml2010", label:"Massa–Lauritzen 2010", year:2010, c:"completion", url:"https://web.math.ku.dk/~lauritzen/papers/conm10179.pdf", note:"Markov combination: max-entropy gluing; NON-associative off junction trees (ordering sensitivity)."},
+ {id:"ml2010", label:"Massa–Lauritzen 2010", year:2010, c:"completion", url:"https://web.math.ku.dk/~lauritzen/papers/conm10179.pdf", note:"Markov combination: max-entropy gluing; non-associative off junction trees (ordering sensitivity)."},
 
  {id:"markowitz1952", label:"Markowitz 1952", year:1952, c:"portfolio", url:"https://doi.org/10.2307/2975974", note:"The γ=1 destination."},
  {id:"hrp2016", label:"HRP 2016", year:2016, c:"portfolio", url:"https://doi.org/10.3905/jpm.2016.42.4.059", note:"López de Prado: the γ=0 corner."},
  {id:"antonov2024", label:"Antonov et al 2024", year:2024, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151", note:"HRP, a closer look."},
  {id:"elw2019", label:"DCC-NL Engle–Ledoit–Wolf ⚠", year:2019, c:"portfolio", url:"https://doi.org/10.1080/07350015.2017.1345683", note:"Large dynamic correlation by nonlinear shrinkage: the industrial competitor at p≈1000s."},
 
- {id:"kfac2015", label:"KFAC 2015", year:2015, c:"ml", url:"https://arxiv.org/abs/1503.05671", note:"Martens–Grosse: the natural gradient is the min-variance operation on the GRADIENT covariance. Block-diagonal/tridiagonal inverse-Fisher = binary γ∈{0,1} coupling choices; its 'damping' (λI) is spectrum loading, not coupling attenuation. The interior dial is unoccupied."},
+ {id:"kfac2015", label:"KFAC 2015", year:2015, c:"ml", url:"https://arxiv.org/abs/1503.05671", note:"Martens–Grosse: the natural gradient is the min-variance operation on the gradient covariance. Block-diagonal/tridiagonal inverse-Fisher = binary γ∈{0,1} coupling choices; its 'damping' (λI) is spectrum loading, not coupling attenuation. The interior dial is unoccupied."},
  {id:"tp2014", label:"Student-t processes ⚠", year:2014, c:"ml", url:"https://arxiv.org/abs/1402.4306", note:"Heavy-tailed GP; a damped t-Vecchia is an open combination."},
 
  {id:"gr2007", label:"Gneiting–Raftery 2007", year:2007, c:"eval", url:"https://sites.stat.washington.edu/raftery/Research/PDF/Gneiting2007jasa.pdf", note:"Proper scoring rules: the frame for 'interior γ is improper but more powerful'."},
@@ -180,6 +205,17 @@ const EDGES = [
  {s:"sko2021", t:"shrinktm2025", type:"lineage"},
  {s:"shrinktm2025", t:"hub", type:"identity", label:"shrunk conditionals; base-bound EB vs base-free γ*"},
  {s:"taper2006", t:"hub", type:"contrast", label:"entrywise vs factorization damping"},
+ {s:"evensen1994", t:"houtekamer2001", type:"lineage"}, {s:"gaspari1999", t:"houtekamer2001", type:"lineage", label:"taper functions"},
+ {s:"gaspari1999", t:"hamill2001", type:"lineage"}, {s:"houtekamer2001", t:"anderson2007", type:"lineage"},
+ {s:"houtekamer2001", t:"hz2016", type:"lineage"}, {s:"anderson2007", t:"hz2016", type:"lineage"},
+ {s:"gaspari1999", t:"taper2006", type:"lineage", label:"same tapers, spatial statistics"},
+ {s:"cotton2026loc", t:"houtekamer2001", type:"endpoint", label:"a block-constant taper's conditional is the damped complement; distance tapers are the general case"},
+ {s:"hub", t:"cotton2026nco", type:"lineage"}, {s:"raffinot2018", t:"cotton2026herc", type:"endpoint", label:"HERC is the (0,0) corner"}, {s:"cotton2026nco", t:"cotton2026herc", type:"lineage", label:"same pair form, a second dial"}, {s:"hrp2016", t:"raffinot2018", type:"lineage"},
+ {s:"lopezdeprado2020", t:"cotton2026nco", type:"endpoint", label:"NCO is the γ=0 end"},
+ {s:"kg2021", t:"cotton2026nco", type:"lineage", label:"knots truncate the conditioning set in the manner of Vecchia"},
+ {s:"anderson2007", t:"anderson2012", type:"lineage"}, {s:"anderson2012", t:"cotton2026loc", type:"lineage", label:"sampling-error correction, squared"},
+ {s:"hub", t:"cotton2026loc", type:"lineage"},
+ {s:"cotton2026loc", t:"hz2016", type:"gap", label:"distance tapers and radius selection in operational EnKF: untreated"},
  {s:"besag1975", t:"varin2011", type:"lineage"},
  {s:"varin2011", t:"hub", type:"endpoint", label:"γ=0 is block-composite likelihood"},
  {s:"varin2011", t:"pakel2021", type:"lineage"},
@@ -187,7 +223,7 @@ const EDGES = [
  {s:"pourahmadi1999", t:"rlz2010", type:"lineage"}, {s:"pourahmadi1999", t:"huang2006", type:"lineage"},
  {s:"rlz2010", t:"hub", type:"identity", label:"PD-by-construction license"},
  {s:"pourahmadi1999", t:"rhee2022", type:"lineage", label:"only robustification (t, small p)"},
- {s:"rhee2022", t:"vecchia1988", type:"gap", label:"no robust Vecchia exists"},
+ {s:"rhee2022", t:"vecchia1988", type:"gap", label:"a robust Vecchia: we found none"},
  {s:"jamesstein1961", t:"hub", type:"identity", label:"γ* is a reliability ratio"},
  {s:"jamesstein1961", t:"lw2004", type:"lineage"}, {s:"lw2004", t:"lw2012", type:"lineage"},
  {s:"lw2012", t:"bun2017", type:"lineage"}, {s:"johnstone2001", t:"bun2017", type:"lineage"},
@@ -205,12 +241,12 @@ const EDGES = [
  {s:"dempster1972", t:"gjsw1984", type:"lineage"}, {s:"gjsw1984", t:"va2015", type:"lineage"},
  {s:"gjsw1984", t:"ml2010", type:"lineage"},
  {s:"va2015", t:"hub", type:"endpoint", label:"γ=1 chordal bridges = max-det completion"},
- {s:"ml2010", t:"hub", type:"identity", label:"ordering sensitivity ↔ Vecchia ordering"},
+ {s:"ml2010", t:"hub", type:"lineage", label:"ordering sensitivity, an analogue of Vecchia ordering"},
  {s:"va2015", t:"sko2021", type:"lineage", label:"same sparse inverse-Cholesky object"},
  {s:"markowitz1952", t:"hrp2016", type:"lineage"},
  {s:"hrp2016", t:"hub", type:"endpoint", label:"γ=0 corner"},
  {s:"markowitz1952", t:"hub", type:"endpoint", label:"γ=1 corner"},
- {s:"hrp2016", t:"antonov2024", type:"lineage"}, {s:"antonov2024", t:"mograby2025", type:"lineage"},
+ {s:"hrp2016", t:"antonov2024", type:"lineage"}, {s:"hrp2016", t:"mograby2025", type:"lineage"},
  {s:"lw2012", t:"elw2019", type:"lineage"},
  {s:"elw2019", t:"hub", type:"contrast", label:"industrial rival at p≈1000s"},
  {s:"kfac2015", t:"hub", type:"endpoint", label:"binary coupling choices on the gradient covariance; the dial itself is absent"},
@@ -238,8 +274,8 @@ const links = EDGES.map(e => ({source:e.s, target:e.t, ...e}));
 // Chakraborty–Katzfuss (ShrinkTM) live inside the circle; edges that used to
 // terminate at a hub dot now stop at the perimeter, so the interior stays legible.
 // Hub↔inner edges are not drawn at all — containment already says it.
-const cx = W/2, cy = H/2, R_PERIM = 63, R_INNER = 24, R_DER = 130, R_RING = 185, R_OUTER = 320;
-const INNER = new Set(["cotton2022","cotton2024","shrinktm2025"]);
+const cx = W/2, cy = H/2, R_PERIM = 92, R_INNER = 42, R_DER = 150, R_RING = 205, R_OUTER = 330;
+const INNER = new Set(["cotton2022", "cotton2024", "shrinktm2025", "cotton2026herc", "cotton2026loc", "cotton2026nco"]);
 // derived works: papers citing Cotton 2024 or Chakraborty-Katzfuss (ShrinkTM)
 const DERIVED = new Set(["mograby2025","wuebben2026","skfolio2025","chitra2025",
                          "salas2025","pergher2026","calle2025","sikorski2025",
@@ -252,7 +288,7 @@ NODES.forEach((d,i) => {
   if (d.id === "hub") { d.fx = cx; d.fy = cy; return; }
   const ring = INNER.has(d.id) ? R_INNER : (DERIVED.has(d.id) ? R_DER : R_OUTER);
   let a;
-  if (INNER.has(d.id)) a = i*2.1;
+  if (INNER.has(d.id)) { const inn = NODES.filter(n => INNER.has(n.id)); a = (inn.indexOf(d)/inn.length)*2*Math.PI - Math.PI/2; }
   else if (DERIVED.has(d.id)) a = (derivedList.indexOf(d)/derivedList.length)*2*Math.PI - Math.PI/2;
   else a = sectors[d.c] + ((i%5)-2)*0.18;
   d.x = cx + ring*Math.cos(a); d.y = cy + ring*Math.sin(a);
@@ -299,7 +335,7 @@ const link = g.append("g").selectAll("line").data(drawn).join("line")
 
 // invisible fat lines so edges are hoverable; tooltip gives type + explanation
 const TYPE_NAMES = {lineage:"builds on", identity:"same object, two readings",
-  endpoint:"endpoint / special case of the γ-dial", contrast:"contrast", gap:"GAP — does not exist yet"};
+  endpoint:"endpoint / special case of the γ-dial", contrast:"contrast", gap:"GAP: does not exist yet"};
 const linkHover = g.append("g").selectAll("line").data(drawn).join("line")
   .attr("stroke","transparent").attr("stroke-width",12)
   .on("mousemove",(ev,d)=>{ tooltip.style("display","block")

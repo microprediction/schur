@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The member weights do not depend on the dial — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>The member weights do not depend on the dial</h1>
+  <p class="subtitle">Under the paper's model of grouped assets, turning the
+  dial changes only how much each group holds of its representative. The
+  variance the bridge gives up then has a closed form.</p>
+
+  <h2>The setting</h2>
+  <p>Assets are grouped, and each group has one representative, the paper's
+  knot. The paper's model of the world, the <em>gateway model</em>, says that
+  every other member of a group is its representative scaled by a beta plus
+  independent noise. So a member's only connection to the rest of the market
+  runs through its own group's representative. Such a market is drawn at
+  random: four groups with two, three, one and two members besides the
+  representative.</p>
+
+  <h2>Inside a group</h2>
+  <p>The bridge builds a small portfolio for each group, the group's
+  <em>direction</em>, and then decides how much money each group gets. The
+  direction lists a weight for the representative and a weight for each
+  member; only its shape matters, since the second step rescales it. At the
+  dial &gamma; = 0 the direction is the group's own minimum-variance portfolio,
+  as in nested clustered optimization. As &gamma; rises the group is told what
+  the other groups' representatives explain about its own.</p>
+
+  <p>The paper's result is that this information changes only one thing: how
+  much of the representative the group holds. The weights on the members are
+  the same at every &gamma;, and the same as they would be if the other groups
+  did not exist. The matrix on the left is the market's correlation with the
+  groups outlined. The bars on the right are every group's direction at three
+  settings of the dial: the member bars are identical across the three, and
+  only the representative bars change.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="seed">random market (seed)</label><input type="range" id="seed" min="1" max="60" step="1" value="47" /><span class="val" id="seedVal">47</span>
+    </div>
+    <div class="controls">
+      <button id="btnU1" class="on">objective: minimum variance</button>
+      <button id="btnMu">objective: maximum Sharpe ratio</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:12px;align-items:start">
+      <div><canvas id="hm" height="260"></canvas></div>
+      <div><canvas id="bars" height="260"></canvas></div>
+    </div>
+    <div class="readout" id="readDir"></div>
+  </div>
+  <div class="lookfor">The direction bars. Bars are grouped by asset, with the
+  representative first in each group. For every member the three bars have
+  the same height; for every representative they differ. The readout gives
+  the largest movement of any member weight across the whole dial, which is
+  rounding error, and confirms that at &gamma; = 1 the portfolio equals the
+  global optimum for the chosen objective. A member bar that differed across
+  the three settings would refute the result. A different seed draws a
+  different market with the same pattern.</div>
+
+  <h2>How far from optimal is the bridge at each &gamma;?</h2>
+  <p>Because the members never move, the paper can collapse each group to two
+  numbers, its representative and one summary of its members, and write the
+  bridge's excess variance over the optimum in closed form. The chart compares
+  that formula with the excess variance computed directly, on the same random
+  market.</p>
+
+  <div class="widget">
+    <canvas id="chartLoss" width="820" height="240"></canvas>
+    <div class="readout" id="readLoss"></div>
+  </div>
+  <div class="lookfor">The excess variance. The height is how much variance the
+  bridge gives up relative to the best possible portfolio, with no estimation
+  error. It is largest at NCO on the left, falls as the dial turns, and reaches
+  zero only at the right end. The two curves lie on top of each other, which is
+  the paper's lost-precision identity checked live.</div>
+
+  <p class="muted">Everything is computed from the sampled covariance in the
+  browser. Betas are drawn around 1 and residual noise is
+  independent, so the gateway model holds exactly.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+let useMu=false;
+function draw(){
+  const seed=+$('seed').value; $('seedVal').textContent=seed;
+  const m=N.gatewayModel(seed,[2,3,1,2]), n=m.Sigma.length;
+  const rnd=N.mulberry32(seed+1000); const mu=Array.from({length:n},()=>3+(rnd()-0.5));
+  const u=useMu?mu:new Array(n).fill(1);
+  const gs=Array.from({length:101},(_,i)=>i/100);
+  const dirs=gs.map(g=>N.directions(m.Sigma,m.clusters,m.knots,g,u));
+  let flat=0;
+  m.clusters.forEach((I,i)=>{for(let r=1;r<I.length;r++) flat=Math.max(flat,...gs.map((g,t)=>Math.abs(dirs[t][i][r]-dirs[0][i][r])));});
+  N.heatmap('hm',N.correlation(m.Sigma),{title:'correlation, groups outlined',clusters:m.clusters,knots:m.knots,name:'ρ',height:260});
+  const cats=m.clusters.flatMap((I,i)=>I.map((a,r)=>r===0?'K'+(i+1):'m')), cl=[]; m.clusters.forEach((I,i)=>I.forEach(()=>cl.push(i)));
+  const gsel=[0,0.5,1];
+  N.barChart('bars',{title:'each group\'s direction d_i(γ): representative first, then members',categories:cats,clusterOf:cl,
+    groups:gsel.map(g=>({name:'γ = '+g,values:N.directions(m.Sigma,m.clusters,m.knots,g,u).flat()})),height:260});
+  const w1=N.bridge(m.Sigma,m.clusters,m.knots,1,u).w; const opt=N.solve(m.Sigma,u); const tot=opt.reduce((s,v)=>s+v,0); const optn=opt.map(v=>v/tot);
+  const dev=Math.max(...w1.map((v,i)=>Math.abs(v-optn[i])));
+  $('readDir').innerHTML='<b>Result.</b> Largest movement of any member weight across the dial: <b>'+flat.toExponential(2)+'</b>. Largest difference between the γ = 1 portfolio and the global optimum: <b>'+dev.toExponential(2)+'</b>.';
+  const S=m.S; const delta=m.clusters.map((I,i)=>{if(I.length<2)return 0;const beta=I.slice(1).map(a=>m.Sigma[a][I[0]]/m.Sigma[I[0]][I[0]]);const E=m.resid[i];const cvec=beta.map(b=>1-b);return N.dot(cvec,N.solve(E,cvec));});
+  const pts1=[],pts2=[]; gs.forEach(g=>{const r=N.lostPrecision(S,delta,g); pts1.push([g,r.computed]); pts2.push([g,r.formula]);});
+  N.lineChart('chartLoss',{series:[{name:'computed directly',points:pts1},{name:'paper\'s closed form',points:pts2,dash:[6,4]}],title:'excess variance of the bridge over the optimum (minimum-variance objective)',xlabel:'γ  (0 = NCO, 1 = global minimum variance)',xname:'γ',height:240});
+  const gap=Math.max(...pts1.map((p,i)=>Math.abs(p[1]-pts2[i][1])));
+  $('readLoss').innerHTML='<b>Result.</b> Largest gap between the two curves: <b>'+gap.toExponential(2)+'</b>.';
+}
+$('seed').addEventListener('input',draw);
+$('btnU1').onclick=()=>{useMu=false;$('btnU1').classList.add('on');$('btnMu').classList.remove('on');draw();};
+$('btnMu').onclick=()=>{useMu=true;$('btnMu').classList.add('on');$('btnU1').classList.remove('on');draw();};
+window.addEventListener('resize',draw); draw();
+})();
+</script>
+</body>
+</html>

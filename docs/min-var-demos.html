@@ -12,16 +12,27 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">schur</a>
     <nav>
-      <a href="./intro.html">Introduction</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./demos.html">Demos</a>
       <a href="./implementations.html">Implementations</a>
-      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="./timeline.html">Timeline</a>
       <a href="https://github.com/microprediction/schur">GitHub</a>
     </nav>
   </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
 </header>
 
 <main>
@@ -49,35 +60,35 @@
 
   <h2>The endpoints</h2>
   <ul class="demo-list">
-    <li><a href="./demo-blindness.html">Lemma 1 — HRP never sees the
+    <li><a href="./demo-blindness.html">Lemma 1: HRP never sees the
       cross-block</a>
       <div class="claim">At &gamma; = 0 the recursion reads only the diagonal
       blocks, so cross-block noise cannot move the weights at all.</div></li>
-    <li><a href="./demo-noise-cost.html">Theorems 1 and 2 — the noise cost is
+    <li><a href="./demo-noise-cost.html">Theorems 1 and 2: the noise cost is
       &gamma;&tau;&sup2;</a>
       <div class="claim">The expected excess cost factors as
       &gamma;&tau;&sup2;H, and the tempting &gamma;&sup2;&tau;&sup2; bound fails
       for a generic family.</div></li>
-    <li><a href="./demo-hrp-endpoint.html">Example 1 — HRP becomes locally
+    <li><a href="./demo-hrp-endpoint.html">Example 1: HRP becomes locally
       optimal at finite noise</a>
       <div class="claim">The boundary derivative is exactly
       &minus;1/700 + (8/189)&tau;&sup2; and flips sign at
       &tau;* = &radic;(27/800).</div></li>
-    <li><a href="./demo-mv-endpoint.html">Theorem 3 — small noise moves the
+    <li><a href="./demo-mv-endpoint.html">Theorem 3: small noise moves the
       optimum off the minimum-variance end</a>
       <div class="claim">1 &minus; &gamma;*(&tau;) grows like
       (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;, with the coefficient 1025/153
-      for the solved family.</div></li>
+      in e&sup2; = 4&tau;&sup2; for the solved family.</div></li>
   </ul>
 
   <h2>The solved family</h2>
   <ul class="demo-list">
-    <li><a href="./demo-family.html">Theorem 4 — unique interior optimum,
+    <li><a href="./demo-family.html">Theorem 4: unique interior optimum,
       monotone in the noise</a>
       <div class="claim">The exact objective in closed form: strictly convex,
       minimizer interior at every admissible noise level, sliding from 1 to
       &frac12;.</div></li>
-    <li><a href="./demo-one-entry.html">Example 2 — one-entry noise, interior
+    <li><a href="./demo-one-entry.html">Example 2: one-entry noise, interior
       without symmetry</a>
       <div class="claim">Noise in a single covariance entry, no common-noise
       symmetry, and the interior optimum survives.</div></li>
@@ -85,16 +96,16 @@
 
   <h2>Whole-matrix noise</h2>
   <ul class="demo-list">
-    <li><a href="./demo-whole-matrix.html">Theorem 5 — the sign of &Xi;
+    <li><a href="./demo-whole-matrix.html">Theorem 5: the sign of &Xi;
       decides</a>
       <div class="claim">Every entry of the covariance noisy. Interiority is
       decided by an explicit second-moment functional, and D-block-only noise
       realizes the &Xi; &lt; 0 branch where full coupling stays optimal.</div></li>
-    <li><a href="./demo-entrywise.html">Entrywise noise — enumerate every sign
+    <li><a href="./demo-entrywise.html">Entrywise noise: enumerate every sign
       state</a>
       <div class="claim">All 64 or 1024 sign states averaged through the
       recursion, exchangeability broken, minimizer still interior.</div></li>
-    <li><a href="./demo-sample-covariance.html">The sample covariance —
+    <li><a href="./demo-sample-covariance.html">The sample covariance:
       &gamma;* sweeps the bridge with T</a>
       <div class="claim">Seeded Monte Carlo in the Antonov&ndash;Lipton&ndash;L&oacute;pez
       de Prado setting: the median-optimal &gamma;* runs from 0.62 at T = 15
@@ -104,7 +115,7 @@
 
   <h2>The surrogate</h2>
   <ul class="demo-list">
-    <li><a href="./demo-frontier.html">Theorem 6 — the clipped frontier</a>
+    <li><a href="./demo-frontier.html">Theorem 6: the clipped frontier</a>
       <div class="claim">The surrogate optimizer is the clipped inverse of
       t(&gamma;) = &minus;V&#8320;&prime;/G&prime;; one family sweeps the whole
       bridge, the other clips to HRP at s = 27/800.</div></li>

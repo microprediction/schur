@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The bridge by Monte Carlo — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+<main>
+  <p class="demo-nav"><a href="./nco-demos.html">&larr; NCO bridge demos</a>
+  <span><a href="./schur-nco-bridge.pdf">paper (PDF)</a> &middot;
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">verification script</a></span></p>
+  <h1>The bridge by Monte Carlo</h1>
+  <p class="subtitle">A random market, a noisy estimate of its covariance,
+  and the out-of-sample variance of the bridge portfolio at every setting of
+  the dial, averaged over many estimates. Nothing here is a formula; it is
+  the algorithm run on data.</p>
+
+  <h2>The market</h2>
+  <p>Twelve assets in four groups. Each group has one representative (K1 to K4)
+  and one to three other members (m). The representatives are correlated with
+  each other; each member is its own group's representative scaled by a beta,
+  plus independent noise, which is the paper's gateway model. The left matrix
+  is the true correlation, with the groups outlined. The right matrix is a
+  sample correlation estimated from T observations, which is what the
+  portfolio has to be built from. The two disagree less as T grows.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="seed">market (seed)</label><input type="range" id="seed" min="1" max="40" step="1" value="7" /><span class="val" id="seedVal">7</span>
+    </div>
+    <div class="controls">
+      <label for="T">observations T</label><input type="range" id="T" min="20" max="400" step="10" value="60" /><span class="val" id="TVal">60</span>
+      <button id="resample">draw another sample</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div><canvas id="hmTrue" height="300"></canvas></div>
+      <div><canvas id="hmSample" height="300"></canvas></div>
+    </div>
+    <div class="readout" id="readHm"></div>
+  </div>
+
+  <h2>Out of sample, over many estimates</h2>
+  <p>For each of many samples of T observations, the bridge portfolio is
+  built from the sample covariance at every &gamma; from 0 to 1, and its
+  variance is then measured under the true covariance. The chart shows the
+  average of that out-of-sample variance against &gamma;, updating as the
+  draws accumulate. The readout also gives
+  what the bridge would achieve if it were handed the true covariance, which
+  is lowest at &gamma; = 1 by the paper's Proposition 2; the noisy curve sits
+  above it everywhere.</p>
+
+  <div class="widget">
+    <div class="controls">
+      <label for="draws">draws</label><input type="range" id="draws" min="50" max="1000" step="50" value="300" /><span class="val" id="drawsVal">300</span>
+      <button id="run" class="on">run</button>
+    </div>
+    <canvas id="chartMC" width="820" height="300"></canvas>
+    <div class="readout" id="readMC"></div>
+  </div>
+  <div class="lookfor">What to look for. With few observations the sample
+  covariance is unreliable and the curve's minimum sits well inside: trusting
+  the estimated cross-group correlation partly beats both ignoring it
+  (&gamma; = 0, NCO) and trusting it fully (&gamma; = 1, full conditioning on the sample knots, which is the sample minimum-variance portfolio only under the gateway model).
+  A minimum at either end of the dial at small T would refute this.
+  Raise T and the minimum drifts toward 1 as the estimate improves. This is
+  the estimation-error trade-off of the paper's Section 7, here without any
+  of its simplifying assumptions: the sample covariance does not satisfy the
+  gateway model, only the truth does.</div>
+
+  <h2>The portfolios</h2>
+  <p>The weights the bridge holds at the two ends and at the best &gamma; found
+  above, first built from the true covariance and then from the last sample
+  drawn. Bars are grouped by asset; the representatives are the first bar in
+  each group.</p>
+
+  <div class="widget">
+    <canvas id="barsTrue" width="820" height="260"></canvas>
+    <canvas id="barsSample" width="820" height="260"></canvas>
+    <div class="readout" id="readBars"></div>
+  </div>
+  <div class="lookfor">What to look for. Built from the truth, the members'
+  weights keep the same proportions to each other within a group at every
+  &gamma;; what the dial changes is how much of each representative the group
+  holds, and the groups' budgets. Built from the sample, the &gamma; = 1
+  portfolio takes the largest and most erratic positions, which is why it
+  loses out of sample.</div>
+
+  <p class="muted">The market is drawn from a seeded generator, so the same seed
+  gives the same market. The same algorithm, in Python, is checked against exact
+  arithmetic in the verification script.</p>
+</main>
+
+<script src="./nco.js"></script>
+<script>
+(function(){
+const N=window.NCO, $=id=>document.getElementById(id);
+const GS=Array.from({length:21},(_,i)=>i/20);
+let market, sampleS, best=1;
+function labels(m){return m.clusters.flatMap((I,i)=>I.map((a,r)=>r===0?'K'+(i+1):'m'));}
+function clusterOf(m){const out=[];m.clusters.forEach((I,i)=>I.forEach(()=>out.push(i)));return out;}
+function drawMarket(){
+  const seed=+$('seed').value, T=+$('T').value; $('seedVal').textContent=seed; $('TVal').textContent=T;
+  market=N.gatewayModel(seed,[2,3,1,2]);
+  const rnd=N.mulberry32(seed*1000+T+Math.floor(Math.random()*1e6));
+  sampleS=N.sampleCovariance(market.Sigma,T,rnd);
+  N.heatmap('hmTrue',N.correlation(market.Sigma),{title:'true correlation (groups outlined)',clusters:market.clusters,knots:market.knots,name:'ρ',height:300});
+  N.heatmap('hmSample',N.correlation(sampleS),{title:'sample correlation from T = '+T+' observations',clusters:market.clusters,knots:market.knots,name:'ρ̂',height:300});
+  const C=N.correlation(market.Sigma),Ch=N.correlation(sampleS); let e=0; for(let i=0;i<C.length;i++)for(let j=0;j<C.length;j++)e=Math.max(e,Math.abs(C[i][j]-Ch[i][j]));
+  $('readHm').innerHTML='Largest error in any sample correlation: <b>'+e.toFixed(3)+'</b>. Hover a cell to read it.';
+  drawBars();
+}
+function mc(){
+  const seed=+$('seed').value, T=+$('T').value, draws=+$('draws').value; $('drawsVal').textContent=draws;
+  const rnd=N.mulberry32(seed*7919+T*31+1);
+  const Sig=market.Sigma, idx=market.clusters, kn=market.knots;
+  const v0=GS.map(g=>{const w=N.bridge(Sig,idx,kn,g).w; return N.quad(Sig,w);});
+  const sum=new Array(GS.length).fill(0), sumsq=new Array(GS.length).fill(0); let done=0, sumMV=0;
+  $('run').disabled=true;
+  function step(){
+    const batch=Math.min(25,draws-done);
+    for(let b=0;b<batch;b++){const S=N.sampleCovariance(Sig,T,rnd);
+      GS.forEach((g,i)=>{let v; try{const w=N.bridge(S,idx,kn,g).w; v=N.quad(Sig,w);}catch(e){v=NaN;} if(isFinite(v)){sum[i]+=v; sumsq[i]+=v*v;}});
+      try{const vmv=N.quad(Sig,N.minVar(S)); if(isFinite(vmv)) sumMV+=vmv;}catch(e){}
+      done++;}
+    const mean=sum.map(s=>s/done), se=sumsq.map((s,i)=>Math.sqrt(Math.max(0,s/done-mean[i]*mean[i])/done));
+    const bi=mean.indexOf(Math.min(...mean)); best=GS[bi];
+    const meanMV=sumMV/done;
+    N.lineChart('chartMC',{series:[{name:'out-of-sample variance, mean of '+done+' draws',points:GS.map((g,i)=>[g,mean[i]])},{name:'sample minimum variance Σ̂⁻¹1, mean of '+done+' draws (benchmark, not on the bridge)',points:GS.map(g=>[g,meanMV])}],
+      title:'expected out-of-sample variance against the dial, T = '+T,xlabel:'γ  (0 = NCO, 1 = full conditioning on the sample knots)',xname:'γ',vlines:[{x:best,label:'lowest mean at γ = '+best.toFixed(2),color:'#0f8b6e'}],height:300});
+    $('readMC').innerHTML='<b>'+done+' of '+draws+' draws.</b> Mean out-of-sample variance: at γ = 0 (NCO) <b>'+mean[0].toFixed(4)+'</b>, at the best γ = '+best.toFixed(2)+' <b>'+mean[bi].toFixed(4)+'</b>, at γ = 1 (full conditioning on the sample knots) <b>'+mean[GS.length-1].toFixed(4)+'</b>, and for the sample minimum-variance portfolio Σ̂⁻¹1 <b>'+meanMV.toFixed(4)+'</b> (standard errors about '+se[bi].toFixed(4)+'). With the true covariance the bridge would reach '+v0[GS.length-1].toFixed(4)+' at γ = 1 and '+v0[0].toFixed(4)+' at γ = 0.';
+    if(done<draws) setTimeout(step,0); else {$('run').disabled=false; drawBars();}
+  }
+  step();
+}
+function drawBars(){
+  const m=market, cats=labels(m), cl=clusterOf(m);
+  const gsel=[0,best,1], names=['γ = 0 (NCO)','γ = '+best.toFixed(2)+' (best above)','γ = 1 (full knot conditioning; minimum variance under the gateway model)'];
+  N.barChart('barsTrue',{title:'weights built from the true covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(m.Sigma,m.clusters,m.knots,g).w})),height:260});
+  N.barChart('barsSample',{title:'weights built from the last sample covariance',categories:cats,clusterOf:cl,groups:gsel.map((g,k)=>({name:names[k],values:N.bridge(sampleS,m.clusters,m.knots,g).w})).concat([{name:'sample minimum variance Σ̂⁻¹1',values:N.minVar(sampleS)}]),height:260});
+  const ws=N.bridge(sampleS,m.clusters,m.knots,1).w, wt=N.bridge(m.Sigma,m.clusters,m.knots,1).w;
+  $('readBars').innerHTML='Largest position in the γ = 1 portfolio built from the sample: <b>'+Math.max(...ws.map(Math.abs)).toFixed(3)+'</b>, against '+Math.max(...wt.map(Math.abs)).toFixed(3)+' with the true covariance. Sum of squared weight errors of the sample γ = 1 portfolio: '+ws.reduce((s,v,i)=>s+(v-wt[i])**2,0).toFixed(4)+'.';
+}
+['seed','T'].forEach(id=>$(id).addEventListener('input',drawMarket));
+$('resample').onclick=drawMarket; $('draws').addEventListener('input',()=>{$('drawsVal').textContent=$('draws').value;}); $('run').onclick=mc;
+window.addEventListener('resize',()=>{drawMarket();});
+drawMarket(); mc();
+})();
+</script>
+</body>
+</html>

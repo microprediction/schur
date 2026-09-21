@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Where to Damp &mdash; Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"
+    onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+
+  <main>
+    <h1>Where to damp</h1>
+    <p class="subtitle">In the estimate, in the algorithm, or both.</p>
+
+    <p class="lead">
+      The damped Schur complement can be applied in two places. The recursion can run on the raw
+      estimate $\widehat\Sigma$ with each block conditioned on the others through
+      $A-\gamma BD^{-1}B^\top$, or the estimate itself can be tapered, the cross-block scaled by
+      $\sqrt\gamma$, and handed to a plain optimizer. The two are the same operation with the dial
+      labelled differently, they agree at both ends, and out of sample their best points are within
+      about one percentage point of each other. The choice is decided by what has to be done with
+      the result, not by performance.
+    </p>
+
+    <h2>The identity</h2>
+    <p>
+      Let the covariance be partitioned into a block and its complement, and let
+      $\Sigma\circ C_s$ be the same matrix with every cross-block entry multiplied by $s$. The
+      conditional covariance of the block under the tapered matrix is $A - s^2 BD^{-1}B^\top$, the
+      damped complement at $\gamma=s^2$, and the companion vector is $\mathbf 1 - s\,BD^{-1}\mathbf 1$.
+      So a minimum-variance portfolio of the tapered estimate is a member of the two-dial family of
+      the 2024 paper, complement damped by $\gamma$ and companion by $\sqrt\gamma$. The recursion
+      damps both by $\gamma$. With more than two blocks the taper damps every cross-block at once,
+      while the flat bridge conditions each cluster on an undamped rest. These are different paths
+      between the same two ends. The
+      <a href="./localization-is-schur-damping.pdf">localization note</a> proves the two-block case.
+    </p>
+
+    <h2>Minimum variance, out of sample</h2>
+    <p>
+      Thirty-two assets in four sectors, one factor per sector and a weak market factor, ninety days
+      of returns, twenty-four random markets. Each row is a path from the heuristic end to the plain
+      optimizer, and the entry is the true variance of the estimated portfolio in excess of the true
+      optimum, in percent, along the dial.
+    </p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>where the damping lives</th><th>dial 0</th><th>best</th><th>dial 1</th></tr></thead>
+      <tbody>
+        <tr><td>in the algorithm: the flat bridge on the raw estimate</td><td>19.5</td><td>18.5 at 0.2</td><td>55.9</td></tr>
+        <tr><td>in the estimate: cross-block tapered by $\sqrt\gamma$, then minimum variance</td><td>19.5</td><td>17.3 at 0.1</td><td>55.9</td></tr>
+        <tr><td>in the estimate: cross-block tapered by $\gamma$, then minimum variance</td><td>19.5</td><td>17.2 at 0.2</td><td>55.9</td></tr>
+        <tr><td>both: tapered by $\sqrt\gamma$, then the bridge at $\gamma$</td><td>19.5</td><td>17.7 at 0.4</td><td>55.9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      The ends coincide because at $0$ every path is the block-diagonal heuristic and at $1$ every
+      path is the plain optimizer on the raw estimate. The minima differ by a point and sit at
+      different places on the dial, which is the relabelling. A gap of several points between the
+      rows, or minima at different ends, would refute the claim that the placement is immaterial.
+      Script: <code>experiments/where_to_damp.py</code>.
+    </p>
+
+    <h2>The race, and the data setting the dial</h2>
+    <p>
+      For a Thurstone portfolio the damping has to live in the estimate, because a race is a
+      functional of one joint law and a tapered covariance is one. That makes it the right place to
+      ask whether the data can set the dial. Put a prior on the covariance whose mean keeps the
+      within-sector blocks and shrinks the cross-sector blocks toward zero, choose the prior's
+      strength by marginal likelihood, and race under the posterior mean. Twelve assets in three
+      sectors, twenty random markets; the entry is the squared distance from the race under the true
+      covariance, times $10^4$.
+    </p>
+    <div class="table-wrap">
+    <table class="impl">
+      <thead><tr><th>estimator</th><th>60 days</th><th>250 days</th></tr></thead>
+      <tbody>
+        <tr><td>race on the full estimated correlation</td><td>62.1</td><td>13.3</td></tr>
+        <tr><td>race with no correlation</td><td>43.6</td><td>23.1</td></tr>
+        <tr><td>cross-sector block set to zero</td><td>46.2</td><td>11.4</td></tr>
+        <tr><td>posterior mean, sector prior, strength by marginal likelihood</td><td>47.0</td><td>11.3</td></tr>
+        <tr><td>posterior mean, diagonal prior, strength by marginal likelihood</td><td>46.6</td><td>12.6</td></tr>
+        <tr><td>average of the race over 32 posterior draws, sector prior</td><td>47.6</td><td>11.8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>
+      Three things follow. The sector prior beats the diagonal prior at 250 days, so the damping has
+      to be aimed at the cross-block; shrinking every entry, which is what ordinary shrinkage does,
+      is weaker. The marginal likelihood puts the sector prior where the best hand-set dial sits,
+      without a dial. And averaging the race over posterior draws adds nothing over the posterior
+      mean, for this loss; whether sampling helps a tail objective is open. A diagonal prior that
+      matched the sector prior at 250 days would refute the first claim.
+      Script: <code>experiments/bayes_race.py</code>.
+    </p>
+
+    <h2>The rule</h2>
+    <p>
+      Damp in the estimate when the result has to feed something else: a constrained optimizer, a
+      tail objective, a race, or a data-driven choice of strength. Damp in the algorithm when the
+      matrix cannot be inverted whole, because it is too large or rank-deficient, or when the
+      structure is a tree or a set of knots rather than a flat block pattern, since the recursion
+      never inverts the full matrix and its conditioning composes down a tree. Either way, aim the
+      damping at the cross-block.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
+</body>
+</html>

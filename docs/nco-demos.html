@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Where to sit on the NCO bridge: the analytic conditions, checked live — Schur Complementary Portfolios</title>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./demos.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
+<main>
+  <h1>Where to sit on the NCO bridge: the analytic conditions, checked live</h1>
+  <p class="subtitle">Four pages: one Monte Carlo experiment, and three that each state a closed-form condition from
+  <a href="./schur-nco-bridge.pdf"><em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em></a> and then compute it live.</p>
+
+  <p class="lead">The paper is about a dial. Assets are grouped, and each group
+  has a representative asset. At one end of the dial, &gamma; = 0, each group is
+  allocated from its own covariance alone and the groups are then combined,
+  which is <em>nested clustered optimization</em>. At the other end, &gamma; = 1,
+  the whole covariance is used at once, which is <em>global minimum
+  variance</em>. In between, each group is told a fraction &gamma; of what the
+  other groups' representatives explain about its own.</p>
+
+  <p class="lead">The question is where
+  on the dial to sit when the covariance is estimated with error. The paper
+  answers with analytic conditions: a closed-form best dial for a noisy
+  estimate, a sign that decides whether small noise moves the best dial inside
+  at all, a formula for how far each group travels along the dial,
+  and a closed form for the variance given up at every setting.</p>
+
+  <ul class="demo-list">
+    <li><a href="./nco-montecarlo.html">The bridge by Monte Carlo: a random
+      market, a noisy estimate, and the out-of-sample curve</a>
+      <div class="claim">The true correlation matrix and a sample estimate of
+      it side by side, the algorithm run on hundreds of such estimates, and
+      the average out-of-sample variance against the dial with its interior
+      minimum. Then the portfolios themselves as bars. There are no formulas,
+      only the algorithm run on data.</div></li>
+    <li><a href="./nco-identical.html">The best dial in closed form, and the sign
+      that decides whether small noise moves it</a>
+      <div class="claim">When every group is the same, the only decision is how
+      much to hold of the representatives, and the out-of-sample variance is a
+      closed-form function of the dial. With a noisy two-point estimate the
+      best dial is strictly inside, at exactly 2/3 in the simplest case, and
+      with small noise it can go either way, with an explicit threshold.</div></li>
+    <li><a href="./nco-effective-damping.html">How far each group really travels:
+      &lambda; = &gamma;r / (1 &minus; &gamma; + &gamma;r)</a>
+      <div class="claim">Setting &gamma; = &frac12; moves an independent
+      representative halfway to its minimum-variance holding but a nearly
+      redundant one almost not at all. In the limit of two identical
+      representatives the bridge is stuck until the very end of the dial, and an
+      alternative dial keeps the path continuous.</div></li>
+    <li><a href="./nco-knots-move.html">The member weights do not depend on the
+      dial, so the variance given up has a closed form</a>
+      <div class="claim">On a random market that satisfies the paper's model, the
+      dial changes how much each group holds of its representative and nothing
+      else; the member weights are the same at every &gamma;. The bridge's
+      distance from the optimum then has a closed form, checked live.</div></li>
+  </ul>
+
+  <p class="muted">The exact rational checks behind the same claims are in
+  <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py"><code>paper/verify_schur_nco_bridge.py</code></a>.</p>
+</main>
+</body>
+</html>

@@ -12,26 +12,37 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">schur</a>
     <nav>
-      <a href="./intro.html">Introduction</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./demos.html">Demos</a>
       <a href="./implementations.html">Implementations</a>
-      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="./timeline.html">Timeline</a>
       <a href="https://github.com/microprediction/schur">GitHub</a>
     </nav>
   </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
 </header>
 
 <main>
   <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
   <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
   <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
-  <h1>Example 2 — one-entry noise: interior without symmetry</h1>
+  <h1>Example 2: one-entry noise, interior without symmetry</h1>
 
   <p>The solved family perturbs all four cross entries in common. This example
-  perturbs a single covariance entry, (1,3), by &plusmn;&tau;, so the common-noise
+  perturbs a single covariance entry, (1,3), by &plusmn;2&tau; (a correlation shift of &plusmn;&tau;), so the common-noise
   symmetry is gone, and the interior optimum survives. The paper's certificate
   point is &tau; = 0.15 with &gamma;&#770; = 9/10: F(9/10) &lt; F(0) and
   F(9/10) &lt; F(1) as exact rational inequalities. Here the whole curve is drawn
@@ -48,11 +59,12 @@
   <div class="lookfor">What to look for: at &tau; = 0.15 the minimizer sits near
   &gamma; = 0.9, matching the certificate. F(0) never moves as &tau; changes
   (Lemma 1 again: the noised entry is in the cross-block), while the right end
-  rises with the noise.</div>
+  rises with the noise. A minimizer at 0 or 1 at &tau; = 0.15 would contradict the
+  certificate.</div>
 
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
   the naive fitness (5), ported directly from the reference implementations, live
-  in your browser. Nothing is pre-baked.</p>
+  in your browser. Nothing is precomputed.</p>
 </main>
 
 <script src="./recursion.js"></script>
@@ -70,7 +82,7 @@ function draw(){
   let ymin=Math.min(...F),ymax=Math.max(...F);
   const pad=(ymax-ymin)*0.08||0.005;ymin-=pad;ymax+=pad;
   const X=g=>padL+g*(W-padL-14),Y=v=>H-padB-(v-ymin)/(ymax-ymin)*(H-padB-24);
-  S.axes(cx,W,H,padL,padB,'F(γ) with ±τ noise in the single entry (1,3)');
+  S.axes(cx,W,H,padL,padB,'F(γ) with ±2τ noise in the single entry (1,3)');
   cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';
   [0,0.25,0.5,0.75,1].forEach(g=>cx.fillText(g,X(g),H-12));
   cx.strokeStyle='#4a3aff';cx.lineWidth=2;cx.beginPath();

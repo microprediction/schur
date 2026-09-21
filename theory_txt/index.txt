@@ -1,0 +1,105 @@
+
+Schur Complementary Portfolios
+
+Bridges between heuristic and optimization-based portfolio construction.
+
+Portfolio construction has long had two camps. One is global optimization:
+a single objective over the whole covariance matrix, with estimation error dealt with before
+the optimizer sees it, by shrinkage, factor structure and the like. The other is
+heuristic, motivated through hierarchies, clusters and risk budgets, and
+deals with estimation error inside the construction itself, by using the covariance
+piecemeal. The question that separates them is where to handle estimation uncertainty: at
+the estimation level, at the construction level, or both.
+
+The Schur complement connects them. Augment each cluster's covariance
+with the Schur complement of the others before allocating, and the hierarchical construction
+reproduces the global optimisation exactly, when each split is budgeted by the child's
+conditioned variance (the taxonomy says which encodings do this
+and which only approach it). A single dial $\gamma \in [0, 1]$ slides smoothly
+between the two worlds, a construction-level answer that sits on top of whatever
+estimation-level answer is in use. The best out-of-sample portfolios usually live somewhere
+in between.
+
+The bridge first appeared in a
+blog
+post in November 2022, on one tree, and was formalized in the
+2024 paper. The 2026 notes extend it to a family: nested clustered
+optimization, hierarchical equal risk contribution, hierarchical risk parity and plain
+inverse variance are each the near end of a bridge whose far end is the same optimizer, and
+the notes prove when the best place to stand is strictly inside. The
+taxonomy says which published “Schur” is which, and
+one picture shows all five roads descending to the same floor.
+
+The intuition. When people build heuristic allocators they chunk: the assets are
+cut into blocks, by sector, by a dendrogram, by a clustering, and each block is handled on its
+own, with the covariance between blocks thrown away at the cut. The cut is a hard decision
+made on soft evidence. The Schur complement is a softer way to cleave. Conditioning a block on
+the others keeps what the cross-block covariance says while still solving one block at a time,
+and the dial says how much of it to keep. The cleaving can follow structure that is presumed,
+sectors or a prior, or structure that is measured, an estimated correlation. In either case,
+at one end of the dial it is the chunking everyone already does, at
+the other it is the global optimizer, and in between it is the same recursion trusting the
+cross-block evidence by degrees.
+
+Scope. Optimization done properly already handles estimation
+uncertainty at the estimation level: under quadratic loss the rule that minimizes
+out-of-sample variance is the optimizer applied to the posterior-mean covariance, and
+nonlinear shrinkage solves that problem exactly over rotation-invariant rules. The heuristic
+constructions belong to the same school. Each is the
+near end of a path whose far end is that optimizer, the path is a Schur complement damped
+by degrees, and the damping is the same reliability ratio a Bayesian would put on the
+coupling. Where to stand on the path is then a question one can answer, and the answer is
+often inside.
+
+Five near ends, one far end. Inverse variance, hierarchical risk parity, hierarchical
+minimum variance, HERC and NCO each reach the same optimizer when their dial is turned to
+one, with the split rule the taxonomy page names for each,
+and the interior is where an estimated covariance says to stand. The
+3D view shows the same picture with heights.
+
+The block-inverse identity, the $\gamma$ interpolation, and the recursion at arbitrary
+hierarchy depth are derived in the
+introduction and the paper.
+
+Implementations
+
+Three maintained libraries cover the batch, streaming, and estimation layers:
+skfolio (fixed universe, sklearn idiom), allocation
+(online, evolving universe, Fiedler seriation), and precise (online
+covariance and the Schur pseudo-likelihood). Install commands, repositories, and tutorials
+are on the implementations page.
+
+Further reading
+
+All roads lead to minimum variance: the five near
+ends and the floor in one 3D view, with an estimated covariance showing the interior optimum.
+
+The 2026 notes on the papers page: the NCO bridge
+(SSRN 7480738), the HERC square, localization as Schur damping, and damping in lending pools.
+
+Cotton, P. (2022). “Schur Complementary Portfolios — A Unification of Machine
+Learning and Optimization-Based Allocation.”
+Geek
+Culture (Medium): the original, informal introduction.
+
+Cotton, P. (2024). arXiv:2411.05807:
+the canonical paper.
+
+CQF
+slides: a compact derivation with the interpolation argument.
+
+Palomar, D. P. Portfolio Optimization,
+§12.3.4
+: textbook treatment alongside HRP and the global minimum-variance portfolio.
+
+Cite
+
+Cotton, P. (2024). “Schur Complementary Allocation: A Unification of Hierarchical
+Risk Parity and Minimum Variance Portfolios.” arXiv preprint
+arXiv:2411.05807.
+
+The bibliography lists works on, citing, or extending Schur
+complementary allocation, together with the spatial-statistics side of the same idea. Every
+entry also appears on the literature map, and the dates are on the
+timeline.
+

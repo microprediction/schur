@@ -21,30 +21,44 @@
   </style>
 </head>
 <body>
-  <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./map.html">Literature map</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
 <div id="tl-wrap">
   <h1>Schur damping across fields: a timeline</h1>
-  <p>The same object — a Schur-complement conditional, shrunk toward independence by a damping
-  parameter — has appeared in two fields, so far. One lane per field; events at their earliest
-  public date (preprint or blog post, not journal acceptance); scope is strict — only work that
-  actually uses Schur complements. The dashed lines mark damping's arrival in finance (Nov 2022)
-  and in spatial statistics (Sep 2024). Hover for details; click to open. Dates marked ⚠ are
+  <p>The same object, a Schur-complement conditional shrunk toward independence by a damping
+  parameter, has appeared in three fields so far. One lane per field; events at their earliest
+  public date (preprint or blog post, not journal acceptance); scope is strict: only work that
+  uses Schur complements. The dashed lines mark damping's arrival in finance (Nov 2022),
+  in spatial statistics (Sep 2024) and in decentralised finance (Jun 2026). Hover for details; click to open. Dates marked ⚠ are
   month-approximate.</p>
   <div class="legend" id="lane-legend"></div>
   <div id="timeline"></div>
-  <p class="hint">Corrections welcome — file an issue on
+  <p class="hint">Corrections welcome: file an issue on
   <a href="https://github.com/microprediction/schur">microprediction/schur</a>.</p>
 </div>
 <div id="tooltip"></div>
@@ -62,37 +76,37 @@ const LANES = {
 const EVENTS = [
  // --- meteorology & spatial statistics ---
  {d:"1988-01", lane:"spatial", label:"Vecchia ⚠", sure:false, url:"https://doi.org/10.1111/j.2517-6161.1988.tb01729.x",
-  note:"1988, JRSS-B. The factorization is born: condition each location on a few neighbours. The conditionals are Schur complements — undamped."},
- {d:"2016-09", lane:"spatial", label:"Guinness ⚠", sure:false, url:"https://arxiv.org/abs/1609.05372",
+  note:"1988, JRSS-B. Conditions each location on a few neighbours; the conditionals are Schur complements, undamped."},
+ {d:"2016-09", lane:"spatial", label:"Guinness", url:"https://arxiv.org/abs/1609.05372",
   note:"Orderings and grouping sharpen Vecchia approximations (arXiv Sep 2016; Technometrics 2018)."},
- {d:"2021-01", lane:"spatial", label:"Katzfuss–Guinness ⚠", sure:false, url:"https://doi.org/10.1214/19-STS755",
-  note:"Statistical Science 2021: the general Vecchia framework — most scalable GP approximations are one DAG choice."},
+ {d:"2017-08", lane:"spatial", label:"Katzfuss–Guinness", url:"https://doi.org/10.1214/19-STS755",
+  note:"arXiv Aug 2017; Statistical Science 2021: the general Vecchia framework: most scalable GP approximations are one DAG choice."},
  {d:"2024-09", lane:"spatial", label:"ShrinkTM (Chakraborty–Katzfuss)", big:true, url:"https://arxiv.org/abs/2409.19208",
-  note:"Sep 2024 (arXiv:2409.19208). Damping arrives in spatial statistics: Vecchia/transport-map conditionals are SHRUNK toward a parametric base, intensity by empirical Bayes."},
+  note:"Sep 2024 (arXiv:2409.19208). Damping arrives in spatial statistics: Vecchia/transport-map conditionals are shrunk toward a parametric base, intensity by empirical Bayes."},
  {d:"2025-05", lane:"spatial", label:"LatticeVision", url:"https://arxiv.org/abs/2505.09803",
-  note:"May 14, 2025. Sikorski–Ivanitskiy–Lenssen: image-to-image networks for non-stationary spatial fields; cites ShrinkTM."},
+  note:"May 14, 2025. Sikorski, Ivanitskiy, Lenssen, Nychka and McKenzie: image-to-image networks for non-stationary spatial fields; cites ShrinkTM."},
  {d:"2025-09", lane:"spatial", label:"Calle-Saldarriaga et al", url:"https://arxiv.org/abs/2509.22474",
   note:"Sep 26, 2025. Generative multi-scale modeling via spatial autoregressive transport maps (Katzfuss group); cites ShrinkTM."},
 
  // --- finance & portfolio construction ---
  {d:"2015-12", lane:"finance", label:"HRP ⚠", sure:false, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2708678",
-  note:"López de Prado, SSRN preprint (JPM 2016). Hierarchical risk parity: divide-and-conquer allocation that discards cross-block information — the γ=0 endpoint."},
- {d:"2022-11", lane:"finance", label:"Cotton — Schur Complementary Portfolios (blog)", big:true, url:"https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f",
-  note:"Nov 2022, Medium. Damping arrives in finance: augment HRP's sub-covariances with Schur complements; γ interpolates HRP (γ=0) to minimum variance (γ=1)."},
+  note:"López de Prado, SSRN preprint (JPM 2016). Hierarchical risk parity, the γ=0 endpoint: divide-and-conquer allocation that discards cross-block information."},
+ {d:"2022-11", lane:"finance", label:"Cotton: Schur Complementary Portfolios (blog)", big:true, url:"https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f",
+  note:"Nov 2022, Medium. Damping arrives in finance: augment HRP's sub-covariances with Schur complements; γ interpolates HRP (γ=0) toward minimum variance (γ→1); the collapsed encoding of that post, and of skfolio and precise, approaches the far end without reaching it."},
  {d:"2023-06", lane:"finance", label:"CQF slides ⚠", sure:false, url:"https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf",
   note:"Schur Complementary Portfolios presented at CQF."},
  {d:"2024-03", lane:"finance", label:"Antonov–Lipton–López de Prado", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151",
-  note:"Mar 5, 2024 (SSRN). 'Overcoming Markowitz's Instability with HRP: Theoretical Evidence': analytical noise comparison of HRP vs Markowitz."},
- {d:"2024-06", lane:"finance", label:"skfolio Schur optimizer ⚠", sure:false, url:"https://skfolio.org/auto_examples/clustering/plot_6_schur.html",
-  note:"skfolio ships a SchurComplementary optimizer (batch/fixed-universe); library paper Jul 2025 (arXiv:2507.04176)."},
- {d:"2024-11", lane:"finance", label:"Cotton — arXiv:2411.05807", big:true, url:"https://arxiv.org/abs/2411.05807",
-  note:"Nov 8, 2024. 'Schur Complementary Allocation: A Unification of Hierarchical Risk Parity and Minimum Variance Portfolios' — the formal paper."},
+  note:"Mar 2024 (SSRN, DOI created Mar 22). 'Overcoming Markowitz's Instability with HRP: Theoretical Evidence': analytical noise comparison of HRP vs Markowitz."},
+ {d:"2025-09", lane:"finance", label:"skfolio Schur optimizer", url:"https://skfolio.org/auto_examples/clustering/plot_6_schur.html",
+  note:"Sep 6, 2025: skfolio v0.12.0 ships a SchurComplementary optimizer (PR #165; batch, fixed universe). The library paper (Jul 2025, arXiv:2507.04176) predates it."},
+ {d:"2024-11", lane:"finance", label:"Cotton: arXiv:2411.05807", big:true, url:"https://arxiv.org/abs/2411.05807",
+  note:"Submitted Oct 29, 2024, announced Nov 2024. 'Schur Complementary Allocation: A Unification of Hierarchical Risk Parity and Minimum Variance Portfolios', the formal paper."},
  {d:"2025-01", lane:"finance", label:"Salas-Molina et al ⚠", sure:false, url:"https://doi.org/10.1007/978-3-031-78241-1_5",
   note:"2025, LNCS Decision Sciences. Empirical HRP estimation-window study; cites Cotton 2024."},
  {d:"2025-02", lane:"defi", label:"Chitra et al (PDLPs)", url:"https://arxiv.org/abs/2502.06028",
-  note:"Feb 9, 2025. 'Perpetual Demand Lending Pools' (Gauntlet/NYU). Appendix B: split one lending pool or keep it whole, decided via the undamped Schur complement of the pool covariance (the exact conditional covariance, no γ) — conditions 'similar to hierarchical risk-parity methods [Cot24, LdP16]'."},
- {d:"2026-06", lane:"defi", label:"Cotton — Schur damping for PDLPs ⚠", big:true, sure:false, url:"./schur-damping-pdlp.pdf",
-  note:"Jun 2026, working paper. Proposes the interior of the dial for the PDLP merge/split decision: a partially-merged pool hedges against A − γ·BC⁻¹Bᵀ, with γ* set by the reliability of the cross-pool covariance. The undersampled DeFi regime pulls γ* toward 0 — pools should stay mostly split until cross-coupling is strong and well-sampled."},
+  note:"Feb 9, 2025. 'Perpetual Demand Lending Pools' (Gauntlet/NYU). Appendix B: split one lending pool or keep it whole, decided via the undamped Schur complement of the pool covariance (the exact conditional covariance, no γ), conditions 'similar to hierarchical risk-parity methods [Cot24, LdP16]'."},
+ {d:"2026-06", lane:"defi", label:"Cotton: Schur damping for PDLPs ⚠", big:true, sure:false, url:"./schur-damping-pdlp.pdf",
+  note:"Jun 2026, working paper. Proposes the interior of the dial for the PDLP merge/split decision: a partially-merged pool hedges against A − γ·BC⁻¹Bᵀ, with γ* set by the reliability of the cross-pool covariance. The undersampled DeFi regime pulls γ* toward 0: pools should stay mostly split until cross-coupling is strong and well-sampled."},
  {d:"2025-03", lane:"finance", label:"Mograby", url:"https://arxiv.org/abs/2503.12328",
   note:"Mar 16, 2025. 'Hierarchical Minimum Variance Portfolios': exact Schur separator recursion on hierarchical graphs; cites Cotton."},
  {d:"2026-01", lane:"finance", label:"Pergher et al ⚠", sure:false, url:"https://doi.org/10.1109/ACCESS.2026.3656702",
@@ -104,8 +118,14 @@ const EVENTS = [
 
 
  // --- cross-field unification ---
+ {d:"2026-09", lane:"finance", label:"Cotton: NCO bridge", big:true, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738",
+  note:"Sep 17, 2026 (SSRN 7480738). Nested clustered optimization is one end of a Schur bridge; one knot per cluster makes the far end cheap; exact interior examples."},
+ {d:"2026-09", lane:"finance", label:"Cotton: HERC square", big:true, url:"./schur-herc-square.pdf",
+  note:"Sep 18, 2026. HERC's budget rule is the optimizer's; two dials lead to minimum variance; Stevens' identity becomes a path; the dial-tied split makes the first HRP bridge exact at both ends."},
+ {d:"2026-09", lane:"spatial", label:"Cotton: localization is Schur damping", big:true, url:"./localization-is-schur-damping.pdf",
+  note:"Sep 17, 2026. A block-constant covariance taper in an ensemble Kalman filter is the damped complement; its optimal strength is a sampling-error correction."},
  {d:"2026-06", lane:"bridge", label:"Two Sides of Schur Damping", big:true, url:"https://arxiv.org/abs/2606.14798",
-  note:"Jun 2026 (arXiv:2606.14798). Cotton: the identity — the conditional shrinkage a spatial model fits and the diversification-variance tilt a portfolio chooses are the same quantity, with the same closed-form reliability γ*."},
+  note:"Jun 2026 (arXiv:2606.14798). Cotton: the conditional shrinkage a spatial model fits and the diversification-variance tilt a portfolio chooses are the same quantity, with the same closed-form reliability γ*."},
 ];
 
 const W = document.getElementById("timeline").clientWidth, H = 700, M = {l: 30, r: 30};
