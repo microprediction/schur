@@ -121,7 +121,7 @@ const EVENTS = [
  {d:"2026-09", lane:"finance", label:"Cotton: NCO bridge", big:true, url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738",
   note:"Sep 17, 2026 (SSRN 7480738). Nested clustered optimization is one end of a Schur bridge; one knot per cluster makes the far end cheap; exact interior examples."},
  {d:"2026-09", lane:"finance", label:"Cotton: HERC square", big:true, url:"./schur-herc-square.pdf",
-  note:"Sep 18, 2026. HERC's budget rule is the optimizer's; two dials lead to minimum variance; Stevens' identity becomes a path; the dial-tied split makes the first HRP bridge exact at both ends."},
+  note:"Sep 19, 2026. HERC's budget rule is the optimizer's; two dials lead to minimum variance; Stevens' identity becomes a path; the dial-tied split makes the first HRP bridge exact at both ends."},
  {d:"2026-09", lane:"spatial", label:"Cotton: localization is Schur damping", big:true, url:"./localization-is-schur-damping.pdf",
   note:"Sep 17, 2026. A block-constant covariance taper in an ensemble Kalman filter is the damped complement; its optimal strength is a sampling-error correction."},
  {d:"2026-06", lane:"bridge", label:"Two Sides of Schur Damping", big:true, url:"https://arxiv.org/abs/2606.14798",
@@ -196,5 +196,9 @@ ev.append("text").attr("class","evlabel")
 d3.select("#lane-legend").selectAll("span").data(Object.values(LANES)).join("span")
   .html(d=>`<span class="dot" style="background:${d.color}"></span>${d.label}`);
 </script>
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
 </body>
 </html>

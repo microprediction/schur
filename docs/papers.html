@@ -39,11 +39,10 @@
 </header>
 
   <main>
-    <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>Papers</h1>
-    <p class="subtitle">The core write-ups of Schur damping. For antecedents,
-    independent rediscoveries, and derived works across fields, see the
-    <a href="./bibliography.html">bibliography</a>.</p>
+    <p class="subtitle">The core write-ups of Schur damping. The
+    <a href="./bibliography.html">bibliography</a> lists these alongside antecedents,
+    independent rediscoveries, and derived works across fields.</p>
 
     <div class="bib">
     <h2>Core</h2>
@@ -85,7 +84,12 @@
         coupling rises with T, from 0.62 at T=15 to 0.96 at T=250. Exact examples
         bound the general claims: HRP can become locally optimal at a finite noise level
         (boundary derivative &minus;1/700 + (8/189)&tau;&sup2;), and the surrogate frontier is a
-        clipped monotone inverse of &tau;&sup2; = &minus;V&#8320;&prime;/G&prime;. All exact
+        clipped monotone inverse of &tau;&sup2; = &minus;V&#8320;&prime;/G&prime;. A closing
+        section shows that every portfolio with a unit budget is the exact minimum-variance
+        portfolio of some positive definite matrix, by a symmetric rank-two correction of the
+        same algebraic form as Jagannathan and Ma's, so the distance from that correction to the
+        data measures how far an allocator's implied beliefs sit from its own input: zero for
+        minimum variance, 0.205 for HRP, 0.385 for equal weight. All exact
         claims are machine-verified in rational arithmetic.</em>
       </li>
       <li>
@@ -147,6 +151,22 @@
         closed-form reliability transfers as &phi;&#8902; = &radic;&gamma;&#8902;.</em>
       </li>
       <li>
+        Cotton, P. (2026). <em>The Far End of a Schur Bridge Does Not Care How Its Clusters Are
+        Priced, and the Interior Does</em>.
+        Working paper: <a href="./pricing-a-cluster.pdf">PDF</a>,
+        <a href="https://github.com/microprediction/schur/blob/main/paper/pricing-a-cluster.tex">source</a>,
+        <a href="https://github.com/microprediction/schur/blob/main/paper/verify_test_space.py">certificate</a>.
+        <em>A two-tier allocation prices its clusters with a $k\times k$ matrix, and every
+        construction so far builds that matrix from the same portfolios it holds. Separating the two
+        gives a family with a trial space and a test space. At the far end the $k$ conditioned
+        directions are the blocks of $\Sigma^{-1}u$ and sum to it, so any non-degenerate pairing
+        recovers it and the choice of representative cannot reach the far end at all. The interior
+        is not free: an unmatched pairing loses symmetry and can pass through singularity inside the
+        dial, with a positive-definite $6\times6$ example where it does and a rate of about a
+        quarter of estimated markets. Pricing against the cluster portfolios makes the matrix a Gram
+        matrix of $\Sigma$ and removes the possibility.</em>
+      </li>
+      <li>
         Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its Optimal
         Strength Is a Sampling-Error Correction</em>.
         Working paper: <a href="./localization-is-schur-damping.pdf">PDF</a>,
@@ -174,5 +194,9 @@
     </ul>
     </div>
   </main>
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
 </body>
 </html>

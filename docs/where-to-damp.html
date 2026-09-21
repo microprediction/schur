@@ -46,8 +46,9 @@
       The damped Schur complement can be applied in two places. The recursion can run on the raw
       estimate $\widehat\Sigma$ with each block conditioned on the others through
       $A-\gamma BD^{-1}B^\top$, or the estimate itself can be tapered, the cross-block scaled by
-      $\sqrt\gamma$, and handed to a plain optimizer. The two are the same operation with the dial
-      labelled differently, they agree at both ends, and out of sample their best points are within
+      $\sqrt\gamma$, and handed to a plain optimizer. With two blocks these are the same operation with
+      the dial labelled differently. With more they are different paths between the same two ends.
+      Either way they agree at both of those ends, and out of sample their best points are within
       about one percentage point of each other. The choice is decided by what has to be done with
       the result, not by performance.
     </p>
@@ -87,7 +88,7 @@
     <p>
       The ends coincide because at $0$ every path is the block-diagonal heuristic and at $1$ every
       path is the plain optimizer on the raw estimate. The minima differ by a point and sit at
-      different places on the dial, which is the relabelling. A gap of several points between the
+      different places on the dial, which is what two paths between the same ends look like. A gap of several points between the
       rows, or minima at different ends, would refute the claim that the placement is immaterial.
       Script: <code>experiments/where_to_damp.py</code>.
     </p>

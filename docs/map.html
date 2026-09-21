@@ -377,5 +377,9 @@ sim.on("tick", ()=>{
 d3.select("#cluster-legend").selectAll("span").data(Object.values(CLUSTERS)).join("span")
   .html(d=>`<span class="dot" style="background:${d.color}"></span>${d.label}`);
 </script>
+  <footer>
+    <a href="https://github.com/microprediction/schur">Source</a> &middot;
+    Maintained by <a href="https://github.com/microprediction">Peter Cotton</a>.
+  </footer>
 </body>
 </html>
