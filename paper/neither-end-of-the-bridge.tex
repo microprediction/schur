@@ -36,26 +36,27 @@ Lies Between HRP and Minimum Variance}
 \author{Peter Cotton\thanks{Microprediction.
 Email: \texttt{peter.cotton@microprediction.com}. The machine-verifiable
 certificates for the exact claims are in
-\texttt{paper/neither\_end\_certificate.py} at
+\texttt{paper/neither\_end\_certificate.py} and
+\texttt{paper/verify\_implied.py} at
 \texttt{github.com/microprediction/schur}; implementations of the recursion
 are in the \texttt{allocation} and \texttt{precise} packages.}}
-\date{July 22, 2026}
+\date{September 20, 2026}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
 We give analytical conditions under which the Schur portfolio with the
-best out-of-sample variance lies strictly inside the bridge, the
-one-parameter family we introduced to unify hierarchical risk parity
-with minimum variance, and exactly provable examples on both sides.
-Under stated endpoint conditions, cross-block estimation error
-separates the optimum from both ends, and an exchangeable four-asset
-family is solved exactly, its optimizer decreasing from full coupling
-to the middle of the bridge. The interior mechanism persists under
-whole-matrix noise, with a sharp second-order sign criterion at full
-coupling, and in sample-covariance experiments the median-optimal
-coupling climbs with sample size.
+best out-of-sample variance lies inside the bridge, our
+hierarchical-to-minimum-variance family, with provable examples on both
+sides. Cross-block estimation error separates the optimum from both ends
+under stated endpoint conditions, and an exchangeable four-asset family
+is solved exactly, its optimizer decreasing from full coupling to the
+middle. The mechanism persists under whole-matrix noise, with a sharp
+second-order sign criterion at full coupling, and the median-optimal
+coupling climbs with sample size. Every portfolio is the minimum-variance
+portfolio of some positive definite matrix, so the dial moves implied
+beliefs.
 \end{abstract}
 
 \noindent\textbf{Keywords:} portfolio construction; hierarchical risk parity;
@@ -1862,6 +1863,295 @@ removes the variance interpretation of the fitness, and implementations
 must repair or refuse.
 \end{remark}
 
+\section{The implied covariance of an allocator}
+\label{sec:implied}
+
+Section~\ref{sec:whole} held the estimate fixed and moved the allocator.
+This section holds the allocator fixed and moves the estimate. The second
+reading is always available, and that is its interest: it withdraws the
+allocator--estimator distinction as a way of sorting portfolio rules, and
+puts a measurement in its place.
+
+\begin{proposition}[Every portfolio is a minimum-variance portfolio]
+\label{prop:implied}
+Let $w \in \mathbb{R}^n$ satisfy $\mathbf{1}^\top w = 1$. Put $u = w/\|w\|$,
+$Q = I - uu^\top$, and
+\begin{equation}
+\Sigma' \;=\; \mathbf{1}\mathbf{1}^\top \;+\; \varepsilon\, Q M Q^\top
+\label{eq:implied}
+\end{equation}
+for any $\varepsilon > 0$ and any symmetric positive definite $M$. Then
+$\Sigma' \succ 0$ and $\Sigma' w = \mathbf{1}$, so $w$ is the global
+minimum-variance portfolio of $\Sigma'$.
+\end{proposition}
+
+\begin{proof}
+Since $Qw = 0$, $\Sigma' w = \mathbf{1}(\mathbf{1}^\top w) = \mathbf{1}$.
+Both summands of \eqref{eq:implied} are positive semidefinite, so if
+$\Sigma' z = 0$ then $z^\top \Sigma' z = 0$ forces each summand to vanish on
+$z$, giving $\mathbf{1}^\top z = 0$ and $Qz = 0$. The second gives $z = tw$,
+and the first then gives $t\,\mathbf{1}^\top w = t = 0$. The kernel is
+trivial, so $\Sigma' \succ 0$. Its minimum-variance portfolio is
+$\Sigma'^{-1}\mathbf{1}$ normalised, and $\Sigma' w = \mathbf{1}$ with
+$\mathbf{1}^\top w = 1$ identifies that vector as $w$.
+\end{proof}
+
+Nothing beyond a unit budget is asked of $w$, so long-short portfolios are
+included, and the certificate checks two of them in exact rational
+arithmetic. Hierarchical risk parity, risk parity, inverse variance
+and the equally weighted portfolio are each the exact minimum-variance
+portfolio of some positive definite matrix, as is every interior point of
+the bridge.
+
+The construction buys less than it appears to, and the reason is worth
+stating exactly. $\Sigma'$ is built from $w$, so it cannot be computed until
+the allocator has already run. By composition $S \mapsto \Sigma'(A(S))$ is a
+function of the data alone, which makes it an estimator in the formal sense
+and in no other, since it was reverse-engineered to return the answer. The
+correction in \cite{jagannathanma2003} has exactly this standing too: its
+multipliers are the dual variables of the problem one has just solved. Both
+are identities read off a computed portfolio rather than recipes for
+computing one. What they supply is a common coordinate system in which
+allocators can be compared, and the distance defined below.
+
+Uniqueness fails, and fails by a wide margin. The symmetric matrices
+consistent with a given $w$ form the affine set
+$\{X = X^\top : Xw = c\mathbf{1}\}$, of dimension $n(n-1)/2$ once the scale
+$c$ is fixed. A portfolio reveals $n$ numbers about the covariance that
+produced it, out of the $n(n+1)/2$ that describe one, so the implied
+covariance of a single allocation is not identified. The identified quantity
+is the distance from that set to the covariance the allocator was handed.
+
+\begin{lemma}[The minimal implied correction]
+\label{lem:minimal}
+Let $S \succ 0$ and let $\mathbf{1}^\top w = 1$. Put $c = w^\top S w$ and
+$r = c\mathbf{1} - Sw$. Among symmetric $X$ with $Xw = c\mathbf{1}$, the one
+nearest to $S$ in Frobenius norm is $X = S + \Delta$ with
+\begin{equation}
+\Delta \;=\; \frac{rw^\top + wr^\top}{w^\top w}
+  \;-\; \frac{(r^\top w)\,ww^\top}{(w^\top w)^2}.
+\label{eq:delta}
+\end{equation}
+This $\Delta$ is symmetric, has rank at most two, and its column space lies
+in $\operatorname{span}\{w, r\}$.
+\end{lemma}
+
+\begin{proof}
+Symmetry and the rank bound are read off \eqref{eq:delta}. Direct
+computation gives $\Delta w = r + w(r^\top w)/(w^\top w) - w(r^\top
+w)/(w^\top w) = r$, so $(S + \Delta)w = Sw + r = c\mathbf{1}$. The feasible
+set is affine with tangent space $\mathcal{T} = \{E = E^\top : Ew = 0\}$,
+and $\Delta$ lies in the range of the adjoint of $E \mapsto Ew$, namely
+$\{aw^\top + wa^\top\}$, which is the orthogonal complement of
+$\mathcal{T}$. A feasible point whose correction is orthogonal to the
+tangent space is the projection. The certificate verifies
+$\langle \Delta, E\rangle = 0$ exactly on a spanning set of $\mathcal{T}$.
+\end{proof}
+
+Equation~\eqref{eq:delta} has the algebraic form of the correction in
+\cite{jagannathanma2003}, where the minimum-variance portfolio of $S$ under
+no-short-sale constraints is shown to be the \emph{unconstrained}
+minimum-variance portfolio of $S + (\delta\mathbf{1}^\top +
+\mathbf{1}\delta^\top) - (\lambda\mathbf{1}^\top + \mathbf{1}\lambda^\top)$
+for Karush--Kuhn--Tucker multipliers $\delta$ and $\lambda$. That is again a
+symmetric rank-two update, spanned by $\mathbf{1}$ and the multipliers.
+Lemma~\ref{lem:minimal} says the phenomenon is not special to inequality
+constraints. Every allocator admits a rank-two implied correction, and the
+constrained optimizer is the case in which the dual variables write it down
+in closed form.
+
+Call $\delta(A, S) = \|\Delta\|_F / \|S\|_F$, evaluated at $w = A(S)$, the
+\emph{distortion} of the allocator $A$ at $S$. It measures how far the
+allocator's answer sits from any minimum-variance reading of the input it was
+handed, so it is a diagnostic of an output and not an estimator. Minimum
+variance has distortion zero at every $S$. Table~\ref{tab:distortion} reports medians
+over sample covariances of a forty-asset market in five blocks of eight,
+within-block correlation $0.7$, cross-block correlation $0.15$, lognormal
+volatilities and $T = 120$.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrr}
+\toprule
+allocator & $\|\Delta\|_F/\|S\|_F$ & $\lambda_{\min}/\lambda_{\max}$ of $S+\Delta$ \\
+\midrule
+minimum variance  & 0.000 & \phantom{$-$}0.0019 \\
+risk parity       & 0.071 & $-$0.0038 \\
+hierarchical risk parity & 0.205 & $-$0.0082 \\
+inverse variance  & 0.220 & $-$0.0035 \\
+equal weight      & 0.385 & \phantom{$-$}0.0028 \\
+\bottomrule
+\end{tabular}
+\caption{Distortion of five allocators, median over 300 sample covariances.}
+\label{tab:distortion}
+\end{table}
+
+The second column conditions $S + \Delta$. For three of the five allocators
+the nearest implied covariance is indefinite, so the nearest matrix that
+rationalises the portfolio is not a covariance at all.
+Proposition~\ref{prop:implied} guarantees that a positive definite one
+exists. It sits further away than the projection.
+
+\subsection{Which shrinkage hierarchical risk parity is}
+\label{sec:whichshrinkage}
+
+The question with content is not the identity above. It is whether some
+\emph{estimator}, a map from $S$ to a covariance that never consults the
+weights, has the hierarchical portfolio as its minimum-variance solution.
+The size of the class settles this before any data is seen. A free symmetric
+taper $S \circ T$ carries $n(n-1)/2$ parameters against $n$ constraints, so
+it is underdetermined and reproduces any target: at $n = 40$ least squares
+matches the hierarchical weights to $4.5 \times 10^{-7}$ in $L^1$. The
+question is therefore one of parsimony, and this subsection asks it of four
+named families.
+
+Distortion measures how far the implied covariance lies, not in which
+direction. The natural guess about direction is that hierarchical risk
+parity shrinks towards block structure, since its recursion never reads a
+cross-block entry. The guess is wrong, and checking it takes one number.
+Measured by relative Frobenius distance to the nearest block-constant
+correlation matrix, the sample covariance of the market above sits at
+$0.160$ and the implied covariance of hierarchical risk parity at $0.320$,
+against $0.044$ for a clustering-filtered estimate. The implied beliefs are
+\emph{twice as far} from block structure as the data they were computed
+from.
+
+Fitting agrees. Table~\ref{tab:fits} searches four shrinkage families for
+the member whose minimum-variance portfolio comes closest in $L^1$ to the
+hierarchical risk parity weights, against the yardstick of the unfitted
+distance from those weights to the inverse-variance portfolio.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrl}
+\toprule
+family & $L^1$ distance & at \\
+\midrule
+inverse variance, no fit & 0.2374 & \\
+$\lambda S + (1-\lambda)\operatorname{diag}(S)$ & 0.2270 & $\lambda = 0.010$ \\
+$\lambda S + (1-\lambda)F$, $F$ constant correlation & 1.2465 & $\lambda = 0.005$ \\
+$S + a I$ & 0.4320 & $a\,n/\operatorname{tr}(S) = 4.94$ \\
+$S \circ T$, one multiplier per tree level & 0.1922 & \\
+\bottomrule
+\end{tabular}
+\caption{Best fit to the hierarchical risk parity weights inside each
+shrinkage family, median over 120 sample covariances. Total portfolio weight
+is one.}
+\label{tab:fits}
+\end{table}
+
+No parsimonious family reproduces the rule. The best of them still misplaces nineteen
+percent of the portfolio, and fitting a whole family of covariances buys
+less than a fifth over the unfitted inverse-variance portfolio. Both
+one-parameter shrinkages that improve on nothing do so by collapsing to the
+diagonal, at $\lambda = 0.010$ and $\lambda = 0.005$, which is inverse
+variance again. The fitted tree taper is the informative row: its
+multipliers are $0.000$ at every level of the bisection except the last,
+where they rise to $0.319$. Hierarchical risk parity behaves like a rule
+that discards coupling at every scale but the finest, and even that
+description leaves a fifth of the weight unexplained.
+
+\subsection{The bridge is a path in implied-covariance space}
+
+Table~\ref{tab:bridgedist} runs the coupling dial over the same market.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+$\gamma$ & distortion & $\lambda_{\min}/\lambda_{\max}$ & true variance \\
+\midrule
+0.0 & 0.190 & $-$0.0117 & 0.16484 \\
+0.2 & 0.151 & $-$0.0057 & 0.13065 \\
+0.4 & 0.105 & $-$0.0001 & 0.09045 \\
+0.6 & 0.064 & \phantom{$-$}0.0016 & 0.06276 \\
+0.8 & 0.031 & \phantom{$-$}0.0021 & 0.05232 \\
+0.9 & 0.017 & \phantom{$-$}0.0021 & 0.05154 \\
+1.0 & 0.000 & \phantom{$-$}0.0020 & 0.05581 \\
+\bottomrule
+\end{tabular}
+\caption{Distortion along the bridge, median over 200 sample covariances.
+The full grid is in eleven steps and the distortion is monotone on all of
+it.}
+\label{tab:bridgedist}
+\end{table}
+
+Distortion falls monotonically to zero, so the dial interpolates between two
+sets of beliefs about risk and not merely between two procedures. The middle
+column adds a feature the variance column does not see. The implied
+covariance crosses into the positive definite cone near $\gamma = 0.42$, in
+every one of the 200 markets, with deciles $0.26$ and $0.52$. Below that
+crossing no covariance within the projection distance rationalises the
+portfolio. The crossing is stable and it is not a selection rule: its
+correlation with the variance-minimising $\gamma$, whose median is $0.86$,
+is $+0.001$.
+
+\subsection{What this asks of a comparison}
+
+If every allocator is minimum variance on an implied covariance, then a
+study that varies the allocator at a fixed estimate is also varying the
+estimate. Table~\ref{tab:controlled} runs the smallest version of the
+experiment this suggests. One market, one sample covariance per draw, and
+two ways to spend it.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+$T/n$ & HRP on $S$ & minimum variance on $S$ & minimum variance on filtered $S$ \\
+\midrule
+0.50 & 0.1810 & 0.1341 & 0.0596 \\
+0.75 & 0.1754 & 0.1812 & 0.0443 \\
+1.00 & 0.1686 & 2.5140 & 0.0402 \\
+1.50 & 0.1742 & 0.1057 & 0.0397 \\
+3.00 & 0.1695 & 0.0546 & 0.0373 \\
+10.00 & 0.1692 & 0.0408 & 0.0372 \\
+\bottomrule
+\end{tabular}
+\caption{True-covariance variance, median over 250 draws at each sample
+size, $n = 40$. The filter averages the sample correlation inside and
+between clusters found by the same single-linkage tree hierarchical risk
+parity uses.}
+\label{tab:controlled}
+\end{table}
+
+Hierarchical risk parity leads the raw optimizer in one row, at $T = n$,
+where the sample covariance is singular and the inverse is meaningless. Hand
+the optimizer the block structure that the hierarchical rule helps itself to
+and it leads at every sample size by a factor between three and four,
+including that row. The comparison that reports an advantage for the
+hierarchical rule is reporting the cost of inverting a raw sample
+covariance.
+
+This is the older lesson of \cite{tola2008}, who filtered the correlation
+matrix by clustering and then optimised, eight years before the hierarchical
+allocators. \cite{soloviov2026} puts the design problem most sharply, noting
+that the estimation-error literature's own remedy ``is almost never the
+benchmark HRP is compared against'', and reports that
+Ledoit--Wolf minimum variance beats hierarchical risk parity at every $T/N$
+in three of four correlation families. \cite{jainjain2019} hold a common
+estimator across allocators;
+\cite{garciamedina2025} cross twelve estimators with three allocators on
+known population covariances and find the hierarchical rule the one whose
+performance the estimator barely moves; \cite{dom2025} run the converse and
+find that constraints supply enough implicit shrinkage to flatten the
+estimator axis, citing \cite{jagannathanma2003} for why; and
+\cite{trucios2026} finds no hierarchical outperformance under any estimator.
+\cite{wuebben2026} reads the coupling dial as a shrinkage intensity
+directly. The theoretical comparison in \cite{antonov2025} is not open to
+this objection, since both allocators there read one estimated covariance.
+It does compare at a raw sample covariance, so it establishes that the
+hierarchical rule's weights carry less estimation noise, which
+Proposition~\ref{prop:implied} recasts as a statement about the implied
+covariance rather than about the rule.
+
+The bridge answers the design problem by construction. At $\gamma = 0$ and
+$\gamma = 1$ the allocator changes while the covariance handed to it does
+not, so a comparison along the dial prices the allocator and the estimator
+on the same data. That is what Section~\ref{sec:whole} does, and
+Table~\ref{tab:bridgedist} now says what the dial is doing to the implied
+covariance while it does it.
+
 \section{Closing}
 
 Under estimation error the Schur coupling is a bias--variance
@@ -1975,6 +2265,50 @@ O.~Ledoit and M.~Wolf,
 \emph{A well-conditioned estimator for large-dimensional covariance
 matrices},
 Journal of Multivariate Analysis \textbf{88}(2) (2004), 365--411.
+
+
+\bibitem{tola2008}
+V.~Tola, F.~Lillo, M.~Gallegati, and R.~N.~Mantegna,
+\emph{Cluster analysis for portfolio optimization},
+Journal of Economic Dynamics and Control, 32(1):235--258, 2008.
+doi:10.1016/j.jedc.2007.01.034.
+
+\bibitem{jainjain2019}
+P.~Jain and S.~Jain,
+\emph{Can machine learning-based portfolios outperform traditional risk-based
+portfolios? The need to account for covariance misspecification},
+Risks, 7(3):74, 2019. doi:10.3390/risks7030074.
+
+\bibitem{garciamedina2025}
+A.~Garc\'ia-Medina,
+\emph{High-dimensional covariance matrix estimators on simulated portfolios
+with complex structures},
+Physical Review E, 111:024316, 2025. doi:10.1103/PhysRevE.111.024316.
+
+\bibitem{dom2025}
+M.~S.~Dom, C.~Howard, M.~Jansen, and H.~Lohre,
+\emph{Beyond GMV: the relevance of covariance matrix estimation for
+risk-based portfolio construction},
+Quantitative Finance, 25(3):403--419, 2025.
+doi:10.1080/14697688.2025.2468268.
+
+\bibitem{trucios2026}
+C.~Truc\'ios,
+\emph{Hierarchical risk clustering versus traditional risk-based portfolios:
+an empirical out-of-sample comparison},
+Empirical Economics, 70(3), 2026. doi:10.1007/s00181-026-02900-x.
+
+\bibitem{soloviov2026}
+E.~Soloviov,
+\emph{When does hierarchical risk parity beat Markowitz? A controlled
+comparison under known covariance},
+preprint, June 2026. \url{https://hrp.marketmaker.cc/paper.pdf}.
+
+\bibitem{wuebben2026}
+B.~J.~Wuebben,
+\emph{Beyond De Prado and Cotton: hierarchical and iterative methods for
+general mean-variance portfolios},
+arXiv:2604.23833, 2026.
 
 \end{thebibliography}
 
