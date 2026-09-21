@@ -39,7 +39,7 @@
   <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
   <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
   <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
-  <h1>Theorem 3 — small noise pushes the optimum off the minimum-variance end</h1>
+  <h1>Theorem 3: small noise pushes the optimum off the minimum-variance end</h1>
 
   <p>At an exact minimum-variance endpoint the population curve is flat
   (V&#8320;&prime;(1) = 0), so any positive marginal noise sensitivity wins
@@ -55,11 +55,12 @@
   </div>
   <div class="lookfor">What to look for: the dots approach the line as
   e &darr; 0. The theorem is a small-noise statement, and the curvature away from
-  the line at larger e is the O(e&#8308;) term.</div>
+  the line at larger e is the O(e&#8308;) term. Dots approaching a different slope
+  as e &darr; 0 would refute the coefficient.</div>
 
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
   the naive fitness (5), ported directly from the reference implementations, live
-  in your browser. Nothing is pre-baked.</p>
+  in your browser. Nothing is precomputed.</p>
 </main>
 
 <script src="./recursion.js"></script>
@@ -76,7 +77,7 @@ function draw(){
   const X=v=>padL+v/xmax*(W-padL-14),Y=v=>H-padB-v/ymax*(H-padB-24);
   S.axes(cx,W,H,padL,padB,'1 − γ*(e) against e² — family A; line has slope 1025/153');
   cx.strokeStyle='#ef6c00';cx.lineWidth=1.6;cx.beginPath();
-  cx.moveTo(X(0),Y(0));cx.lineTo(X(xmax),Y(1025/153*xmax));cx.stroke();
+  {const xe=Math.min(xmax,ymax/(1025/153));cx.moveTo(X(0),Y(0));cx.lineTo(X(xe),Y(1025/153*xe));cx.stroke();}
   cx.fillStyle='#4a3aff';
   pts.forEach(p=>{cx.beginPath();cx.arc(X(p.x),Y(p.y),3.5,0,7);cx.fill();});
   cx.fillStyle='#888';cx.font='10px sans-serif';cx.textAlign='center';

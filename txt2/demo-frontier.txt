@@ -1,0 +1,25 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Theorem 6: the clipped frontier
+
+ For the second-order surrogate, the optimal coupling is the clipped inverse
+ of t(&gamma;) = &minus;V&#8320;&prime;/G&prime;. If t sweeps (0,&infin;) the
+ optimizer sweeps the whole bridge (Family A). If t reaches a finite limit
+ t&#8320; at the HRP end, then for s = &tau;&sup2; &ge; t&#8320; the surrogate
+ parks at HRP (Family B, with t&#8320; = 27/800).
+
+ Left: t(&gamma;) for both families (log scale), computed
+ from the recursion. Right: the resulting surrogate optimizer
+ &gamma;&#8322;*(s); Family A sweeps the bridge, Family B clips to 0 at
+ s = 27/800.
+
+ What to look for: Family A's t diverges at the left end
+ and vanishes at the right (no clipping); Family B's t hits a ceiling at 27/800
+ &asymp; 0.034, and its optimizer path drops to zero there. A Family B optimizer
+ that stayed positive past s = 27/800 would refute the clipping.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.

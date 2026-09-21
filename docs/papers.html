@@ -41,8 +41,8 @@
   <main>
     <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>Papers</h1>
-    <p class="subtitle">The core write-ups of Schur damping. For the wider literature &mdash; antecedents,
-    independent rediscoveries, and derived works across fields &mdash; see the
+    <p class="subtitle">The core write-ups of Schur damping. For antecedents,
+    independent rediscoveries, and derived works across fields, see the
     <a href="./bibliography.html">bibliography</a>.</p>
 
     <div class="bib">
@@ -52,7 +52,9 @@
         Cotton, P. (2024).
         <a href="https://arxiv.org/abs/2411.05807"><em>Schur Complementary Allocation: A
         Unification of Hierarchical Risk Parity and Minimum Variance Portfolios</em></a>.
-        arXiv:2411.05807. <em>The canonical write-up: the damped Schur complement and the recursion
+        arXiv:2411.05807. Original version: October 29, 2024; latest version: September 19, 2026
+        (<a href="./schur-complementary-allocation.pdf">corrected PDF</a>,
+        <a href="https://github.com/microprediction/schur/tree/main/paper/schur-complementary-allocation">source</a>). <em>The canonical write-up: the damped Schur complement and the recursion
         at arbitrary hierarchy depth, with &gamma; interpolating HRP and minimum variance.</em>
       </li>
       <li>
@@ -69,7 +71,7 @@
       <li>
         Cotton, P. (2026). <em>When the Out-of-Sample-Optimal Schur Portfolio Lies Between HRP
         and Minimum Variance</em>.
-        Working paper &mdash; <a href="./neither-end-of-the-bridge.pdf">PDF</a>.
+        Working paper: <a href="./neither-end-of-the-bridge.pdf">PDF</a>.
         <em>Where to sit on the bridge when the covariance is estimated with error, in four
         layers: a structural theorem (top-level cross-block noise is invisible at HRP and its
         expected cost factors as &gamma;&tau;&sup2;H, so small noise uniformly separates the
@@ -79,8 +81,8 @@
         interior and slides monotonically from 1 to &frac12; as the noise grows. A whole-matrix
         section then noises every entry of the covariance: a sharp second-moment condition
         &Xi; &gt; 0 decides interiority, exact enumeration certifies interior optima under
-        entrywise noise, and under the sample covariance of T Gaussian draws the optimizer
-        sweeps the bridge monotonically with T. Exact examples
+        entrywise noise, and under the sample covariance of T Gaussian draws the median-optimal
+        coupling rises with T, from 0.62 at T=15 to 0.96 at T=250. Exact examples
         bound the general claims: HRP can become locally optimal at a finite noise level
         (boundary derivative &minus;1/700 + (8/189)&tau;&sup2;), and the surrogate frontier is a
         clipped monotone inverse of &tau;&sup2; = &minus;V&#8320;&prime;/G&prime;. All exact
@@ -88,7 +90,7 @@
       </li>
       <li>
         Cotton, P. (2026). <em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em>.
-        Working paper &mdash; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738">SSRN 7480738</a>,
+        Working paper: <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738">SSRN 7480738</a>,
         <a href="./schur-nco-bridge.pdf">PDF</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/schur-nco-bridge.tex">source</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/verify_schur_nco_bridge.py">certificate</a>,
@@ -100,7 +102,7 @@
         cross-cluster dependence. Damping by &gamma; then runs from nested clustered optimization
         at &gamma;=0 to the global optimum at &gamma;=1, with no linear solve larger than a cluster
         or the number of clusters. The flat and tree
-        constructions agree at &gamma;=1 and differ in the interior. Under the gateway model only the knot
+        constructions agree at &gamma;=1 and differ in the interior.<br />Under the gateway model only the knot
         exposures move along the bridge, in closed form; the member positions are the same at
         both ends. Under estimation error the
         optimal &gamma; can be strictly interior, and full coupling can remain locally optimal: a
@@ -113,13 +115,13 @@
       </li>
       <li>
         Cotton, P. (2026). <em>Hierarchical Equal Risk Contribution Is a Corner of a Schur Square, and Two Dials Lead to Minimum Variance</em>.
-        Working paper &mdash; <a href="./schur-herc-square.pdf">PDF</a>,
+        Working paper: <a href="./schur-herc-square.pdf">PDF</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/schur-herc-square.tex">source</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/verify_herc_square.py">certificate</a>.
         <em>HERC budgets clusters by inverse cluster variance, which is the rule block inversion gives the
-        global minimum-variance portfolio. What HERC lacks is conditioning in two places: each cluster on
+        global minimum-variance portfolio. HERC lacks conditioning in two places: each cluster on
         the others, and each asset on its cluster mates. Damping the two Schur complements by &gamma; and
-        &eta; gives a square with HERC at (0,0) and the global optimum at (1,1). Raffinot's split formula,
+        &eta; gives a square with HERC at (0,0) and the global optimum at (1,1).<br />Raffinot's split formula,
         read with risk contribution as a precision, telescopes down any dendrogram to a flat inverse-fitness
         rule; the reference implementations sum variances instead and depart from it at three or more
         clusters. The inner dial has a closed form interpolating the naive and Stevens quantities, a
@@ -130,25 +132,9 @@
         move inside and where one stays. Every claim is machine-verified in rational arithmetic.</em>
       </li>
       <li>
-        Cotton, P. (2026). <em>The Far End of a Schur Bridge Does Not Care How Its Clusters Are
-        Priced, and the Interior Does</em>.
-        Working paper: <a href="./pricing-a-cluster.pdf">PDF</a>,
-        <a href="https://github.com/microprediction/schur/blob/main/paper/pricing-a-cluster.tex">source</a>,
-        <a href="https://github.com/microprediction/schur/blob/main/paper/verify_test_space.py">certificate</a>.
-        <em>A two-tier allocation prices its clusters with a $k\times k$ matrix, and every
-        construction so far builds that matrix from the same portfolios it holds. Separating the two
-        gives a family with a trial space and a test space. At the far end the $k$ conditioned
-        directions are the blocks of $\Sigma^{-1}u$ and sum to it, so any non-degenerate pairing
-        recovers it and the choice of representative cannot reach the far end at all. The interior
-        is not free: an unmatched pairing loses symmetry and can pass through singularity inside the
-        dial, with a positive-definite $6\times6$ example where it does and a rate of about a
-        quarter of estimated markets. Pricing against the cluster portfolios makes the matrix a Gram
-        matrix of $\Sigma$ and removes the possibility.</em>
-      </li>
-      <li>
         Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its Optimal
         Strength Is a Sampling-Error Correction</em>.
-        Working paper &mdash; <a href="./localization-is-schur-damping.pdf">PDF</a>,
+        Working paper: <a href="./localization-is-schur-damping.pdf">PDF</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/localization-is-schur-damping.tex">source</a>,
         <a href="https://github.com/microprediction/schur/blob/main/paper/verify_localization.py">verification</a>.
         <em>Ensemble Kalman filters localize by an elementwise taper. A taper that is
@@ -162,7 +148,7 @@
       </li>
       <li>
         Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
-        Working paper &mdash; <a href="./schur-damping-pdlp.pdf">PDF</a>,
+        Working paper: <a href="./schur-damping-pdlp.pdf">PDF</a>,
         <a href="./damping-in-pdlps.html">web note</a>.
         <em>Proposes the interior of the dial for the single-pool-vs-two-pools decision of
         Chitra et al.: a partially-merged DeFi lending pool that hedges against

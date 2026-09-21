@@ -1,0 +1,41 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ The sample covariance — &gamma;* sweeps the bridge with T
+
+ The estimation model taken literally: &Sigma;&#770; is the sample covariance
+ of T draws from N(0,&Sigma;), the setting in which Antonov, Lipton, and
+ L&oacute;pez de Prado prove HRP more robust than Markowitz. The browser runs a
+ seeded Monte Carlo (4,000 replications, common draws across the &gamma; grid;
+ the paper's table uses 200,000).
+
+ Two honest wrinkles, both findings of the paper rather than bugs. First, on
+ a sample covariance the implemented recursion at &gamma; = 1 is not
+ the sample minimum-variance portfolio (the naive splits
+ break the exact recovery once exchangeability is gone), so the right end of
+ the chart is full coupling, and the paper carries sample Markowitz
+ as a separate benchmark. Second, the mean of the raw recursion's
+ loss appears to diverge at small T: rare draws drive the fitness sum through zero, the
+ pole looks non-integrable, and a sample mean never settles; the paper gives a pole criterion and Monte Carlo evidence but stops short of a theorem. The plot therefore
+ shows the median curve, which is stable at any sample count, with
+ the tail frequency reported separately.
+
+ sample size T
+ 15
+ 25
+ 50
+ 100
+ 250
+
+ computing&hellip;
+
+ What to look for: at T = 15 the median minimum sits near
+ &gamma; &asymp; 0.6 and roughly 2% of draws at full coupling blow past ten
+ times the population minimum variance; by T = 250 the minimum has slid to
+ &gamma; &asymp; 0.96 and the tail is gone. The readout collects
+ &gamma;*(T) as you click through the sample sizes.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is pre-baked.

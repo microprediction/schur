@@ -37,20 +37,20 @@
   <main>
     <p class="pagenav"><a href="./index.html">&larr; Home</a></p>
     <h1>Implementations</h1>
-    <p class="subtitle">Three maintained libraries. They differ in setting, not in quality.</p>
+    <p class="subtitle">Three libraries: batch, streaming, estimation.</p>
 
     <p class="lead">
       Use <em>skfolio</em> when the universe and covariance are fixed (backtests, batch
       rebalancing). Use <em>allocation</em> when assets arrive, leave, and update one
-      observation at a time. Use <em>precise</em> when what you need is the covariance
-      machinery itself &mdash; online estimators and the Schur pseudo-likelihood for scoring them.
+      observation at a time. Use <em>precise</em> for the covariance
+      machinery itself: online estimators and the Schur pseudo-likelihood for scoring them.
     </p>
 
-    <h2>skfolio &mdash; batch, fixed universe</h2>
+    <h2>skfolio: batch, fixed universe</h2>
     <p>
       The scikit-learn-ecosystem portfolio library ships a <code>SchurComplementary</code>
       optimizer. Pipelines, cross-validation, and model selection come for free from the sklearn
-      idiom. Described in Nicolini, Manzi &amp; Delatte (2025),
+      idiom. The library is described in Nicolini, Manzi &amp; Delatte (2025),
       <a href="https://arxiv.org/abs/2507.04176">arXiv:2507.04176</a>.
     </p>
     <ul>
@@ -60,12 +60,20 @@
         Schur Complementary tutorial</a></li>
     </ul>
 
-    <h2>allocation &mdash; streaming, changing universe</h2>
+    <h2>allocation: streaming, changing universe</h2>
     <p>
       Online Schur allocation for universes that evolve: assets are ordered by <em>Fiedler
-      seriation</em> (a smooth function of the covariance, so <code>partial_fit</code> stays
-      low-turnover), covariance is maintained incrementally, and names can enter or leave without a
-      refit.
+      seriation</em>, covariance is maintained incrementally, and names can enter or leave without a
+      refit. The Fiedler vector is continuous in the covariance, and the order changes only
+      when two of its coordinates cross, each crossing a finite jump in the allocation; the lower
+      turnover is empirical, not a continuity result. Its <code>SchurBridge</code> is the pair-form engine,
+      with constructors named by their endpoints:
+      <code>hrp_to_min_variance</code>, <code>hmv_to_min_variance</code>,
+      <code>herc_to_min_variance</code>, <code>nco_to_min_variance</code>,
+      <code>inverse_variance_to_min_variance</code>, each exact at both ends, and a
+      <code>companion</code> of <code>'vol'</code> or <code>'mean'</code> for maximum
+      diversification or tangency. The older <code>SchurComplementary</code> is kept as the
+      collapsed encoding that matches skfolio to machine precision.
     </p>
     <ul>
       <li>Install: <code>pip install allocation</code></li>
@@ -73,12 +81,11 @@
       <li>Documentation: <a href="https://allocation.microprediction.org">allocation.microprediction.org</a></li>
     </ul>
 
-    <h2>precise &mdash; online covariance and the Schur pseudo-likelihood</h2>
+    <h2>precise: online covariance and the Schur pseudo-likelihood</h2>
     <p>
       The estimation layer underneath: sklearn-style <em>online</em> covariance and correlation
       estimators behind one <code>partial_fit</code> contract (the online complement of
-      <code>sklearn.covariance</code>), including Schur covariance estimators with the &gamma;
-      dial, and assessors &mdash; among them the Schur pseudo-likelihood, which scores covariance
+      <code>sklearn.covariance</code>), and assessors, among them the Schur pseudo-likelihood, which scores covariance
       estimates reliably in the undersampled regime where the plain held-out likelihood fails.
     </p>
     <ul>

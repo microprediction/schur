@@ -39,17 +39,19 @@
   <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
   <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
   <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
-  <h1>Theorem 4 — the solved family: unique interior optimum, monotone in the noise</h1>
+  <h1>Theorem 4: the solved family has a unique interior optimum, monotone in the noise</h1>
 
   <p>For Family A with common cross-block noise the paper computes the exact
   expected out-of-sample variance in closed form, equation (20). The solid curve
   is the recursion and the dashed curve is the closed form; they coincide. The
   objective is strictly convex, the minimizer is unique and interior for every
   0 &lt; e &le; c = 0.6, and it slides monotonically from &gamma;*(0) = 1 to
-  &gamma;*(0.6) = &frac12; exactly. One honest footnote: for e &ge; 0.15 the raw
-  recursion is undefined at the single point &gamma; = 0.75/(0.6 + e), where a
-  block's augmented fitness diverges; the curve shown is the continuous extension
-  (equation (18) of the paper), which the recursion equals everywhere else.
+  &gamma;*(0.6) = &frac12; exactly.</p>
+  <p>For e &ge; 0.15 the raw recursion is undefined at the single point
+  &gamma; = 0.75/(0.6 + e), where a block's augmented fitness diverges. The
+  recursion is evaluated on a grid that avoids that point, and the dashed closed
+  form is the continuous extension (equation (18) of the paper), which the
+  recursion equals everywhere else.
   Theorem 4(v) proves the minimizer always sits strictly left of that point, so
   the optimum is a statement about the recursion itself.</p>
   <div class="widget">
@@ -66,11 +68,12 @@
   indistinguishable; the marked minimizer moves left as e grows and lands exactly
   on &gamma; = &frac12; at e = 0.6. The lower panel traces &gamma;*(e): monotone,
   from 1 to &frac12;, with the small-noise parabola
-  1 &minus; (1025/153)e&sup2; overlaid near e = 0.</div>
+  1 &minus; (1025/153)e&sup2; overlaid near e = 0. A visible gap between the two
+  curves, or a minimizer that moved right as e grew, would refute the theorem.</div>
 
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
   the naive fitness (5), ported directly from the reference implementations, live
-  in your browser. Nothing is pre-baked.</p>
+  in your browser. Nothing is precomputed.</p>
 </main>
 
 <script src="./recursion.js"></script>

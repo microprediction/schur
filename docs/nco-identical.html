@@ -60,7 +60,7 @@
   on the independent assets, spread evenly. The whole allocation problem is
   therefore one number, x. The lowest-variance choice is
   x&#8902; = 1 / (1 + &delta;L), where L = 1 + (k &minus; 1)c measures how much the
-  representatives move together, and the variance you pay for missing it
+  representatives move together, and the variance paid for missing it
   grows with the square of the miss.</p>
 
   <h2>Two methods, and the bridge between them</h2>
@@ -74,13 +74,13 @@
   told a fraction &gamma; of what the other representatives explain about its
   own.</p>
 
-  <h2>Why the dial matters: the correlation is estimated</h2>
+  <h2>The correlation is estimated</h2>
   <p>The true correlation c is unknown. The portfolio is built from an
   estimate z, and then it has to live under the true c. The score is therefore
   the <em>expected out-of-sample variance</em> F(&gamma;): build the bridge
   portfolio from the estimate, compute its variance under the truth, and
   average over what the estimate might have been. Two kinds of estimate are
-  offered below.</p>
+  considered.</p>
   <ul>
     <li><b>Two-point estimate.</b> The estimate is either 0 or 2c, each half the
     time. It is unbiased but very noisy.</li>
@@ -114,43 +114,45 @@
     estimates the portfolio might be built from. Only the block of
     representatives differs between them.</div>
     <canvas id="chartX" width="820" height="240"></canvas>
-    <div class="readout"><b>What the portfolio does.</b> The weight x that the
+    <div class="readout"><b>The representative weight.</b> The weight x that the
     bridge puts on the representatives, against the dial &gamma;, on each of the
     two estimates. The grey line is the ideal weight x&#8902; under the true
-    correlation. The bridge is trying to land on that line while only seeing
+    correlation. The bridge aims for that line while seeing only
     the estimate.</div>
     <canvas id="chartF" width="820" height="280"></canvas>
     <div class="readout" id="readF"></div>
   </div>
-  <div class="lookfor">How to read the second chart. Lower is better. The
-  left end is NCO, the right end is global minimum variance. If the lowest
-  point is strictly inside, then trusting the estimated correlation only partly
-  beats both trusting it fully and ignoring it. With the two-point estimate the
-  paper gives the best dial in closed form,
+  <div class="lookfor">The out-of-sample variance. The left end is NCO, the
+  right end is global minimum variance. If the lowest point is strictly inside,
+  then trusting the estimated correlation only partly beats both trusting it
+  fully and ignoring it. With the two-point estimate the paper gives the best
+  dial in closed form,
   &gamma;&#8902; = (1 + 2(k&minus;2)c) / (2[1 + (k&minus;3)c]), drawn in red; the numerical
-  minimum is drawn in green and should sit on top of it. With small symmetric
-  noise the red line is a prediction from an expansion in &tau;, not an exact
-  optimum: it is drawn only when it lands on the bridge, and the costs in the
-  readout are always measured against the numerical minimum. The &tau; slider is
-  capped so that both estimates remain covariances, since an equicorrelated
-  estimate is one only for &minus;1/(k&minus;1) &lt; z &lt; 1. At the default k = 2,
-  c = &frac14;, &delta; = 1 the answer is exactly 2/3. The reason is visible in the
-  first chart: on the estimate 0 the bridge cannot move, and on the estimate 2c
-  the dial 2/3 lands the weight exactly on x&#8902;.</div>
+  minimum is drawn in green and sits on top of it. A green marker off the red
+  line would refute the closed form.</div>
+  <div class="lookfor">With small symmetric noise the red line is a prediction
+  from an expansion in &tau;, not an exact optimum: it is drawn only when it
+  lands on the bridge, and the costs in the readout are always measured against
+  the numerical minimum. The &tau; slider is capped so that both estimates
+  remain covariances, since an equicorrelated estimate is one only for
+  &minus;1/(k&minus;1) &lt; z &lt; 1. At the default k = 2, c = &frac14;, &delta; = 1
+  the best dial is exactly 2/3. The reason is visible in the first chart: on
+  the estimate 0 the bridge cannot move, and on the estimate 2c the dial 2/3
+  lands the weight exactly on x&#8902;.</div>
 
   <h2>When a little damping helps, and when it does not</h2>
   <p>For small noise the paper shows the best dial is
   1 &minus; (G&prime;(1)/V&#8320;&Prime;(1))&tau;&sup2;: a fixed coefficient times the noise
   squared, below 1. If the coefficient is positive, full coupling is beaten by
   a slightly smaller &gamma;. If it is negative, the formula points past 1 and
-  the best you can do is stay at full coupling. The chart plots that
+  full coupling is best. The chart plots that
   coefficient against &delta; for the current k and c.</p>
 
   <div class="widget">
     <canvas id="chartShift" width="820" height="240"></canvas>
     <div class="readout" id="readShift"></div>
   </div>
-  <div class="lookfor">How to read it. Above the zero line, small noise pushes
+  <div class="lookfor">The sign of the coefficient. Above the zero line, small noise pushes
   the best dial inside; below it, full coupling stays best. For k = 10 and
   c = &frac14; the paper gives the coefficient exactly, (8 &minus; &delta;)/(1 + 13&delta;/4),
   so the crossing is at &delta; = 8. Set k = 10 and &delta; = 12: small noise then

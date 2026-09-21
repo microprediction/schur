@@ -1,0 +1,25 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Lemma 1: HRP never sees the cross-block
+
+ At &gamma; = 0 the recursion is hierarchical risk parity: it splits by the
+ naive variances of the two diagonal blocks and never touches the cross-block. So
+ noise in the cross-block cannot move the HRP weights at all, while any
+ &gamma; &gt; 0 reads the noisy block and moves. The covariance is the paper's
+ Family A: volatilities (1,1,2,2), within-block correlation &frac12;, cross-block
+ correlation 0.3, and the noise moves the cross-block correlation by
+ &plusmn;&tau;.
+
+ cross-block noise &tau;
+
+ 0.10
+
+ What to look for: drag &tau;. The &gamma; = 0 bars never
+ move (clean and perturbed weights are identical to machine precision); the
+ &gamma; = 0.6 bars drift with the noise. Any movement in the &gamma; = 0 bars would refute the lemma.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is precomputed.
