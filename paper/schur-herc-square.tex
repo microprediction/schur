@@ -24,7 +24,7 @@ Email: \texttt{peter.cotton@microprediction.com}. A companion
 verification script is \texttt{paper/verify\_herc\_square.py}
 at \texttt{github.com/microprediction/schur}. Every numerical claim in
 this paper is checked there in exact rational arithmetic.}}
-\date{September 18, 2026}
+\date{September 19, 2026}
 
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\ones}{\mathbf{1}}
@@ -242,14 +242,28 @@ $z(Q,b,\eta)$ has entries
 \end{equation}
 where $-i$ now means $C\setminus\{i\}$. The portfolio at $(\gamma,\eta)$ is
 \begin{equation}
-  w_{\gamma\eta}\;\propto\;\sum_C\frac{v_C}{\nu_C},
+  w_{\gamma\eta}\;\propto\;\sum_C
+  \frac{b_C^\top z_C}{z_C^\top Q_C z_C}\,z_C,
   \qquad
-  v_C=\frac{z_C}{b_C^\top z_C},\quad
-  \nu_C=v_C^\top Q_C v_C,\quad
-  z_C=z\big(Q_C(\gamma),b_C(\gamma),\eta\big).
+  z_C=z\big(Q_C(\gamma),b_C(\gamma),\eta\big),
   \label{eq:square}
 \end{equation}
+with a cluster whose direction $z_C$ vanishes contributing nothing.
 \end{definition}
+
+When $b_C^\top z_C\neq0$ the summand is $v_C/\nu_C$ with
+$v_C=z_C/b_C^\top z_C$ the cluster's holding normalized by its companion
+vector and $\nu_C=v_C^\top Q_Cv_C$ its variance on the pair, so
+\eqref{eq:square} is the inverse-variance budget rule in the form
+\eqref{eq:fitness}. The unnormalized form is the one we use, because it has
+no singularity. On ordinary positive-definite input a companion vector can
+vanish: $\Sigma=\left(\begin{smallmatrix}2&1\\1&1\end{smallmatrix}\right)$
+with singleton clusters has $b_{\{1\}}(1)=0$, so $z_{\{1\}}=0$ at $\gamma=1$
+and the normalized holding $v_{\{1\}}$ is $0/0$, while
+$\Sigma^{-1}\ones=(0,1)^\top$ is perfectly well defined. By
+\eqref{eq:blockinv} a vanishing companion means that block of the global
+direction is zero, which is what \eqref{eq:square} assigns. The same
+convention is used for the flat bridge in \cite{cotton2026nco}.
 
 The dial $\gamma$ conditions a cluster on the outside world. The dial
 $\eta$ conditions an asset on its cluster mates. The budget rule is HERC's
@@ -275,8 +289,9 @@ cluster's pair. We take $u=\ones$ unless said otherwise.
 At $\eta=0$ the leaf direction is $z_i=b_i/Q_{ii}$, which at $\gamma=0$ is
 $1/\sigma_i^2$. At $\eta=1$ the leaf direction is the block inversion
 \eqref{eq:blockinv} of the pair $(Q,b)$ on the partition
-$(\{i\},C\setminus\{i\})$, so $z=Q^{-1}b$, and by \eqref{eq:fitness}
-$v_C/\nu_C=Q^{-1}b$. At $\gamma=1$ the pair is $(\Sigma^c_C,b_C)$ and
+$(\{i\},C\setminus\{i\})$, so $z=Q^{-1}b$, and then
+$b^\top z/(z^\top Qz)=1$, so the summand is $Q^{-1}b$ whether or not $b$
+vanishes. At $\gamma=1$ the pair is $(\Sigma^c_C,b_C)$ and
 $Q^{-1}b=(\Sigma^{-1}u)_C$ by \eqref{eq:blockinv}. The remaining corners
 read off the definitions.
 \end{proof}
@@ -410,8 +425,15 @@ cluster's minimum-variance portfolio $v_\star$,
   \label{eq:theta}
 \end{equation}
 where $\alpha=\sum_i\sigma_i^{-2}$ and $\beta=\sum_i s_{-i}/\sigma_i$, so
-that $\beta=(\sum_i\sigma_i^{-1})^2-\alpha$. The long-only frontier is
-$\eta_+=\min_i 1/(\kappa\sigma_i s_{-i})$.
+that $\beta=(\sum_i\sigma_i^{-1})^2-\alpha$. With $h_i=\kappa\sigma_i s_{-i}$
+the long-only frontier is
+\begin{equation}
+  \eta_+=\min\big(\{1\}\cup\{1/h_i : h_i>1\}\big),
+  \label{eq:equifrontier}
+\end{equation}
+which is $\min_i 1/h_i$ when some asset is shorted inside the square and $1$
+otherwise, including every $\rho\le0$, where $\kappa\le0$ and nothing is
+ever shorted.
 \end{proposition}
 
 \begin{proof}
@@ -422,7 +444,8 @@ weight is $a_i-t\,c_i$ with $t=\eta\kappa$, $a_i=\sigma_i^{-2}$ and
 $c_i=s_{-i}/\sigma_i$. Two normalized vectors of this form differ by a
 multiple of the fixed vector $a\beta-c\alpha$, which gives the segment,
 and $t=\kappa$ is the minimum-variance end. The frontier is
-\eqref{eq:frontier} with $b=\ones$ and $s_i=1-\kappa\sigma_i s_{-i}$.
+\eqref{eq:frontier} with $b=\ones$ and $s_i=1-h_i$: the numerator of asset
+$i$ crosses zero inside $[0,1]$ exactly when $h_i>1$, at $\eta=1/h_i$.
 \end{proof}
 
 In words: on an equicorrelated cluster, the inner dial is linear shrinkage

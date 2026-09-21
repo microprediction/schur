@@ -1,0 +1,99 @@
+Schur-complementary allocation
+
+ One slider from HRP to minimum variance, over a smooth ordering.
+
+ Hierarchical risk parity splits the universe in two, allocates between the
+ halves by inverse variance, and recurses — never inverting a matrix, but also never using the
+ covariance between the halves. Minimum variance uses all of it, through
+ Σ⁻¹. The Schur-complementary portfolio connects them with a single coupling
+ parameter: at γ = 0 the recursion is exactly HRP; as γ → 1 the
+ off-diagonal blocks are folded back in via Schur complements and the weights approach minimum
+ variance.
+
+ One more substitution matters for streaming use. Classic HRP orders assets by an
+ agglomerative dendrogram, which can reorder discontinuously as the covariance drifts. Here the
+ order comes from Fiedler seriation — the second eigenvector of the similarity graph's
+ Laplacian — which moves continuously with the covariance. The second widget shows what that is
+ worth in turnover.
+
+ Try it: drag γ
+
+ Daily returns of 28 Dow names, 2010–2024. The heatmap is the empirical correlation in the
+ chosen order; the bars are the Schur weights, recomputed by the actual package
+ (compute_monotonic_weights) on a grid of γ and shown in the same order.
+
+ coupling γ
+
+ 0.00
+
+ 0 — HRP (block-diagonal)minimum variance — 1
+
+ order
+ Fiedler seriation
+ dendrogram
+ alphabetical
+
+ Two things to notice. The weights deform continuously in γ — there is no point at
+ which the portfolio switches regime. And the slider quietly stops helping: past
+ γ ≈ 0.67 on this covariance, pushing further no longer reduces variance, so the
+ estimator caps the effective γ there (the keep_monotonic behaviour; the readout
+ shows both the requested and effective value). Portfolio variance falls from 1.39× the
+ unconstrained minimum-variance level at γ = 0 to 1.34× at the cap — a modest gain on this
+ particular covariance, priced long-only and without ever inverting Σ.
+
+ Out of sample, the middle of the bridge wins
+
+ In sample, variance falls as γ rises until the cap — more of the covariance is used. Out of
+ sample the question is different: the cross-block terms that γ folds in are estimated,
+ and estimation error grows with how aggressively they are used. Here weights are fitted on
+ one-year windows drawn from 2010–2017 (raw weights, no monotonic cap, so the whole bridge
+ shows) and evaluated on the 2018–2024 covariance, averaged over 26 windows:
+
+ training covariance
+ raw sample
+ Ledoit–Wolf shrinkage
+
+ Neither endpoint is best. HRP (γ = 0) ignores cross-block covariance it could have used;
+ γ = 1 trusts estimated cross-block terms it shouldn't, and pays 21% for it. The minimum sits
+ mid-bridge, at γ ≈ 0.55, about 2.5% below HRP — a modest dip, but a real interior optimum:
+ the coupling parameter is a bias–variance dial, not a formality. The γ slider above moves the
+ marker here too.
+
+ The natural objection is that raw one-year covariances overfit by construction, and a
+ practitioner would shrink first. The toggle answers it: switch the training covariances to
+ Ledoit–Wolf and the interior optimum survives — slightly deeper (0.97× at γ = 0.6) and γ = 1
+ still pays 24%. On this data, shrinkage moves the best γ a little to the right; it does not
+ rescue the far end of the bridge.
+
+ Nor is the interior optimum an accident of this dataset — it is provable. In a four-asset,
+ two-block example with a two-point error on one cross-block covariance entry, the expected
+ out-of-sample variance satisfies F(0.9) &lt; F(0) and
+ F(0.9) &lt; F(1) as exact rational inequalities (every step of the recursion is
+ rational arithmetic, so the comparison is a certificate, not a simulation), while γ = 0 is
+ structurally noise-immune — the HRP recursion never reads the cross block, so the minimizer
+ is never at 0 and, at the exhibited noise level and a neighbourhood of it, not at 1 either. The construction and
+ certificate: paper/neither_end_certificate.py.
+
+ What the smooth ordering is worth
+
+ Same experiment twice: an EWMA covariance (60-day halflife) over the same 28 names,
+ rebalanced weekly at γ = 0.5, 2011–2024. The only difference is the ordering fed to the
+ recursion — a dendrogram recomputed each week, versus Fiedler seriation warm-started from the
+ previous week. Cumulative one-way turnover:
+
+ The dendrogram portfolio pays about 40% more turnover for the same recursion on the same
+ covariance — the extra trades are pure reordering, not information. The gap is the point of
+ replacing the combinatorial step with a spectral one. The Fiedler vector is a continuous
+ function of the covariance, but the sorted order is not: when two of its coordinates cross,
+ the bisection changes and the allocation can move by a finite amount, exactly as a dendrogram
+ can. What the spectral step buys is fewer such events, a coordinate crossing rather than a
+ linkage reordering, and the lower turnover above is an empirical result, not a continuity
+ theorem.
+
+ Reproducible: experiments/gen_schur_gamma_data.py computes
+ everything shown here (orders, weight grid, turnover series) with the
+ allocation package. Estimator: allocation/schur.py
+ (SchurComplementary, and HierarchicalRiskParity as its
+ γ = 0 case). The analytical companion — When the Out-of-Sample-Optimal Schur Portfolio Lies Between HRP and Minimum Variance — is here; data generators live in the allocation repository.
+
+ Part of schur.microprediction.org — the Schur bridge. Snapshot of the demo maintained at allocation.microprediction.org. MIT © Peter Cotton.

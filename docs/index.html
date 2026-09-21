@@ -11,102 +11,167 @@
     onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="nav-inner">
-      <a class="brand" href="./index.html">schur</a>
-      <nav>
+<header class="site-header">
+  <div class="nav-inner">
+    <a class="brand" href="./index.html">schur</a>
+    <nav>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
         <a href="./intro.html">Introduction</a>
-        <a href="./papers.html">Papers</a>
-        <a href="./demos.html">Demos</a>
-        <a href="./implementations.html">Implementations</a>
         <a href="./taxonomy.html">Taxonomy</a>
-        <a href="#bibliography">Bibliography</a>
-        <a href="./map.html">Literature map</a>
-        <a href="./timeline.html">Timeline</a>
-        <a href="https://github.com/microprediction/schur">GitHub</a>
-      </nav>
-    </div>
-  </header>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
+      <a href="./papers.html">Papers</a>
+      <a href="./demos.html">Demos</a>
+      <a href="./implementations.html">Implementations</a>
+      <a href="./bibliography.html">Bibliography</a>
+      <a href="./map.html">Literature map</a>
+      <a href="./timeline.html">Timeline</a>
+      <a href="https://github.com/microprediction/schur">GitHub</a>
+    </nav>
+  </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
+</header>
 
   <main>
     <h1>Schur Complementary Portfolios</h1>
-    <p class="subtitle">A bridge between hierarchical and optimisation-based portfolio construction.</p>
+    <p class="subtitle">Bridges between heuristic and optimization-based portfolio construction.</p>
 
     <p class="lead">
-      Portfolio construction has long had two camps. <strong>Top-down</strong> methods build a
-      hierarchy of assets and allocate between and within clusters &mdash; robust, intuitive, and
-      forgiving of a noisy covariance estimate. <strong>Bottom-up</strong> methods solve a single
-      optimisation over the whole covariance matrix &mdash; efficient when the estimate is good.
-      Both are reasonable; they simply trust the data to different degrees.
+      Portfolio construction has long had two camps. One is <em>global optimization</em>:
+      a single objective over the whole covariance matrix, with estimation error dealt with before
+      the optimizer sees it, by shrinkage, factor structure and the like. The other is
+      <em>heuristic</em>, motivated through hierarchies, clusters and risk budgets, and
+      deals with estimation error inside the construction itself, by using the covariance
+      piecemeal. The question that separates them is where to handle estimation uncertainty: at
+      the estimation level, at the construction level, or both.
     </p>
 
     <p>
-      The <strong>Schur complement</strong> connects them. Augment each cluster&apos;s covariance
+      The <em>Schur complement</em> connects them. Augment each cluster&apos;s covariance
       with the Schur complement of the others before allocating, and the hierarchical construction
-      reproduces the global optimisation exactly. A single dial $\gamma \in [0, 1]$ slides smoothly
-      between the two worlds &mdash; and, encouragingly, the best out-of-sample portfolios usually
-      live somewhere in between.
+      reproduces the global optimisation exactly, when each split is budgeted by the child's
+      conditioned variance (the <a href="./taxonomy.html">taxonomy</a> says which encodings do this
+      and which only approach it). A single dial $\gamma \in [0, 1]$ slides smoothly
+      between the two worlds, a construction-level answer that sits on top of whatever
+      estimation-level answer is in use. The best out-of-sample portfolios usually live somewhere
+      in between.
+    </p>
+
+    <p>
+      The bridge first appeared in a
+      <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">blog
+      post in November 2022</a>, on one tree, and was formalized in the
+      <a href="https://arxiv.org/abs/2411.05807">2024 paper</a>. The 2026 notes extend it to a <em>family</em>: nested clustered
+      optimization, hierarchical equal risk contribution, hierarchical risk parity and plain
+      inverse variance are each the near end of a bridge whose far end is the same optimizer, and
+      the notes prove when the best place to stand is strictly inside. The
+      <a href="./taxonomy.html">taxonomy</a> says which published &ldquo;Schur&rdquo; is which, and
+      <a href="./all-roads.html">one picture</a> shows all five roads descending to the same floor.
+    </p>
+
+    <p>
+      <em>The intuition.</em> When people build heuristic allocators they chunk: the assets are
+      cut into blocks, by sector, by a dendrogram, by a clustering, and each block is handled on its
+      own, with the covariance between blocks thrown away at the cut. The cut is a hard decision
+      made on soft evidence. The Schur complement is a softer way to cleave. Conditioning a block on
+      the others keeps what the cross-block covariance says while still solving one block at a time,
+      and the dial says how much of it to keep. The cleaving can follow structure that is presumed,
+      sectors or a prior, or structure that is measured, an estimated correlation. In either case,
+      at one end of the dial it is the chunking everyone already does, at
+      the other it is the global optimizer, and in between it is the same recursion trusting the
+      cross-block evidence by degrees.
+    </p>
+
+    <p>
+      <em>Scope.</em> The scope here is to demonstrate the connection to the optimization
+      school rather than to compete with it. Optimization done properly already handles estimation
+      uncertainty at the estimation level: under quadratic loss the rule that minimizes
+      out-of-sample variance is the optimizer applied to the posterior-mean covariance, and
+      nonlinear shrinkage solves that problem exactly over rotation-invariant rules. The heuristic
+      constructions belong to the same school. Each is the
+      near end of a path whose far end is that optimizer, the path is a Schur complement damped
+      by degrees, and the damping is the same reliability ratio a Bayesian would put on the
+      coupling. Where to stand on the path is then a question one can answer, and the answer is
+      often inside.
     </p>
 
     <div class="diagram">
-      <svg viewBox="0 0 760 210" role="img"
-           aria-label="The Schur complement as a bridge between hierarchical risk parity and minimum-variance optimisation">
+      <svg viewBox="0 0 760 300" role="img"
+           aria-label="Five heuristic constructions, each a Schur bridge to the same global optimizer">
         <defs>
           <marker id="arrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
             <path d="M0,0 L6.5,3 L0,6 Z" fill="#4a3aff"/>
           </marker>
         </defs>
 
-        <!-- left world -->
-        <rect x="8" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="120" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Top-down</text>
-        <text x="120" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Hierarchical Risk Parity</text>
-        <text x="120" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">allocate on diagonal blocks</text>
+        <!-- near ends -->
+        <text x="120" y="16" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Heuristic</text>
+        <rect x="8" y="27" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="43" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Inverse variance</text>
+        <text x="120" y="57" text-anchor="middle" font-size="9.5" fill="#9a9a9a">diagonal only</text>
+        <rect x="8" y="71" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="87" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Hierarchical risk parity</text>
+        <text x="120" y="101" text-anchor="middle" font-size="9.5" fill="#9a9a9a">bisection, inverse-variance splits</text>
+        <rect x="8" y="115" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="131" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">Hierarchical minimum variance</text>
+        <text x="120" y="145" text-anchor="middle" font-size="9.5" fill="#9a9a9a">bisection, min-variance splits</text>
+        <rect x="8" y="159" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="175" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">HERC</text>
+        <text x="120" y="189" text-anchor="middle" font-size="9.5" fill="#9a9a9a">clusters, inverse cluster variance</text>
+        <rect x="8" y="203" width="224" height="36" rx="10" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="120" y="219" text-anchor="middle" font-size="12.5" font-weight="600" fill="#1f1d3d">NCO</text>
+        <text x="120" y="233" text-anchor="middle" font-size="9.5" fill="#9a9a9a">clusters, an optimizer across</text>
 
-        <!-- right world -->
-        <rect x="528" y="24" width="224" height="96" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
-        <text x="640" y="56" text-anchor="middle" font-size="15" font-weight="600" fill="#1f1d3d">Bottom-up</text>
-        <text x="640" y="79" text-anchor="middle" font-size="12.5" fill="#5a5a5a">Minimum-Variance</text>
-        <text x="640" y="98" text-anchor="middle" font-size="11" fill="#9a9a9a">invert the full covariance</text>
+        <!-- far end -->
+        <text x="640" y="16" text-anchor="middle" font-size="13" font-weight="600" fill="#1f1d3d">Global optimization</text>
+        <rect x="528" y="86" width="224" height="72" rx="12" fill="#ffffff" stroke="#e2e2e2"/>
+        <text x="640" y="116" text-anchor="middle" font-size="14" font-weight="600" fill="#1f1d3d">Minimum variance</text>
+        <text x="640" y="137" text-anchor="middle" font-size="11" fill="#5a5a5a">&#931;&#8315;&#185;1, or &#931;&#8315;&#185;&#963;, or &#931;&#8315;&#185;&#956;</text>
 
-        <!-- bridge connectors -->
-        <line x1="300" y1="72" x2="236" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
-        <line x1="460" y1="72" x2="524" y2="72" stroke="#4a3aff" stroke-width="2" marker-end="url(#arrow)"/>
+        <!-- the bridges -->
+        <path d="M236,44 C 340,44 420,104 520,104" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,88 C 340,88 420,113 520,113" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,132 C 340,132 420,122 520,122" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,176 C 340,176 420,131 520,131" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
+        <path d="M236,220 C 340,220 420,140 520,140" fill="none" stroke="#4a3aff" stroke-width="2" opacity="0.85" marker-end="url(#arrow)"/>
 
-        <!-- bridge -->
-        <rect x="300" y="49" width="160" height="46" rx="23" fill="#4a3aff"/>
-        <text x="380" y="71" text-anchor="middle" font-size="14" font-weight="600" fill="#ffffff">Schur complement</text>
-        <text x="380" y="87" text-anchor="middle" font-size="10.5" fill="#cfcaff">the bridge</text>
+        <text x="380" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#4a3aff">each path is a Schur complement, damped by a dial</text>
 
-        <!-- gamma axis -->
-        <line x1="120" y1="158" x2="640" y2="158" stroke="#e2e2e2" stroke-width="2"/>
-        <circle cx="120" cy="158" r="5" fill="#4a3aff"/>
-        <circle cx="640" cy="158" r="5" fill="#4a3aff"/>
-        <circle cx="380" cy="158" r="6" fill="#4a3aff"/>
-        <text x="120" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 0</text>
-        <text x="120" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">HRP</text>
-        <text x="640" y="180" text-anchor="middle" font-size="12" fill="#1f1d3d">&#947; = 1</text>
-        <text x="640" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">MVP</text>
-        <text x="380" y="180" text-anchor="middle" font-size="12" fill="#4a3aff">&#947; &#8712; (0, 1)</text>
-        <text x="380" y="196" text-anchor="middle" font-size="10.5" fill="#9a9a9a">the interesting region</text>
+        <!-- dial axis -->
+        <line x1="120" y1="282" x2="640" y2="282" stroke="#e2e2e2" stroke-width="2"/>
+        <circle cx="120" cy="282" r="5" fill="#4a3aff"/>
+        <circle cx="380" cy="282" r="6" fill="#4a3aff"/>
+        <circle cx="640" cy="282" r="5" fill="#4a3aff"/>
+        <text x="120" y="297" text-anchor="middle" font-size="11" fill="#1f1d3d">dial = 0: the method as published</text>
+        <text x="380" y="297" text-anchor="middle" font-size="11" fill="#4a3aff">inside: where an estimated covariance says to stand</text>
+        <text x="640" y="297" text-anchor="middle" font-size="11" fill="#1f1d3d">dial = 1: the optimizer, exactly</text>
       </svg>
       <p class="caption">
-        One dial: $\gamma = 0$ recovers hierarchical risk parity, $\gamma = 1$ recovers the
-        minimum-variance portfolio, and the interior interpolates between them.
+        Five near ends, one far end. Inverse variance, hierarchical risk parity, hierarchical
+        minimum variance, HERC and NCO each reach the same optimizer when their dial is turned to
+        one, with the split rule the <a href="./taxonomy.html">taxonomy page</a> names for each,
+        and the interior is where an estimated covariance says to stand. The
+        <a href="./all-roads.html">3D view</a> shows the same picture with heights.
       </p>
     </div>
 
     <p>
-      For the derivation &mdash; the block-inverse identity, the $\gamma$ interpolation, and the
-      recursion at arbitrary hierarchy depth &mdash; see the
-      <a href="./intro.html">introduction</a> or the <a href="https://arxiv.org/abs/2411.05807">paper</a>.
+      The block-inverse identity, the $\gamma$ interpolation, and the recursion at arbitrary
+      hierarchy depth are derived in the
+      <a href="./intro.html">introduction</a> and the <a href="https://arxiv.org/abs/2411.05807">paper</a>.
     </p>
 
     <h2 id="implementations">Implementations</h2>
     <p>
       Three maintained libraries cover the batch, streaming, and estimation layers:
-      <strong>skfolio</strong> (fixed universe, sklearn idiom), <strong>allocation</strong>
-      (online, evolving universe, Fiedler seriation), and <strong>precise</strong> (online
+      <em>skfolio</em> (fixed universe, sklearn idiom), <em>allocation</em>
+      (online, evolving universe, Fiedler seriation), and <em>precise</em> (online
       covariance and the Schur pseudo-likelihood). Install commands, repositories, and tutorials
       are on the <a href="./implementations.html">implementations page</a>.
     </p>
@@ -114,26 +179,31 @@
     <h2>Further reading</h2>
     <ul>
       <li>
-        <a href="./intro.html">Introduction</a> &mdash; the method explained step by step on this
-        site, with the block-inverse identity and the $\gamma$ interpolation.
+        <a href="./all-roads.html">All roads lead to minimum variance</a>: the five near
+        ends and the floor in one 3D view, with an estimated covariance showing the interior optimum.
       </li>
       <li>
-        Cotton, P. (2022). &ldquo;Schur Complementary Portfolios Fix Hierarchical Risk Parity.&rdquo;
+        The 2026 notes on the <a href="./papers.html">papers page</a>: the NCO bridge
+        (SSRN 7480738), the HERC square, localization as Schur damping, and damping in lending pools.
+      </li>
+      <li>
+        Cotton, P. (2022). &ldquo;Schur Complementary Portfolios &mdash; A Unification of Machine
+        Learning and Optimization-Based Allocation.&rdquo;
         <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
-        Culture (Medium)</a> &mdash; the original, informal introduction that started it all.
+        Culture (Medium)</a>: the original, informal introduction.
       </li>
       <li>
-        Cotton, P. (2024). <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a> &mdash;
+        Cotton, P. (2024). <a href="https://arxiv.org/abs/2411.05807">arXiv:2411.05807</a>:
         the canonical paper.
       </li>
       <li>
         <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">CQF
-        slides</a> &mdash; a compact derivation with the interpolation argument.
+        slides</a>: a compact derivation with the interpolation argument.
       </li>
       <li>
         Palomar, D. P. <em>Portfolio Optimization</em>,
         <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">&sect;12.3.4</a>
-        &mdash; textbook treatment alongside HRP and the global minimum-variance portfolio.
+        : textbook treatment alongside HRP and the global minimum-variance portfolio.
       </li>
     </ul>
 
@@ -152,249 +222,10 @@
   url     = {https://arxiv.org/abs/2411.05807}
 }</pre>
 
-    <div class="bib">
-      <h2 id="bibliography">Bibliography</h2>
-      <p>Works on, citing, or directly extending Schur complementary allocation &mdash; plus the
-      spatial-statistics side of the same idea. Every paper below also appears on the
-      <a href="./map.html">literature map</a>; the dated story is on the
-      <a href="./timeline.html">timeline</a>.</p>
-
-      <h3>The core</h3>
-      <ul>
-        <li>
-          Cotton, P. (2022). &ldquo;Schur Complementary Portfolios &mdash; A Unification of Machine Learning and Optimization-Based Allocation.&rdquo;
-          <a href="https://medium.com/geekculture/schur-complementary-portfolios-fix-hierarchical-risk-parity-28b0efa1f35f">Geek
-          Culture (Medium)</a>. <em>Where the &gamma;-bridge first appeared, November 2022.</em>
-        </li>
-        <li>
-          Cotton, P. (2023). <em>Schur Complementary Portfolios &mdash; CQF slides</em>.
-          <a href="https://github.com/microprediction/precise/blob/main/papers/Schur_Complementary_Portfolios_CQF_Slides_Updated.pdf">PDF</a>.
-          <em>Compact derivation with the interpolation argument.</em>
-        </li>
-        <li>
-          Cotton, P. (2024).
-          <a href="https://arxiv.org/abs/2411.05807"><em>Schur Complementary Allocation: A
-          Unification of Hierarchical Risk Parity and Minimum Variance Portfolios</em></a>.
-          arXiv:2411.05807. <em>The canonical write-up; the recursion at arbitrary depth.</em>
-        </li>
-        <li>
-          Cotton, P. (2026). <em>Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods
-          and Portfolio Allocation</em>.
-          <a href="https://arxiv.org/abs/2606.14798">arXiv:2606.14798</a>.
-          <em>The cross-field identity: the same damping, and the same closed-form reliability
-          &gamma;*, in allocation and in spatial pseudo-likelihoods.</em>
-        </li>
-        <li>
-          Cotton, P. (2026). <em>Nested Clustered Optimization Is One End of a Schur Bridge, and the Interior Is Sometimes Provably Better</em>.
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738">SSRN 7480738</a> &mdash;
-          <a href="./schur-nco-bridge.pdf">PDF</a>. <em>The flat-partition
-          bridge: nested clustered optimization at &gamma;=0, unconstrained minimum variance at
-          &gamma;=1, made cheap by conditioning each cluster on one knot from every other
-          cluster.</em>
-        </li>
-        <li>
-          Cotton, P. (2026). <em>Hierarchical Equal Risk Contribution Is a Corner of a Schur Square, and Two Dials Lead to Minimum Variance</em>.
-          Working paper &mdash; <a href="./schur-herc-square.pdf">PDF</a>. <em>HERC's budget rule is
-          the global minimum-variance rule; what it lacks is two Schur complements. Damping them by
-          &gamma; and &eta; gives a square with HERC at one corner and the global optimum at the
-          opposite corner, and the inner dial makes Stevens' identity a one-parameter path.</em>
-        </li>
-        <li>
-          Cotton, P. (2026). <em>Covariance Localization Is Schur Damping, and Its
-          Optimal Strength Is a Sampling-Error Correction</em>.
-          Working paper &mdash; <a href="./localization-is-schur-damping.pdf">PDF</a>. <em>A
-          block-constant taper in an ensemble Kalman filter is the &gamma;-dial; the
-          optimal &gamma; is interior at every noise level and in closed form.</em>
-        </li>
-        <li>
-          Cotton, P. (2026). <em>Schur Damping for Perpetual Demand Lending Pools</em>.
-          Working paper &mdash; <a href="./schur-damping-pdlp.pdf">PDF</a>,
-          <a href="./damping-in-pdlps.html">web note</a>. <em>Brings the interior &gamma;-dial to the
-          single-pool-vs-two-pools decision of Chitra et al.; &gamma;* set by the reliability of the
-          cross-pool covariance, pulled toward 0 in the undersampled DeFi regime.</em>
-        </li>
-      </ul>
-
-      <h3>Data assimilation</h3>
-      <p>The same dial under another name. Ensemble filters estimate a forecast
-      covariance from a small ensemble and damp its cross-covariances by a
-      distance taper, choosing the radius empirically. A block-constant taper
-      has the damped Schur complement as its conditional, and for that case the
-      optimal &gamma; is a closed-form sampling-error correction (see the working
-      paper above). Distance tapers and radius selection in operational filters
-      remain untreated.</p>
-      <ul>
-        <li>
-          Evensen, G. (1994). &ldquo;Sequential data assimilation with a nonlinear
-          quasi-geostrophic model using Monte Carlo methods to forecast error
-          statistics.&rdquo; <em>Journal of Geophysical Research</em> 99(C5),
-          10143&ndash;10162. <a href="https://doi.org/10.1029/94JC00572">doi</a>.
-          <em>The ensemble Kalman filter: a small ensemble stands in for the
-          forecast covariance.</em>
-        </li>
-        <li>
-          Gaspari, G., and Cohn, S. E. (1999). &ldquo;Construction of correlation
-          functions in two and three dimensions.&rdquo; <em>Quarterly Journal of the
-          Royal Meteorological Society</em> 125(554), 723&ndash;757.
-          <a href="https://doi.org/10.1002/qj.49712555417">doi</a>. <em>The taper
-          that localization multiplies the sample covariance by.</em>
-        </li>
-        <li>
-          Houtekamer, P. L., and Mitchell, H. L. (2001). &ldquo;A sequential ensemble
-          Kalman filter for atmospheric data assimilation.&rdquo; <em>Monthly Weather
-          Review</em> 129(1), 123&ndash;137.
-          <a href="https://doi.org/10.1175/1520-0493(2001)129&lt;0123:ASEKFF&gt;2.0.CO;2">doi</a>.
-          <em>Covariance localization by a Schur product with a distance taper:
-          Schur&apos;s name, but the elementwise product, not the complement.</em>
-        </li>
-        <li>
-          Hamill, T. M., Whitaker, J. S., and Snyder, C. (2001). &ldquo;Distance-dependent
-          filtering of background error covariance estimates in an ensemble Kalman
-          filter.&rdquo; <em>Monthly Weather Review</em> 129(11), 2776&ndash;2790.
-          <a href="https://doi.org/10.1175/1520-0493(2001)129&lt;2776:DDFOBE&gt;2.0.CO;2">doi</a>.
-          <em>The localization radius is tuned empirically.</em>
-        </li>
-        <li>
-          Anderson, J. L. (2007). &ldquo;Exploring the need for localization in
-          ensemble data assimilation using a hierarchical ensemble filter.&rdquo;
-          <em>Physica D</em> 230(1&ndash;2), 99&ndash;111.
-          <a href="https://doi.org/10.1016/j.physd.2006.02.011">doi</a>. <em>Adaptive
-          localization from the sampling error of regression coefficients: the
-          nearest thing to a reliability argument.</em>
-        </li>
-        <li>
-          Houtekamer, P. L., and Zhang, F. (2016). &ldquo;Review of the ensemble Kalman
-          filter for atmospheric data assimilation.&rdquo; <em>Monthly Weather Review</em>
-          144(12), 4489&ndash;4532. <a href="https://doi.org/10.1175/MWR-D-15-0440.1">doi</a>.
-          <em>Localization and inflation as the two dials of the field.</em>
-        </li>
-      </ul>
-
-      <h3>Antecedents</h3>
-      <ul>
-        <li>
-          L&oacute;pez de Prado, M. (2016). &ldquo;Building Diversified Portfolios that Outperform
-          Out of Sample.&rdquo; <em>Journal of Portfolio Management</em> 42(4), 59&ndash;69.
-          <em>Hierarchical risk parity &mdash; the &gamma;=0 endpoint.</em>
-        </li>
-        <li>
-          Antonov, A., Lipton, A., and L&oacute;pez de Prado, M. (2024).
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4748151"><em>Overcoming
-          Markowitz&apos;s Instability with the Help of the Hierarchical Risk Parity (HRP):
-          Theoretical Evidence</em></a>. SSRN 4748151. <em>Analytical noise comparison of HRP vs
-          Markowitz.</em>
-        </li>
-        <li>
-          Palomar, D. P. <em>Portfolio Optimization</em>, &sect;12.3.4
-          &ldquo;Schur complementary portfolios&rdquo;.
-          <a href="https://portfoliooptimizationbook.com/book/12.3-hierarchical-clustering-based-portfolios.html#HRP-vs-GMVP">Online
-          edition</a>. <em>Textbook treatment alongside HRP and global minimum variance.</em>
-        </li>
-      </ul>
-
-      <h3>Theory and extensions</h3>
-      <ul>
-        <li>
-          Mograby, G. (2025).
-          <a href="https://arxiv.org/abs/2503.12328"><em>Hierarchical Minimum Variance Portfolios:
-          A Theoretical and Algorithmic Approach</em></a>. arXiv:2503.12328.
-          <em>Exact Schur separator recursion on hierarchical graphs &mdash; the &gamma;=1
-          skeleton, made rigorous.</em>
-        </li>
-        <li>
-          Wuebben, B. J. (2026).
-          <a href="https://arxiv.org/abs/2604.23833"><em>Beyond De Prado and Cotton: Hierarchical
-          and Iterative Methods for General Mean-Variance Portfolios</em></a>. arXiv:2604.23833.
-          <em>HRP-&mu;, HRP-&Sigma;&mu;, CRISP: signal-aware extensions past minimum variance.</em>
-        </li>
-        <li>
-          Kne&zcaron;evi&cacute;, P., and Posedel &Scaron;imovi&cacute;, P. (2026).
-          <a href="https://doi.org/10.1142/S2705109926700013"><em>Bridging Risk Parity and
-          Variance Optimization: A Schur Complement Approach to Recursive Asset
-          Allocation</em></a>. <em>The Journal of FinTech</em> 2670001, open access
-          (<a href="https://github.com/microprediction/schur/blob/main/assets/pdf/Bridging%20Risk%20Parity%20and%20Variance%20Optimization_%20A%20Schur%20Complement%20Approach%20to%20Recursive%20Asset%20Allocation.pdf">PDF</a>).
-          <em>Cites both the 2022 blog post and the 2024 paper.</em>
-        </li>
-        <li>
-          Alonso, N. I. (2025).
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5370624"><em>Return-Adjusted
-          Hierarchical Risk Parity and Schur Portfolios: A Comprehensive Theoretical and Empirical
-          Study</em></a>. SSRN 5370624.
-        </li>
-        <li>
-          Alonso, N. I. (2026).
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6447220"><em>Reinforcement
-          Learning Portfolio Optimization (RLPO): From Markowitz to Risk-Sensitive Control</em></a>.
-          SSRN 6447220.
-        </li>
-      </ul>
-
-      <h3>The spatial-statistics side</h3>
-      <ul>
-        <li>
-          Vecchia, A. V. (1988). &ldquo;Estimation and Model Identification for Continuous Spatial
-          Processes.&rdquo; <em>JRSS-B</em> 50(2). <em>The neighbour-conditioned factorization;
-          the conditionals are Schur complements.</em>
-        </li>
-        <li>
-          Katzfuss, M., and Guinness, J. (2021). &ldquo;A General Framework for Vecchia
-          Approximations of Gaussian Processes.&rdquo;
-          <a href="https://doi.org/10.1214/19-STS755"><em>Statistical Science</em> 36(1)</a>.
-        </li>
-        <li>
-          Chakraborty, A., and Katzfuss, M. (2025).
-          <a href="https://arxiv.org/abs/2409.19208"><em>Learning Non-Gaussian Spatial
-          Distributions via Bayesian Transport Maps with Parametric Shrinkage</em></a> (ShrinkTM).
-          arXiv:2409.19208. <em>Damping arrives in spatial statistics: conditionals shrunk toward a
-          parametric base.</em>
-        </li>
-      </ul>
-
-      <h3>Applications and empirical studies</h3>
-      <ul>
-        <li>
-          Chitra, T., Diamandis, T., Sheng, N., Sterle, L., and Yusubov, K. (2025).
-          <a href="https://arxiv.org/abs/2502.06028"><em>Perpetual Demand Lending Pools</em></a>.
-          arXiv:2502.06028. <em>Appendix B decides single vs multiple DeFi lending pools via the
-          <strong>undamped</strong> Schur complement of the pool covariance &mdash; the exact
-          conditional covariance, no &gamma;. The &gamma;=0 vs &gamma;=1 architecture
-          question, posed for billions of dollars of pooled assets &mdash; see the note on
-          <a href="./damping-in-pdlps.html">damping in PDLPs</a> for what the interior dial adds.</em>
-        </li>
-        <li>
-          Salas-Molina, F., Pla-Santamaria, D., Garcia-Bernabeu, A., and Reig-Mullor, J. (2025).
-          <a href="https://doi.org/10.1007/978-3-031-78241-1_5"><em>Estimation Windows in
-          Hierarchical Risk Parity Methods for Portfolio Selection</em></a>. LNCS Decision
-          Sciences. <em>Empirical HRP study; best out-of-sample Sharpe near five years of daily
-          data.</em>
-        </li>
-        <li>
-          Pergher, K. G. R., Soldera, J., and Scharcanski, J. (2026).
-          <a href="https://doi.org/10.1109/ACCESS.2026.3656702"><em>An Orthogonal Hierarchical
-          Risk Parity Allocation Method for Improved Portfolio Out-of-Sample Performance</em></a>.
-          IEEE Access.
-        </li>
-        <li>
-          Bergmeier, J. (2026).
-          <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6536678"><em>The Risk Parity
-          Zoo: Which Risk Contributions Should Multi-Asset Investors Equalize?</em></a>.
-          SSRN 6536678. <em>Out-of-sample comparison of risk-based allocation models.</em>
-        </li>
-        <li>
-          Nicolini, C., Manzi, M., and Delatte, H. (2025).
-          <a href="https://arxiv.org/abs/2507.04176"><em>skfolio: Portfolio Optimization in
-          Python</em></a>. arXiv:2507.04176. <em>The library shipping the SchurComplementary
-          optimizer.</em>
-        </li>
-      </ul>
-
-      <p class="muted" style="font-size:0.9rem; margin-top:16px;">
-        Citation list maintained from
-        <a href="https://scholar.google.com/scholar?cites=7287366636726005592">Google Scholar
-        forward citations</a>. Working on a related paper or implementation? Open an issue on
-        <a href="https://github.com/microprediction/schur">the schur repo</a> and we&apos;ll add it.
-      </p>
-    </div>
+    <p>The <a href="./bibliography.html">bibliography</a> lists works on, citing, or extending Schur
+    complementary allocation, together with the spatial-statistics side of the same idea. Every
+    entry also appears on the <a href="./map.html">literature map</a>, and the dates are on the
+    <a href="./timeline.html">timeline</a>.</p>
   </main>
 
   <footer>

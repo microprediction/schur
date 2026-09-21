@@ -1,0 +1,42 @@
+&larr; All demos
+ paper (PDF) &middot;
+ exact certificates
+
+ Lemma 4 and Theorem 5 — whole-matrix noise: the sign of &Xi; decides
+
+ The other demos noise only the cross-block. Here every entry of the
+ covariance is perturbed: rank-one exchangeable displacements of amplitude
+ e&alpha; on the A block, e&delta; on the D block, and
+ e&zeta; on the cross-block, with independent signs (8 equally likely
+ states, averaged exactly). Theorem 5 says interiority is decided by the sign of
+ &Xi; = (9963/320)e&zeta;&sup2; + (1674/125)e&alpha;&sup2;
+ &minus; (189/500)e&delta;&sup2;, with
+ 1 &minus; &gamma;* &asymp; &Xi;/((d&minus;a)&sup2;c&sup2;K) at small
+ amplitudes. Noise confined to the D block makes &Xi; &lt; 0 and full coupling
+ stays optimal: the support of the noise does not decide the question, the sign
+ of &Xi; does.
+
+ e&alpha;
+
+ 0.10
+ e&delta;
+
+ 0.10
+ e&zeta;
+
+ 0.10
+
+ presets
+ equal amplitudes
+ cross only
+ &delta; only (&Xi; &lt; 0)
+
+ What to look for: with any noise on the cross or A
+ channels the marked minimizer is interior and the measured 1 &minus; &gamma;*
+ tracks the &Xi; prediction at small amplitudes. Click "&delta; only": &Xi; goes
+ negative and the minimizer parks at &gamma; = 1 exactly, at every
+ amplitude.
+
+ The widget runs the recursion of the paper's equation (4) with
+ the naive fitness (5), ported directly from the reference implementations, live
+ in your browser. Nothing is pre-baked.

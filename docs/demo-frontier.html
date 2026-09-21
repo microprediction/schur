@@ -12,24 +12,34 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">schur</a>
     <nav>
-      <a href="./intro.html">Introduction</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./demos.html">Demos</a>
       <a href="./implementations.html">Implementations</a>
-      <a href="./taxonomy.html">Taxonomy</a>
-      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="./timeline.html">Timeline</a>
       <a href="https://github.com/microprediction/schur">GitHub</a>
     </nav>
   </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
 </header>
 
 <main>
   <p class="demo-nav"><a href="./min-var-demos.html">&larr; All demos</a>
   <span><a href="./neither-end-of-the-bridge.pdf">paper (PDF)</a> &middot;
   <a href="https://github.com/microprediction/schur/blob/main/paper/neither_end_certificate.py">exact certificates</a></span></p>
-  <h1>Theorem 6 — the clipped frontier</h1>
+  <h1>Theorem 6: the clipped frontier</h1>
 
   <p>For the second-order surrogate, the optimal coupling is the clipped inverse
   of t(&gamma;) = &minus;V&#8320;&prime;/G&prime;. If t sweeps (0,&infin;) the
@@ -45,11 +55,12 @@
   </div>
   <div class="lookfor">What to look for: Family A's t diverges at the left end
   and vanishes at the right (no clipping); Family B's t hits a ceiling at 27/800
-  &asymp; 0.034, and its optimizer path drops to zero there.</div>
+  &asymp; 0.034, and its optimizer path drops to zero there. A Family B optimizer
+  that stayed positive past s = 27/800 would refute the clipping.</div>
 
   <p class="muted">The widget runs the recursion of the paper's equation (4) with
   the naive fitness (5), ported directly from the reference implementations, live
-  in your browser. Nothing is pre-baked.</p>
+  in your browser. Nothing is precomputed.</p>
 </main>
 
 <script src="./recursion.js"></script>

@@ -1,0 +1,123 @@
+
+Which Schur is which
+
+Schur conditioning is a technique. A bridge is named by what it connects.
+
+Several portfolio constructions in the papers and in code carry the word
+“Schur”, and some of them disagree numerically. A bridge is named by
+its two endpoints, a heuristic at the near end and
+an optimizer at the far end, and it carries the plain name only if both ends are exact.
+A qualifier names the path when the path changes the interior. The algebraic
+encoding gets no name at all: it is either exact, or an approximation of the
+exact one, and is labelled by which end it misses.
+
+The recipe
+
+Partition the assets into clusters. Each cluster carries a pair $(Q, b)$, a covariance
+block and a companion vector. Conditioning a subset $I$ on $J$ inside a pair, damped by $g$, is
+
+$$Q_I \leftarrow Q_{II} - g\,Q_{IJ}Q_{JJ}^{-1}Q_{JI}, \qquad b_I \leftarrow b_I - g\,Q_{IJ}Q_{JJ}^{-1}b_J .$$
+
+Two dials: $\gamma$ conditions a cluster on the outside, $\eta$ conditions an asset on its
+cluster mates. Each cluster is budgeted by the inverse of a variance, or by NCO's outer optimizer. Block inversion gives
+$\Sigma^{-1}u$ exactly at $(\gamma,\eta)=(1,1)$ for any partition, with $u=\mathbf 1$ minimum
+variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. The near end
+depends on the partition and on the split rule, the variance used for budgeting.
+
+The bridges
+
+bridgenear end (dials at 0)far end (dials at 1)path, split rule, and where it lives
+
+HRP to minimum variance
+HRP, exactly
+minimum variance, exactly
+Bisection tree to single assets, each block conditioned on its sibling, one dial. Split: the variance of the child's damped naive portfolio on its conditioned pair, the damping tied to $\gamma$. SchurBridge.hrp_to_min_variance. Earlier constructions are exact at one end only: the 2024 pair form starts at the min-variance split's near end, and its collapsed implementations start at HRP and miss minimum variance (Wuebben 2026 makes the $\gamma=0$ point).
+
+Min-variance split to minimum variance
+HRP's tree with each block's minimum variance as its fitness
+minimum variance, exactly
+Bisection tree, sibling conditioning, one dial. Split: the child pair's minimum variance $1/(b^\top Q^{-1}b)$. The exact object of Cotton (2024), arXiv:2411.05807, which calls the whole family hierarchical minimum variance, HMV; this row is that family with the min-variance split. SchurBridge.hmv_to_min_variance.
+
+HRP to minimum variance, collapsed encoding
+HRP, exactly
+approximate: moves toward minimum variance when the optimum is long-only, and does not reach it
+Bisection tree, sibling conditioning, one dial, with the pair collapsed into one matrix $(I-\gamma BD^{-1}M^\top)^{-1}A^c(\gamma)$, symmetrized, with a step-up matrix $M$ for unequal blocks. Split: HRP's naive rule, the variance of the inverse-variance portfolio of the collapsed child block. precise, skfolio SchurComplementary, allocation.SchurComplementary and StreamingSchur; the variant analysed in the tree paper. Kept for compatibility, never called the bridge.
+
+NCO to minimum variance
+NCO: minimum variance inside each cluster, an optimizer across cluster portfolios
+minimum variance, exactly with all-asset or sibling conditioning; via knots, under the note's gateway model
+Flat clusters, conditioned on all other assets or on one knot asset per other cluster (in the manner of Vecchia), one dial. No split: the outer step is an optimizer over cluster directions. The NCO bridge note, SSRN 7480738. SchurBridge.nco_to_min_variance; its optional factor-knot path conditions on one factor-mimicking portfolio per other cluster and is exact under a block one-factor model, of which the knot asset is the special case $a_C=e_p$.
+
+HERC to minimum variance, a square
+HERC: inverse variance inside, inverse cluster variance across
+minimum variance, exactly
+Flat clusters, from a dendrogram cut in the note and from the Fiedler order or fixed labels in the code, conditioned on all other assets or on siblings (exact) or on factor knots (exact under a block one-factor model), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. The HERC square note. SchurBridge.herc_to_min_variance.
+
+Inverse variance to minimum variance
+inverse variance
+minimum variance, exactly
+One cluster and the inner dial, or every asset its own cluster and the outer dial; closed form from one inverse; Stevens (1998) at the far end. The inner dial of the HERC note. SchurBridge.inverse_variance_to_min_variance.
+
+Any of the above to maximum diversification or tangency
+the same near ends with $\sigma$ or $\mu$ in the numerator
+$\Sigma^{-1}\sigma$ or $\Sigma^{-1}\mu$, exactly
+As above with the companion vector $u=\sigma$ or $u=\mu$: companion='vol' / 'mean'. The HERC note's remark on companion vectors, and the generality page for the full list of problems of the form $\Sigma^{-1}b$. Compare Wuebben (2026), whose HRP-$\mu$ carries a signal through the tree but is exact at neither end.
+
+The paths
+
+The outer dial needs a conditioning set. Siblings: compose conditioning down a
+bisection tree, each block on its sibling; exact at $\gamma=1$ because Schur complements
+compose, one half-size solve at the root. All: each cluster on every other
+asset; exact, one solve of size $n-|C|$ per cluster. Knots: each cluster on one
+asset per other cluster; exact under the gateway model of the NCO note, $k\times k$ solves.
+Factor knots: each cluster on one factor-mimicking portfolio per other cluster,
+$a_C=\Sigma_{CC}^{-1}\beta_C$; exact when cross-cluster dependence runs through one latent factor
+per cluster, cluster-sized solves. The paths agree at both ends when exact and differ inside.
+
+The split rules
+
+On a tree the budget between siblings decides the near end. HRP's naive rule, the variance of
+the child block's inverse-variance portfolio, starts at HRP and misses the far end. The
+minimum-variance rule starts at the 2024 paper's near end and reaches the far end. The dial-tied rule, the variance of
+the child's damped naive portfolio on its conditioned pair with the damping tied to $\gamma$, starts at HRP and reaches
+the far end: it is the only rule exact at both, which is why it defines the HRP bridge. On a flat
+partition the same rule budgets the clusters; HERC's rule is the variance of what the cluster
+holds, and the reference implementations' sum of cluster variances departs from it at three or
+more clusters.
+
+Where to sit
+
+Three papers ask where on a bridge to sit when the covariance is estimated:
+the tree paper for the collapsed HRP variant under
+cross-block and then whole-matrix noise, the NCO note for the flat bridge with
+knots, and the HERC note for the square and the inner
+dial. The same second-order machinery applies to every exact bridge, because at the far end the
+noiseless objective is flat and only the noise cost has a slope.
+
+Other uses of the word
+
+Localization in the
+localization note is a Schur product, an entrywise taper of the covariance; the note
+shows that a block-constant taper is the same damped complement $A-\gamma BD^{-1}B^\top$, so
+“Schur damping” there is the damping used here. Same dial, no portfolio endpoints.
+Damping in PDLPs (the DeFi note) is the
+same complement with isolated pools at $\gamma=0$ and one merged pool at $\gamma=1$.
+Hierarchical minimum variance on graphs (Mograby, 2025) is the far end made exact
+by separator recursion, not a bridge. Noguer i Alonso (2026) states the exact
+bisection identity and names HRP's three substitutions; his Schur-RA-HRP is a fixed return-aware
+rule that swaps standalone for conditional cluster variance inside RA-HRP's split, with no dial,
+reducing to RA-HRP when the hedge terms vanish, and aimed at tangency rather than at a bridge in
+the sense above.
+
+Glossary
+
+Pair: a block and its companion vector. Companion vector: the conditioned
+image of $u$, the numerator of every direction. Dial: a damping in $[0,1]$ on one
+conditioning. Path: the conditioning set of the outer dial. Split rule: the
+variance whose inverse budgets a child or a cluster.
+
+Knot: the one asset per cluster
+that carries its cross-cluster dependence; factor knot: the one portfolio per cluster
+that does. Encoding: an algebraic rewriting of the pair into a single matrix; exact
+or not, never named.
+

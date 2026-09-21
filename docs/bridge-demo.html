@@ -46,17 +46,27 @@
   <div class="nav-inner">
     <a class="brand" href="./index.html">schur</a>
     <nav>
-      <a href="./intro.html">Introduction</a>
+      <span class="menu"><span class="menu-label" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Theory</span><span class="drop">
+        <a href="./intro.html">Introduction</a>
+        <a href="./taxonomy.html">Taxonomy</a>
+        <a href="./generality.html">Generality</a>
+        <a href="./where-to-damp.html">Where to damp</a>
+      </span></span>
       <a href="./papers.html">Papers</a>
       <a href="./demos.html">Demos</a>
       <a href="./implementations.html">Implementations</a>
-      <a href="./taxonomy.html">Taxonomy</a>
-      <a href="./index.html#bibliography">Bibliography</a>
+      <a href="./bibliography.html">Bibliography</a>
       <a href="./map.html">Literature map</a>
       <a href="./timeline.html">Timeline</a>
       <a href="https://github.com/microprediction/schur">GitHub</a>
     </nav>
   </div>
+  <script>
+    document.querySelectorAll('.site-header .menu-label').forEach(function (b) {
+      b.addEventListener('click', function (e) { e.stopPropagation(); var m = b.parentNode, open = m.classList.toggle('open'); b.setAttribute('aria-expanded', open); });
+    });
+    document.addEventListener('click', function () { document.querySelectorAll('.site-header .menu.open').forEach(function (m) { m.classList.remove('open'); m.querySelector('.menu-label').setAttribute('aria-expanded', 'false'); }); });
+  </script>
 </header>
 
 <main>
@@ -64,7 +74,7 @@
   <p class="subtitle">One slider from HRP to minimum variance, over a smooth ordering.</p>
 
   <p class="lead">Hierarchical risk parity splits the universe in two, allocates between the
-  halves by inverse variance, and recurses — never inverting a matrix, but also never using the
+  halves by inverse variance, and recurses. It never inverts a matrix, and it never uses the
   covariance <em>between</em> the halves. Minimum variance uses all of it, through
   <code>Σ⁻¹</code>. The Schur-complementary portfolio connects them with a single coupling
   parameter: at <code>γ = 0</code> the recursion is exactly HRP; as <code>γ → 1</code> the
@@ -73,11 +83,11 @@
 
   <p>One more substitution matters for streaming use. Classic HRP orders assets by an
   agglomerative dendrogram, which can reorder discontinuously as the covariance drifts. Here the
-  order comes from <em>Fiedler seriation</em> — the second eigenvector of the similarity graph's
-  Laplacian — which moves continuously with the covariance. The second widget shows what that is
+  order comes from <em>Fiedler seriation</em>, the second eigenvector of the similarity graph's
+  Laplacian, which moves continuously with the covariance. The second widget shows what that is
   worth in turnover.</p>
 
-  <h2>Try it: drag γ</h2>
+  <h2>The bridge on 28 Dow names</h2>
   <p>Daily returns of 28 Dow names, 2010–2024. The heatmap is the empirical correlation in the
   chosen order; the bars are the Schur weights, recomputed by the actual package
   (<code>compute_monotonic_weights</code>) on a grid of γ and shown in the same order.</p>
@@ -99,16 +109,16 @@
     <div class="readout" id="readout"></div>
   </div>
 
-  <p>Two things to notice. The weights deform <em>continuously</em> in γ — there is no point at
-  which the portfolio switches regime. And the slider quietly stops helping: past
+  <p>The weights deform <em>continuously</em> in γ: there is no point at
+  which the portfolio switches regime. The slider also stops helping: past
   <code>γ ≈ 0.67</code> on this covariance, pushing further no longer reduces variance, so the
   estimator caps the effective γ there (the <code>keep_monotonic</code> behaviour; the readout
   shows both the requested and effective value). Portfolio variance falls from 1.39× the
-  unconstrained minimum-variance level at γ = 0 to 1.34× at the cap — a modest gain on this
+  unconstrained minimum-variance level at γ = 0 to 1.34× at the cap, a modest gain on this
   particular covariance, priced long-only and without ever inverting <code>Σ</code>.</p>
 
   <h2>Out of sample, the middle of the bridge wins</h2>
-  <p>In sample, variance can only fall as γ rises — more of the covariance is used. Out of
+  <p>In sample, variance falls as γ rises until the cap, since more of the covariance is used. Out of
   sample the question is different: the cross-block terms that γ folds in are <em>estimated</em>,
   and estimation error grows with how aggressively they are used. Here weights are fitted on
   one-year windows drawn from 2010–2017 (raw weights, no monotonic cap, so the whole bridge
@@ -126,27 +136,28 @@
 
   <p>Neither endpoint is best. HRP (γ = 0) ignores cross-block covariance it could have used;
   γ = 1 trusts estimated cross-block terms it shouldn't, and pays 21% for it. The minimum sits
-  mid-bridge, at γ ≈ 0.55, about 2.5% below HRP — a modest dip, but a real interior optimum:
-  the coupling parameter is a bias–variance dial, not a formality. The γ slider above moves the
-  marker here too.</p>
+  mid-bridge, at γ ≈ 0.55, about 2.5% below HRP: a modest dip, but a real interior optimum.
+  The coupling parameter is a bias–variance dial, not a formality. A curve that fell
+  monotonically to γ = 1, or bottomed at γ = 0, would refute the interior optimum on this
+  data. The γ slider above moves the marker here too.</p>
   <p>The natural objection is that raw one-year covariances overfit by construction, and a
   practitioner would shrink first. The toggle answers it: switch the training covariances to
-  Ledoit–Wolf and the interior optimum survives — slightly deeper (0.97× at γ = 0.6) and γ = 1
+  Ledoit–Wolf and the interior optimum survives, slightly deeper (0.97× at γ = 0.6), and γ = 1
   still pays 24%. On this data, shrinkage moves the best γ a little to the right; it does not
   rescue the far end of the bridge.</p>
-  <p>Nor is the interior optimum an accident of this dataset — it is provable. In a four-asset,
+  <p>The interior optimum is provable, not an accident of this dataset. In a four-asset,
   two-block example with a two-point error on one cross-block covariance entry, the expected
   out-of-sample variance satisfies <code>F(0.9) &lt; F(0)</code> and
   <code>F(0.9) &lt; F(1)</code> as exact rational inequalities (every step of the recursion is
   rational arithmetic, so the comparison is a certificate, not a simulation), while γ = 0 is
-  structurally noise-immune — the HRP recursion never reads the cross block, so the minimizer
-  is never at 0 and, above the exhibited noise level, never at 1 either. The construction and
-  certificate: <code>experiments/schur_interior_optimum.py</code>.</p>
+  structurally noise-immune (the HRP recursion never reads the cross block), so the minimizer
+  is never at 0 and, at the exhibited noise level and a neighbourhood of it, not at 1 either. The construction and
+  certificate: <code>paper/neither_end_certificate.py</code>.</p>
 
   <h2>What the smooth ordering is worth</h2>
   <p>Same experiment twice: an EWMA covariance (60-day halflife) over the same 28 names,
   rebalanced weekly at γ = 0.5, 2011–2024. The only difference is the ordering fed to the
-  recursion — a dendrogram recomputed each week, versus Fiedler seriation warm-started from the
+  recursion: a dendrogram recomputed each week, versus Fiedler seriation warm-started from the
   previous week. Cumulative one-way turnover:</p>
 
   <div class="widget">
@@ -155,20 +166,23 @@
   </div>
 
   <p>The dendrogram portfolio pays about 40% more turnover for the same recursion on the same
-  covariance — the extra trades are pure reordering, not information. The gap is the point of
-  replacing the combinatorial step with a spectral one: the allocation becomes a continuous
-  function of the covariance end to end, which is what makes a streaming
-  <code>partial_fit</code> cheap to follow in practice.</p>
+  covariance; the extra trades are pure reordering, not information. Replacing the
+  combinatorial step with a spectral one saves that gap. The Fiedler vector is a continuous
+  function of the covariance, but the sorted order is not: when two of its coordinates cross,
+  the bisection changes and the allocation can move by a finite amount, exactly as a dendrogram
+  can. The spectral step buys fewer such events, a coordinate crossing rather than a
+  linkage reordering. The lower turnover above is an empirical result, not a continuity
+  theorem.</p>
 
   <p class="muted">Reproducible: <code>experiments/gen_schur_gamma_data.py</code> computes
   everything shown here (orders, weight grid, turnover series) with the
   <code>allocation</code> package. Estimator: <code>allocation/schur.py</code>
   (<code>SchurComplementary</code>, and <code>HierarchicalRiskParity</code> as its
-  <code>γ = 0</code> case). The analytical companion — <em>When Neither Minimum Variance nor Hierarchical Risk Parity Is Optimal</em> — is <a href="./neither-end-of-the-bridge.pdf">here</a>; data generators live in the <a href="https://github.com/microprediction/allocation">allocation</a> repository.</p>
+  <code>γ = 0</code> case). The analytical companion, <em>When the Out-of-Sample-Optimal Schur Portfolio Lies Between HRP and Minimum Variance</em>, is <a href="./neither-end-of-the-bridge.pdf">here</a>; data generators live in the <a href="https://github.com/microprediction/allocation">allocation</a> repository.</p>
 </main>
 
 <footer>
-  Part of <a href="./index.html">schur.microprediction.org</a> — the Schur bridge. Snapshot of the demo maintained at <a href="https://allocation.microprediction.org/demos/schur-gamma/">allocation.microprediction.org</a>. MIT © Peter Cotton.
+  Part of <a href="./index.html">schur.microprediction.org</a>, the Schur bridge. Snapshot of the demo maintained at <a href="https://allocation.microprediction.org/demos/schur-gamma/">allocation.microprediction.org</a>. MIT © Peter Cotton.
 </footer>
 
 <script src="./bridge-demo-data.js"></script>

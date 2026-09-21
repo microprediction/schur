@@ -1,0 +1,182 @@
+
+← Home
+
+An introduction
+
+One damped Schur complement, discovered separately by portfolio
+managers, spatial statisticians, and (almost) machine learners.
+
+Whenever a covariance matrix is too large or too noisy to trust whole, every field reaches
+for the same first move: split the variables into groups and handle the groups separately.
+A portfolio manager clusters assets. A meteorologist conditions each weather station on a few
+neighbours. An ML engineer block-factorizes a curvature matrix. The move that follows,
+how much of the coupling between groups to put back, is the same
+object in every case.
+
+The shared object
+
+Partition the covariance:
+
+$\Sigma = \begin{pmatrix} A & B \\ B^\top & D \end{pmatrix}$
+
+$A$ and $D$ are within-group covariances; $B$ is the coupling. Conditioning one group on the
+other produces two quantities that carry all of $B$'s information: a regression
+$b = A^{-1}B$ and a Schur complement $S_D = D - B^\top A^{-1} B$, the covariance of
+the second group once the first is known. The coupling $B$ is also the noisiest part of any
+estimated $\hat\Sigma$, so the practical question, in every field, is how much of it
+to believe.
+
+One dial, three readings
+
+Damp the coupling with a single parameter $\gamma \in [0,1]$:
+
+$S_A(\gamma) = A - \gamma\,B D^{-1} B^\top,
+\qquad
+S_D(\gamma) = D - \gamma\,B^\top A^{-1} B$
+
+Finance. Allocate top-down between clusters using the damped complements
+and recurse. At $\gamma=0$ the cross block is set aside and the recursion is
+hierarchical risk parity, blind to $B$ by construction. At
+$\gamma=1$ the block-inverse identity makes the hierarchy exact: when each split is
+budgeted by the child's conditioned variance, the recursion reproduces the global
+minimum-variance portfolio (the collapsed encoding in the reference
+implementations only approaches it; see the taxonomy). The dial turns a heuristic
+into an identity, with everything in between a tunable trade-off between estimation noise and
+information.
+
+The finance reading of the dial: $\gamma = 0$ recovers hierarchical risk parity,
+$\gamma = 1$ recovers the minimum-variance portfolio with the dial-tied split, and the
+interior interpolates. The spatial-statistics reading replaces the endpoints with “independent
+conditionals” and “full Vecchia conditioning.”
+
+Spatial statistics. The Vecchia approximation, the workhorse for
+fitting Gaussian fields over tens of thousands of locations, writes the likelihood as
+a product of per-location conditionals. Each conditional is a Schur complement, and
+each is estimated, hence noisy. Shrinking those conditionals (as ShrinkTM does toward a
+parametric base, or as the damped form above does toward independence, base-free) is the same
+$\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
+variance a weather model keeps after conditioning on neighbours.
+
+Machine learning. The natural gradient is the minimum-variance operation
+applied to the gradient covariance, and the optimizer hierarchy lines up with the
+portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC's
+block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices:
+trust a cross-layer coupling completely or zero it exactly. KFAC's own
+“damping” (λI) is spectrum loading, not coupling attenuation. Every rung
+of the ladder is discrete; the continuous dial is unoccupied there.
+
+How much to trust the coupling: a closed form
+
+The right $\gamma$ is the reliability of the estimated
+coupling, a James–Stein / Wiener ratio of signal to signal-plus-noise. In the
+two-block case with conditional correlation $\rho$ estimated from $n$ observations,
+
+$\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}$
+
+More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimisation is the right
+choice. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
+heuristic is the right choice. Empirically the optimum is interior: on daily asset
+returns in Two Sides of Schur Damping, and on crypto correlations, weather-forecast
+residuals and simulated fields in the earlier Schur pseudo-likelihood work in
+precise. The closed form gets most of the gain with zero tuning, and a single
+held-out-fitted intensity does better still.
+
+A family of bridges
+
+The 2024 recursion runs on one bisection tree. Three notes in 2026 show that the same
+move works on any partition and that the familiar heuristics are the near ends of a whole
+family.
+
+The recipe has four parts. Partition the assets into clusters. Give each cluster a
+pair $(Q_C, b_C)$: its covariance block and a companion vector, both conditioned on
+the assets outside the cluster and damped by $\gamma$. Inside the cluster, condition each
+asset on its cluster mates, damped by a second dial $\eta$. Then budget each cluster by the
+inverse variance of what it holds.
+
+Block inversion says that at $(\gamma,\eta)=(1,1)$ this is
+$\Sigma^{-1}u$ exactly, for any partition, with $u=\mathbf 1$ minimum variance,
+$u=\sigma$ maximum diversification and $u=\mu$ the tangency portfolio. The
+far end is minimum variance in disguise. The near ends are the
+methods people already use: inverse variance, hierarchical risk parity, hierarchical minimum
+variance, HERC and NCO. The taxonomy gives the split rule and
+the conditioning path for each.
+
+Two naming rules apply. A bridge is named by its endpoints and carries the plain
+name only if both ends are exact; anything else is a variant labelled by the end it misses,
+which is where the collapsed encoding of the reference implementations sits. And an encoding
+is never named, because it is either exact or an approximation of the exact one. The
+taxonomy page sorts every published “Schur” by this
+rule, and one 3D picture shows the five near ends descending
+to the same floor.
+
+Conditioning one asset on its cluster mates
+is Stevens' identity, the minimum-variance weight as one minus the hedge sum over the residual
+variance. Damping it gives a weight whose numerator and denominator are each linear in $\eta$
+between the naive quantity and the regression quantity, so the whole path costs one inverse,
+and there is an explicit frontier $\eta_+$ beyond which the first short appears. On an
+equicorrelated cluster the path is the straight segment from inverse variance to the
+cluster's minimum-variance portfolio.
+
+Where to sit: what is proved
+
+With the true covariance the far end wins and the question is empty. With an estimate
+$\widehat\Sigma_\tau=\Sigma+\tau E$ the expected out-of-sample objective is
+$F(\gamma,\tau)=V_0(\gamma)+\tau^2 G(\gamma)+O(\tau^4)$, and three facts decide where to
+stand. The far end is flat in the population, $V_0'(1)=0$, so only the noise term has a slope
+there: the optimum moves inside exactly when $G'(1)>0$, to
+$\tilde\gamma=1-\big(G'(1)/V_0''(1)\big)\tau^2$, and the gain from moving is of fourth order.
+The near end is blind to the cross-cluster block, so its estimation cost does not grow with
+$\gamma$ and moving away from it costs $\gamma\tau^2$; if the population objective falls at
+the near end, the near end is strictly suboptimal for small noise. And the sign of $G'(1)$ is
+not fixed by the structure: both signs occur, each on an open set.
+
+The examples are exact, in rational arithmetic. Identical clusters coupled through their
+knots have a closed-form optimum $\gamma_\star=\big(1+2(k-2)c\big)/\big(2[1+(k-3)c]\big)$;
+for two clusters and $c=\tfrac14$ it is $\tfrac23$, with gaps $1/576$ and $1/900$ to the two
+ends. An equicorrelated cluster on the inner dial has optimum $\eta_\star=\tfrac35$ for
+volatilities $(1,2,2)$ and $\rho=\tfrac14$, with gaps $1/45$ and $1/20$. A threshold in the
+member variance ($\delta=8$) or in the cluster size and correlation ($q^2-1$ against
+$r\rho(2+q)$) separates the interior case from the case where full coupling stays optimal.
+Every claim has a certificate script, and the demos recompute
+the conditions live.
+
+What the partition costs
+
+At the far end the weights do not depend on the partition at all, so the price of a wrong
+or changing clustering is a continuous function of the dials that vanishes at $(1,1)$. The
+dials that damp estimation noise damp reclustering churn too. Along the way the partition is
+taken from the Fiedler vector of the correlation graph, which is continuous in the covariance
+and reorders only when two of its coordinates cross; each crossing is a finite jump, fewer
+than a dendrogram's, and the lower turnover is an empirical result rather than a theorem.
+
+Conditioning a cluster on everything outside it is the inverse a two-level method exists to
+avoid. Two devices make it cheap. Composing the conditioning down a tree, each block on its
+sibling, is exact because Schur complements compose. Conditioning on one factor-mimicking
+portfolio per other cluster is exact whenever cross-cluster dependence runs through one
+latent factor per cluster, of which the NCO note's knot asset is the special case, and costs
+only cluster-sized solves. The allocation package's SchurBridge
+exposes all of this with constructors named by their endpoints.
+
+One idea in three fields
+
+The fields solved complementary halves. Finance contributed the bridge: the
+observation that $\gamma$ connects two allocation philosophies previously seen as rivals.
+Spatial statistics contributed scale and fitting: orderings, conditioning sets, and
+empirical-Bayes machinery for choosing the shrinkage from data. Neither had noticed the other.
+The 
+Two Sides paper makes the correspondence precise, and the
+timeline shows the idea arriving in each field.
+
+Three questions
+remain open: robust conditional regressions, massive-scale semi-local maintenance, and the
+completion-theory connection. They are the dashed red edges on the
+literature map.
+
+For the recursion at arbitrary hierarchy depth and the empirical comparisons, see the
+paper; for the family, the
+2026 notes and the taxonomy.
+The
+implementations are skfolio for batch portfolios,
+allocation for streaming universes, precise for online covariance
+estimation and the Schur pseudo-likelihood.
+
