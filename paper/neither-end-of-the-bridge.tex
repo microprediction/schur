@@ -40,7 +40,7 @@ certificates for the exact claims are in
 \texttt{paper/verify\_implied.py} at
 \texttt{github.com/microprediction/schur}; implementations of the recursion
 are in the \texttt{allocation} and \texttt{precise} packages.}}
-\date{September 20, 2026}
+\date{September 21, 2026}
 
 \begin{document}
 \maketitle
@@ -109,8 +109,8 @@ entry of the covariance the same family still prefers the interior, under
 an explicit and sharp condition on the noise's second moments, and in
 Monte Carlo under the sample covariance of $T$ Gaussian draws the
 median-optimal coupling climbs from $0.62$ to $0.96$ over the sample
-sizes examined: sample size selects the seat. We are
-explicit about what is not claimed. Covariance error does not always force
+sizes examined: sample size selects the seat. The scope is
+bounded on both sides. Covariance error does not always force
 an interior optimum, and either endpoint can be optimal on a nontrivial
 interval of noise levels. Exact examples mark those boundaries, and every
 exact claim about them is verified in rational arithmetic.
@@ -1911,7 +1911,7 @@ and in no other, since it was reverse-engineered to return the answer. The
 correction in \cite{jagannathanma2003} has exactly this standing too: its
 multipliers are the dual variables of the problem one has just solved. Both
 are identities read off a computed portfolio rather than recipes for
-computing one. What they supply is a common coordinate system in which
+computing one. They supply a common coordinate system in which
 allocators can be compared, and the distance defined below.
 
 Uniqueness fails, and fails by a wide margin. The symmetric matrices
@@ -2079,12 +2079,12 @@ it.}
 Distortion falls monotonically to zero, so the dial interpolates between two
 sets of beliefs about risk and not merely between two procedures. The middle
 column adds a feature the variance column does not see. The implied
-covariance crosses into the positive definite cone near $\gamma = 0.42$, in
-every one of the 200 markets, with deciles $0.26$ and $0.52$. Below that
-crossing no covariance within the projection distance rationalises the
-portfolio. The crossing is stable and it is not a selection rule: its
-correlation with the variance-minimising $\gamma$, whose median is $0.86$,
-is $+0.001$.
+covariance crosses into the positive definite cone at a median $\gamma$ of
+$0.41$, in every one of the 200 markets, with deciles $0.26$ and $0.51$.
+Below that crossing no covariance within the projection distance rationalises
+the portfolio. The crossing is stable and it is not a selection rule: its
+correlation with the variance-minimising $\gamma$, whose median is $0.86$, is
+$+0.022$.
 
 \subsection{What this asks of a comparison}
 
@@ -2115,13 +2115,54 @@ parity uses.}
 \label{tab:controlled}
 \end{table}
 
-Hierarchical risk parity leads the raw optimizer in one row, at $T = n$,
-where the sample covariance is singular and the inverse is meaningless. Hand
-the optimizer the block structure that the hierarchical rule helps itself to
-and it leads at every sample size by a factor between three and four,
-including that row. The comparison that reports an advantage for the
-hierarchical rule is reporting the cost of inverting a raw sample
-covariance.
+Hierarchical risk parity leads the raw optimizer in the two rows nearest
+$T = n$. Every row at or below parity has a singular sample covariance, so
+singularity alone is not the reason; the inverse is at its worst where the
+smallest nonzero eigenvalue is closest to zero, which is at $T \approx n$ and
+not further down. Hand the optimizer the block structure that the
+hierarchical rule helps itself to and it leads at every row of the table, by a
+factor between $3.0$ and $4.6$, including those two. On this market
+the comparison that reports an advantage for the hierarchical rule is
+reporting the cost of inverting a raw sample covariance.
+
+Two limits on that reading, and the first reverses it.
+Table~\ref{tab:deep} continues below the range of
+Table~\ref{tab:controlled}, and the ordering turns over.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+$T/n$ & HRP & filtered & beats HRP & inverse variance & beats HRP \\
+\midrule
+0.10 & 0.2420 & 0.3509 & 22\% & 0.2093 & 80\% \\
+0.20 & 0.2031 & 0.1695 & 69\% & 0.1869 & 81\% \\
+0.30 & 0.1886 & 0.0922 & 95\% & 0.1769 & 74\% \\
+0.50 & 0.1794 & 0.0571 & 100\% & 0.1758 & 71\% \\
+\bottomrule
+\end{tabular}
+\caption{The rank-deficient corner on the same market, median over 300 draws
+at each size, $n = 40$.}
+\label{tab:deep}
+\end{table}
+
+At $T/n = 1/5$ the filtered optimizer leads by a factor of $1.2$ rather than
+$3$, and at $T/n = 1/10$ it is \emph{worse} than the hierarchical rule and
+wins $22$ percent of draws, because by then the filter's own blocks are
+themselves rank-deficient and inverting them is no better than inverting the
+whole. The deep rank-deficient corner, which is the case the hierarchical
+rule is usually defended on, is the one place where an optimizer does not
+beat it.
+
+It is beaten there by something else. Inverse variance, which inverts nothing
+either and consults no tree, beats the hierarchical rule in between $71$ and
+$81$ percent of draws at every size in the table. Whatever the recursion
+earns in that corner, the hierarchy is not what earns it.
+
+Second, the dominance of a shrunk estimate is a property of a stationary
+market. When the covariance itself switches regime a single shrinkage target
+cannot represent two dependence structures, and Ledoit--Wolf minimum variance
+falls behind the hierarchical rule.
 
 This is the older lesson of \cite{tola2008}, who filtered the correlation
 matrix by clustering and then optimised, eight years before the hierarchical
@@ -2207,8 +2248,8 @@ Cambridge University Press, 2025. doi:10.1017/9781009428095.
 
 \bibitem{cotton2024schur}
 P.~Cotton,
-\emph{Schur complementary allocation: a unification of hierarchical and
-optimization-based portfolio construction}, 2024.
+\emph{Schur Complementary Allocation: A Unification of Hierarchical Risk
+Parity and Minimum Variance Portfolios}, 2024.
 arXiv:2411.05807. \url{https://schur.microprediction.org}
 
 \bibitem{antonov2025}

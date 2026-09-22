@@ -510,6 +510,40 @@ def part3():
         check("distortion is monotone in gamma", mono)
         check("distortion vanishes at the far end", np.median(dd[1.0]) < 1e-12)
 
+        # The crossing into the positive definite cone, on a finer grid, and
+        # whether it selects a gamma. These numbers appear in the prose, so
+        # they are computed here rather than asserted.
+        fine = np.linspace(0.0, 1.0, 101)
+        cross, best = [], []
+        rng2 = np.random.default_rng(23)
+        for _ in range(200):
+            Sig = market(rng2)
+            X = rng2.normal(size=(120, 40)) @ np.linalg.cholesky(Sig).T
+            S = np.cov(X, rowvar=False)
+            tr = bisection_tree(seriate(S)[0], leaf_size=1)
+            rat, var = [], []
+            for g in fine:
+                w = bridge_weights(S, tr, gamma=float(g), eta=1.0, split="dial")
+                _, c, _, _ = implied(S, w)
+                rat.append(c); var.append(float(w @ Sig @ w))
+            rat = np.asarray(rat)
+            ok = np.where(rat > 0)[0]
+            cross.append(fine[ok[0]] if len(ok) else np.nan)
+            best.append(fine[int(np.argmin(var))])
+        cross = np.asarray(cross, dtype=float); best = np.asarray(best)
+        fin = np.isfinite(cross)
+        q = np.nanpercentile(cross, [10, 50, 90])
+        corr = float(np.corrcoef(cross[fin], best[fin])[0, 1])
+        print(f"\n  positive-definite crossing, 101-point grid, 200 markets")
+        print(f"    crosses in {int(fin.sum())} of {len(cross)} markets")
+        print(f"    median crossing {q[1]:.2f}, deciles {q[0]:.2f} and {q[2]:.2f}")
+        print(f"    median variance-minimising gamma {np.median(best):.2f}")
+        print(f"    correlation between the two {corr:+.3f}")
+        check("the crossing is a stable interval", 0.2 < q[0] and q[2] < 0.7,
+              f"deciles {q[0]:.2f} to {q[2]:.2f}")
+        check("the crossing does not select the best gamma", abs(corr) < 0.2,
+              f"correlation {corr:+.3f} against a median optimum of {np.median(best):.2f}")
+
     # --- Table 4: the controlled comparison
     rng = np.random.default_rng(3)
     print("\n  Table 4  one market, one covariance, two allocators and two estimators")
@@ -531,6 +565,36 @@ def part3():
           all(v[2] < v[0] for v in kept.values()))
     check("HRP beats the raw optimizer only near the singular point",
           sum(1 for v in kept.values() if v[0] < v[1]) <= 2)
+
+    # --- The rank-deficient corner, which Table 4 does not reach.
+    print("\n  Table 5  below the table's range, n = 40")
+    print(f"  {'T/n':>6s}{'HRP':>10s}{'filtered':>11s}{'beats HRP':>11s}"
+          f"{'inv var':>10s}{'beats HRP':>11s}")
+    deep = {}
+    for T in (4, 8, 12, 20):
+        a, b, c = [], [], []
+        for _ in range(300):
+            Sig = market(rng)
+            X = rng.normal(size=(T, 40)) @ np.linalg.cholesky(Sig).T
+            S = np.cov(X, rowvar=False)
+            F, _ = block_filter(S, 5)
+            wh = hrp(S); a.append(wh @ Sig @ wh)
+            wf = min_var(F, 1e-10); b.append(wf @ Sig @ wf)
+            iv = inv_var(S); c.append(iv @ Sig @ iv)
+        a, b, c = map(np.array, (a, b, c))
+        deep[T] = (np.median(a), np.median(b), float(np.mean(b < a)),
+                   np.median(c), float(np.mean(c < a)))
+        print(f"  {T/40:6.2f}{deep[T][0]:10.4f}{deep[T][1]:11.4f}{deep[T][2]:10.0%}"
+              f"{deep[T][3]:11.4f}{deep[T][4]:10.0%}")
+    check("at T/n = 1/10 the filtered optimizer is WORSE than HRP",
+          deep[4][1] > deep[4][0] and deep[4][2] < 0.5,
+          f"filtered {deep[4][1]:.4f} against HRP {deep[4][0]:.4f}, wins {deep[4][2]:.0%}")
+    check("the lead reverses between T/n = 1/10 and 1/5",
+          deep[8][1] < deep[8][0] < deep[4][1],
+          f"ratio HRP/filtered {deep[8][0]/deep[8][1]:.2f} at 1/5")
+    check("inverse variance beats HRP at every ratio from 1/10 to 1/2",
+          all(v[4] > 0.5 for v in deep.values()),
+          "win rates " + ", ".join(f"{v[4]:.0%}" for v in deep.values()))
 
 
 if __name__ == "__main__":
