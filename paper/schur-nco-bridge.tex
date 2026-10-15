@@ -718,15 +718,25 @@ exclude another $\gamma<1$ that produces the same portfolio.
 
 \begin{remark}[When the gateway model fails]
 \label{rem:misspec}
-If some $\Delta_i\neq0$ in \eqref{eq:loss}, then $w_1$ is not the
-minimum-variance portfolio and $V_0'(1)$ is in general nonzero. The
-expansion reads $\partial_\gamma F(1,\tau)=V_0'(1)+\tau^2G'(1)+O(\tau^4)$,
-and for small $\tau$ the population slope decides: if $V_0'(1)<0$ then full
-coupling is a strict local minimizer whatever the sign of $G'(1)$, and if
-$V_0'(1)>0$ the minimizer of $V_0$ is away from full coupling already at
-$\tau=0$. The displacement \eqref{eq:shift} is then a second-order
-correction to a zeroth-order misspecification effect, and the sign of
-$G'(1)$ matters only when $|V_0'(1)|$ is itself of order $\tau^2$.
+If some $\Delta_i\neq0$ in \eqref{eq:loss}, then $w_1$ need not be the
+minimum-variance portfolio, and $V_0'(1)$ is in general nonzero. The exact
+criterion for the right end is $\Sigma^{-1}\ones\in\operatorname{col}(D_1)$,
+which a nonzero $\Delta_i$ alone does not decide: with
+$\Sigma=\tfrac12I_4+\tfrac12\ones\ones^\top$, clusters $\{1,2\}$, $\{3,4\}$
+and knots $1$, $3$, each $\Delta_i=\tfrac1{12}\ones\ones^\top$, yet every
+direction is proportional to $\ones$ and $w_\gamma=\ones/4$ is the global
+optimum at every $\gamma$. When the end is inexact, the boundary expansion
+reads $\partial_\gamma F(1,\tau)=V_0'(1)+\tau^2G'(1)+O(\tau^4)$, and for
+small $\tau$ the population slope decides the endpoint test: if $V_0'(1)<0$
+then full coupling is a strict local minimizer whatever the sign of
+$G'(1)$, with no interior displacement, and if $V_0'(1)>0$ the minimizer of
+$V_0$ is away from full coupling already at $\tau=0$. In that test the sign
+of $G'(1)$ enters only when $|V_0'(1)|$ is itself of order $\tau^2$.
+Equation \eqref{eq:shift} was derived from $V_0'(1)=0$ and does not carry
+over. If instead $V_0$ has a nondegenerate interior minimizer $\gamma_0$,
+with $V_0'(\gamma_0)=0$ and $V_0''(\gamma_0)>0$, the same implicit-function
+argument gives
+$\gamma_*(\tau)=\gamma_0-\tau^2G'(\gamma_0)/V_0''(\gamma_0)+O(\tau^4)$.
 \end{remark}
 
 The displacement in \eqref{eq:shift} is of second order in the noise, and
