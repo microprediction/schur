@@ -90,7 +90,8 @@
       path is the plain optimizer on the raw estimate. The minima differ by a point and sit at
       different places on the dial, which is what two paths between the same ends look like. A gap of several points between the
       rows, or minima at different ends, would refute the claim that the placement is immaterial.
-      Script: <code>experiments/where_to_damp.py</code>.
+      Script: <a href="https://github.com/microprediction/allocation/blob/main/experiments/studies/where_to_damp.py"><code>experiments/studies/where_to_damp.py</code></a>
+      in the <code>allocation</code> repository.
     </p>
 
     <h2>The race, and the data setting the dial</h2>
@@ -99,7 +100,7 @@
       functional of one joint law and a tapered covariance is one. That makes it the right place to
       ask whether the data can set the dial. Put a prior on the covariance whose mean keeps the
       within-sector blocks and shrinks the cross-sector blocks toward zero, choose the prior's
-      strength by marginal likelihood, and race under the posterior mean. Twelve assets in three
+      strength by a plug-in marginal likelihood, and race under the posterior mean. Twelve assets in three
       sectors, twenty random markets; the entry is the squared distance from the race under the true
       covariance, times $10^4$.
     </p>
@@ -110,8 +111,8 @@
         <tr><td>race on the full estimated correlation</td><td>62.1</td><td>13.3</td></tr>
         <tr><td>race with no correlation</td><td>43.6</td><td>23.1</td></tr>
         <tr><td>cross-sector block set to zero</td><td>46.2</td><td>11.4</td></tr>
-        <tr><td>posterior mean, sector prior, strength by marginal likelihood</td><td>47.0</td><td>11.3</td></tr>
-        <tr><td>posterior mean, diagonal prior, strength by marginal likelihood</td><td>46.6</td><td>12.6</td></tr>
+        <tr><td>posterior mean, sector prior, strength by plug-in marginal likelihood</td><td>47.0</td><td>11.3</td></tr>
+        <tr><td>posterior mean, diagonal prior, strength by plug-in marginal likelihood</td><td>46.6</td><td>12.6</td></tr>
         <tr><td>average of the race over 32 posterior draws, sector prior</td><td>47.6</td><td>11.8</td></tr>
       </tbody>
     </table>
@@ -119,11 +120,16 @@
     <p>
       Three things follow. The sector prior beats the diagonal prior at 250 days, so the damping has
       to be aimed at the cross-block; shrinking every entry, which is what ordinary shrinkage does,
-      is weaker. The marginal likelihood puts the sector prior where the best hand-set dial sits,
-      without a dial. And averaging the race over posterior draws adds nothing over the posterior
-      mean, for this loss; whether sampling helps a tail objective is open. A diagonal prior that
-      matched the sector prior at 250 days would refute the first claim.
-      Script: <code>experiments/bayes_race.py</code>.
+      is weaker. The sector-prior row lands where the best hand-set taper sits, but not by a clean
+      evidence calculation: the prior's mean is built from the same sample covariance the likelihood
+      then scores, and the selected strength is the largest value in the grid searched, in every
+      market, with the evidence still rising beyond it. A prior fixed before the data is seen, or a
+      held-out criterion, is what would let the data set the dial, and that remains to be run. And
+      averaging the race over posterior draws adds nothing over the posterior mean, for this loss;
+      whether sampling helps a tail objective is open. A diagonal prior that matched the sector
+      prior at 250 days would refute the first claim.
+      Script: <a href="https://github.com/microprediction/allocation/blob/main/experiments/studies/bayes_race.py"><code>experiments/studies/bayes_race.py</code></a>
+      in the <code>allocation</code> repository.
     </p>
 
     <h2>The rule</h2>
