@@ -145,8 +145,8 @@
     <h2>How much to trust the coupling: a closed form</h2>
     <p>
       The right $\gamma$ is the <em>reliability</em> of the estimated
-      coupling, a James&ndash;Stein / Wiener ratio of signal to signal-plus-noise. In the
-      two-block case with conditional correlation $\rho$ estimated from $n$ observations,
+      coupling, a Wiener ratio of signal to signal-plus-noise in the James&ndash;Stein spirit. In the
+      two-block case with conditional correlation $\rho$ across the block and $n$ observations,
     </p>
     <div class="equation-card">
       $\gamma^\star = \dfrac{(n-2)\,\rho^2}{(n-2)\,\rho^2 + (1-\rho^2)}$
@@ -154,7 +154,13 @@
     <p>
       More data, or stronger coupling: $\gamma^\star \to 1$ and the full optimization is the right
       choice. Undersampled, or weak coupling: $\gamma^\star \to 0$ and the divide-and-conquer
-      heuristic is the right choice. Empirically the optimum is interior: on daily asset
+      heuristic is the right choice. Those limits are statements about the population $\rho$. In
+      use the sample correlation $r$ is plugged in, and the plug-in is a heuristic rather than an
+      optimal shrinkage: with true correlation zero, $(n-2)r^2$ does not vanish but converges to a
+      $\chi^2_1$ variable $Z$, so $\gamma^\star$ converges to $Z/(1+Z)$, mean about $0.34$, and
+      arbitrarily much null data keeps a third of coupling that is pure noise. The cost of keeping
+      it is small, since a null cross-block estimate is itself of order $1/\sqrt n$ and its
+      variance cost of order $1/n$, which is why the rule works in practice. Empirically the optimum is interior: on daily asset
       returns in <em>Two Sides of Schur Damping</em>, and on crypto correlations, weather-forecast
       residuals and simulated fields in the earlier Schur pseudo-likelihood work in
       <code>precise</code>. The closed form gets most of the gain with zero tuning, and a single

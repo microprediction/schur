@@ -135,14 +135,12 @@ check('7. with the diagonal reference the blend damps within-cluster correlation
 # ---- Monte Carlo: both ends of the dial are races, and phi = 0 reproduces the benchmark
 try:
     import numpy as np
-    from allocation._thurstone.ability import base_density
     from allocation._thurstone.calibrate import calibrate_diagonal
     from allocation._thurstone.transport import transport_weights
     Cf = np.array([[float(x) for x in row] for row in C])
     seeds = np.random.default_rng(0).standard_normal((1 << 14, n))
-    base = base_density()
     tgt = np.full(n, 1.0/n)
-    ab = calibrate_diagonal(tgt, base=base)
+    ab = calibrate_diagonal(tgt)
     w0 = transport_weights(ab, np.eye(n), seeds)
     check('8. (Monte Carlo) calibration reproduces the benchmark under its own reference law',
           float(np.abs(w0 - tgt).max()) < 5e-3)
@@ -152,6 +150,33 @@ try:
           abs(wA.sum()-1) < 1e-9 and abs(wB.sum()-1) < 1e-9 and float(np.abs(wA-wB).max()) > 1e-3)
 except Exception as exc:                                    # pragma: no cover
     print('skip 8-9 (needs numpy and the allocation package): %s' % exc)
+
+# ---- the reliability plug-in under the null: it does not vanish with n
+# r^2 ~ Beta(1/2, (n-2)/2) for n iid bivariate-normal observations with correlation 0, and
+# gamma(r) = (n-2) r^2 / ((n-2) r^2 + 1 - r^2). Integrate E_0[gamma] exactly (x = u^2 removes
+# the endpoint singularity), and the n -> infinity limit E[Z/(1+Z)], Z ~ chi^2_1.
+import math
+def null_mean(n, m=200000):
+    a, b = 0.5, (n - 2) / 2.0
+    lnB = math.lgamma(a) + math.lgamma(b) - math.lgamma(a + b)
+    tot = 0.0
+    for i in range(m):
+        u = (i + 0.5) / m; x = u * u                      # dx = 2u du, x^(a-1) = 1/u
+        dens = math.exp(-lnB) * (1 - x) ** (b - 1) * 2.0  # x^(-1/2) * 2u = 2
+        tot += dens * (n - 2) * x / ((n - 2) * x + 1 - x)
+    return tot / m
+def chi2_limit(m=400000, zmax=60.0):
+    tot = 0.0
+    for i in range(m):
+        v = (i + 0.5) / m * math.sqrt(zmax); z = v * v    # z = v^2, dz = 2v dv
+        tot += (z / (1 + z)) * math.exp(-z / 2) / math.sqrt(2 * math.pi * z) * 2 * v
+    return tot * math.sqrt(zmax) / m
+lim = chi2_limit(); means = {n_: null_mean(n_) for n_ in (10, 20, 100, 500)}
+check('10. the reliability plug-in under a true correlation of zero has mean 0.366, 0.354, 0.346, '
+      '0.345 at n = 10, 20, 100, 500 and limit E[Z/(1+Z)] = 0.344: it does not vanish with n',
+      abs(lim - 0.34432) < 2e-4 and all(abs(means[k] - v) < 2e-3 for k, v in
+                                       {10: 0.3660, 20: 0.3539, 100: 0.3461, 500: 0.3447}.items())
+      and all(means[k] > lim for k in means))
 
 bad = [nm for nm, c in checks if not c]
 print('\n%d of %d checks passed' % (len(checks) - len(bad), len(checks)) + ('; FAILED: %s' % bad if bad else ''))

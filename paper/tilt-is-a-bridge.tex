@@ -205,8 +205,13 @@ and $n$ for the number of observations, \cite{cotton2026twosides} gives
   \phi^\star=\sqrt{\gamma^\star}.
   \label{eq:phistar}
 \end{equation}
-The tilt strength is then read off the data rather than tuned. The square root
-matters: a coupling one would damp to $\gamma^\star=\tfrac14$ on the covariance
+The tilt strength is then read off the data rather than tuned, with the sample
+correlation $r$ plugged in for $\rho$. The plug-in is a heuristic rather than
+an optimal shrinkage: under a true correlation of zero, $(n-2)r^2$ converges to
+a $\chi^2_1$ variable rather than to zero, so $\gamma^\star$ keeps about a third
+of pure-noise coupling however large $n$, at a variance cost of order $1/n$
+since the null cross-block estimate is itself of order $1/\sqrt n$. The square
+root matters: a coupling one would damp to $\gamma^\star=\tfrac14$ on the covariance
 side corresponds to $\phi^\star=\tfrac12$ on the tilt side, so a tilt that looks
 mild is a heavier damping than it appears.
 
