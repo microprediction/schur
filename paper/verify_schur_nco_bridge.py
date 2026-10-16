@@ -23,6 +23,8 @@ Run with `python verify_schur_nco_bridge.py`; it needs only NumPy and the standa
   check_incremental_cost Phi = gamma tau^2 H with H bounded
   check_zero_direction   a vanishing block of Sigma^{-1}u at gamma = 1 still yields the optimum
   check_interior_zero_direction  the continuous extension at an interior vanishing (issue 11)
+  check_hedge_cluster    u_I = 0 with a_i != 0: the cluster is kept as a hedge at every gamma, including 0
+  check_inexact_model_exact_endpoint  Delta_i != 0 yet w_gamma is the global optimum at every gamma
   check_scale_invariance rescaling Sigma or u leaves the weights unchanged (issue 12)
   check_sharpe_sign      fully invested Sigma^{-1}mu is max Sharpe only when its total is positive
   check_only_knots_move  member part of d_i is constant in gamma; knot exposure in closed form
@@ -335,16 +337,20 @@ def cluster_direction(sigma_hat, I, other, gamma, u, rel=1e-10):
     the two terms that cancel, so it is invariant to rescaling Sigma or u. When b_i vanishes
     at gamma > 0 the shape of d_i has the limit Q_i^{-1} d b_i / d gamma = -Q_i^{-1} a_i, and
     that limiting direction is used, which keeps the span continuous in gamma. A cluster is
-    dropped only if u_I itself is zero. Returns None for a dropped cluster.
+    dropped only if b_i vanishes identically, that is u_I = 0 and a_i = 0; with u_I = 0 but
+    a_i != 0 the cluster is kept as a hedge with direction -Q_i^{-1} a_i at every gamma,
+    including gamma = 0. Returns None for a dropped cluster.
     """
     Q, b = cheap_pair(sigma_hat, I, other, gamma, u)
-    a = (u[I] - b) / gamma if gamma > 0 else np.zeros(len(I))
-    scale = max(np.abs(u[I]).max(), np.abs(gamma * a).max())
-    if np.abs(b).max() <= rel * scale:
-        if gamma > 0 and np.abs(a).max() > 0:
-            b = -a
-        else:
-            return None
+    if len(other):
+        a = sigma_hat[np.ix_(I, other)] @ np.linalg.solve(sigma_hat[np.ix_(other, other)], u[other])
+    else:
+        a = np.zeros(len(I))
+    scale_u = np.abs(u).max()
+    if np.abs(u[I]).max() <= rel * scale_u and np.abs(a).max() <= rel * scale_u:
+        return None                      # b_i = u_I - gamma a_i vanishes identically
+    if np.abs(b).max() <= rel * max(np.abs(u[I]).max(), np.abs(gamma * a).max()):
+        b = -a                           # an isolated zero of b_i: the limiting direction
     d = np.linalg.solve(Q, b)
     return d / np.abs(d).max()          # scale is immaterial to the span; unit columns condition the Gram matrix
 
@@ -1037,6 +1043,38 @@ def check_interior_zero_direction():
     return out
 
 
+def check_hedge_cluster():
+    """A cluster with u_I = 0 but a_i != 0 is kept as a hedge at every gamma, including gamma = 0.
+    Sigma = [[2, 1], [1, 2]], u = (0, 1), singleton clusters, both knots: the span is all of R^2 and the
+    unnormalized bridge equals Sigma^{-1} u = (-1/3, 2/3) for every gamma, with no jump at zero.
+    With Sigma diagonal, a_1 = 0 as well, the cluster is dropped and the result is (0, 1/2)."""
+    S = np.array([[2.0, 1.0], [1.0, 2.0]]); u = np.array([0.0, 1.0]); idx, knots = [[0], [1]], [0, 1]
+    target = np.linalg.solve(S, u)
+    worst = max(np.abs(bridge_unnormalized(S, idx, knots, g, u) - target).max() for g in (0.0, 1e-6, 0.5, 1.0))
+    dropped = bridge_unnormalized(np.diag([2.0, 2.0]), idx, knots, 0.0, u)
+    return {"max_error_vs_Sigma_inv_u": float(worst), "target": target.tolist(), "dropped_case": dropped.tolist()}
+
+
+def check_inexact_model_exact_endpoint():
+    """A nonzero omitted correction Delta_i does not make the right end inexact. Sigma = I/2 + 11'/2,
+    clusters {1,2}, {3,4}, knots 1 and 3: Delta_i = (1/12) 11' in each cluster, yet every direction is
+    proportional to 1 and the bridge is the global optimum 1/4 at every gamma, with variance 5/8."""
+    S = 0.5 * np.eye(4) + 0.5 * np.ones((4, 4)); idx, knots = [[0, 1], [2, 3]], [0, 2]
+    deltas = []
+    for i, I in enumerate(idx):
+        rest = [j for j in range(4) if j not in I]; other = [k for j, k in enumerate(knots) if j != i]
+        full = S[np.ix_(I, rest)] @ np.linalg.solve(S[np.ix_(rest, rest)], S[np.ix_(rest, I)])
+        cheap = S[np.ix_(I, other)] @ np.linalg.solve(S[np.ix_(other, other)], S[np.ix_(other, I)])
+        deltas.append(full - cheap)
+    worst = 0.0
+    for g in (0.0, 0.3, 0.7, 1.0):
+        w = bridge_unnormalized(S, idx, knots, g); w = w / w.sum()
+        worst = max(worst, np.abs(w - 0.25).max())
+    w = np.full(4, 0.25)
+    return {"Delta_minus_one_twelfth": float(max(np.abs(D - 1 / 12).max() for D in deltas)),
+            "max_deviation_from_quarter": float(worst), "variance": float(w @ S @ w)}
+
+
 def check_scale_invariance(rng, trials=40):
     """Issue 12: rescaling Sigma or u must not change fully invested weights."""
     worst = 0.0
@@ -1104,6 +1142,10 @@ def main():
     for key, (w0, w1, v) in [(k2, v2) for k2, v2 in r.items() if k2[0].isdigit()]:
         assert abs(w0 + 0.25) < 1e-9 and abs(w1 - 1.25) < 1e-9 and abs(v - 7 / 8) < 1e-9, key
     assert r["exact_at_two_thirds"] == [Fr(-1, 4), Fr(5, 4)]
+    r = check_hedge_cluster(); print("hedge cluster             ", r)
+    assert r["max_error_vs_Sigma_inv_u"] < 1e-12 and np.allclose(r["dropped_case"], [0.0, 0.5])
+    r = check_inexact_model_exact_endpoint(); print("inexact model, exact end  ", r)
+    assert r["Delta_minus_one_twelfth"] < 1e-12 and r["max_deviation_from_quarter"] < 1e-12 and abs(r["variance"] - 5 / 8) < 1e-12
     r = check_scale_invariance(rng); print("scale invariance          ", r)
     assert r["max_change_under_rescaling"] < 1e-8 and np.allclose(r["diag_1e12"], [2 / 3, 1 / 3])
     r = check_sharpe_sign(); print("Sharpe sign               ", r)

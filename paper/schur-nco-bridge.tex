@@ -153,6 +153,7 @@ inverse of size $n-|I_i|$ per cluster, which is what a two-stage method
 exists to avoid.
 
 \section{The gateway model}
+\label{sec:gateway}
 
 \begin{definition}[Gateway model]
 For every cluster $j$, the residual of the remaining members $J_j$ after linear
@@ -296,11 +297,18 @@ $I_i$. The bridge portfolio is
 \end{equation}
 It solves, on the span of the $k$ directions, the problem that
 $\Sigma^{-1}u$ solves on the whole space. Since $b_i(\gamma)=u_{I_i}-\gamma a_i$
-with $a_i=\Sigma_{i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}u_{P_{-i}}$ fixed, a
-direction can vanish only at isolated $\gamma$, and there its shape has
-the limit $-Q_i(\gamma)^{-1}a_i$. We use that limiting direction, which
-keeps the span continuous in $\gamma$; only its scale is lost, and scale
-does not enter \eqref{eq:top}. A cluster is dropped only when $u_{I_i}=0$.
+with $a_i=\Sigma_{i,P_{-i}}\Sigma_{P_{-i}P_{-i}}^{-1}u_{P_{-i}}$ fixed, either
+$b_i$ vanishes identically, which happens exactly when $u_{I_i}=0$ and
+$a_i=0$, or it vanishes at no more than one $\gamma$, and there its shape
+has the limit $-Q_i(\gamma)^{-1}a_i\neq0$. We use that limiting direction,
+which keeps the span continuous in $\gamma$; only its scale is lost, and
+scale does not enter \eqref{eq:top}. A cluster is dropped only when $b_i$
+vanishes identically; under the gateway model its block of $\Sigma^{-1}u$
+is then zero. A cluster with $u_{I_i}=0$ but $a_i\neq0$ is kept, with
+direction $-Q_i(\gamma)^{-1}a_i$ for every $\gamma$: it carries no exposure
+to $u$ and enters the outer tier only as a hedge. The columns of $D_\gamma$
+are then nonzero with disjoint supports, so
+$D_\gamma^\top\Sigma D_\gamma\succ0$.
 
 \paragraph{Two-tier reading.} The right side of \eqref{eq:top} does not
 change when a column of $D_\gamma$ is rescaled. When every total
@@ -317,8 +325,9 @@ singularity when a cluster total crosses zero.
 \begin{enumerate}
 \item At $\gamma=0$ with $u=\ones$ the recipe is NCO with minimum variance
   at both tiers.
-\item Under the gateway model the nonvanishing columns of $D_1$ are the
-  blocks of $\Sigma^{-1}u$, and $w_1\propto\Sigma^{-1}u$.
+\item Under the gateway model, for every cluster with $b_i(1)\neq0$ the
+  column $d_i(1)$ of $D_1$ is the block $(\Sigma^{-1}u)_{I_i}$, every
+  cluster with $b_i(1)=0$ has a zero block, and $w_1\propto\Sigma^{-1}u$.
 \end{enumerate}
 \end{proposition}
 
@@ -327,8 +336,10 @@ At $\gamma=0$ the pair is $(\Sigma_{ii},\ones)$, so $d_i=\Sigma_{ii}^{-1}\ones$
 has a positive total, $v_i$ is the minimum-variance portfolio of the block,
 and the outer tier is minimum variance across the cluster portfolios. For
 the second claim, \eqref{eq:blockinv} and \cref{prop:sufficient} give
-$\Sigma^{-1}u$ as the sum of the nonvanishing columns of $D_1$, which lies
-in the column span of $D_1$ whatever replaces a vanishing column. Then
+$(\Sigma^{-1}u)_{I_i}=Q_i(1)^{-1}b_i(1)$, which is $d_i(1)$ when
+$b_i(1)\neq0$ and zero otherwise. So $\Sigma^{-1}u$ is the sum of the
+columns with $b_i(1)\neq0$, which lies in the column span of $D_1$ whatever
+limiting direction occupies a column with $b_i(1)=0$. Then
 $D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top u
 =D_1(D_1^\top\Sigma D_1)^{-1}D_1^\top\Sigma D_1\alpha=D_1\alpha$ for the
 $\alpha$ with $\Sigma^{-1}u=D_1\alpha$.
@@ -463,10 +474,12 @@ its shortfall in beta to the knot, per unit of residual variance.
 Take $u=\ones$ and put
 $\delta_i=(\ones-\beta_i)^\top E_i^{-1}(\ones-\beta_i)$. Under the gateway
 model, replace each cluster by its knot together with one asset that is
-uncorrelated with everything and has variance $1/\delta_i$. Then
-$V_0(\gamma)$ is unchanged for every $\gamma$. So is $F(\gamma,\tau)$ of
-\cref{sec:where} under noise that perturbs only the knot covariance and
-preserves the gateway structure.
+uncorrelated with everything and has variance $1/\delta_i$. Then the
+variance $V_0(\gamma)=w_\gamma^\top\Sigma w_\gamma$ of the normalized bridge
+portfolio, $\ones^\top w_\gamma=1$, is unchanged for every $\gamma$. So is
+the expected out-of-sample variance $F(\gamma,\tau)$ of \cref{sec:where}
+under noise that perturbs only the knot covariance and preserves the
+gateway structure.
 \end{corollary}
 
 \begin{proof}
@@ -479,9 +492,10 @@ which gives the same three quantities.
 \end{proof}
 
 A large cluster interior therefore never obscures the analysis: it enters
-as one scalar. If every member has unit beta to its knot then
-$\delta_i=0$, the members carry no budget, and $w_\gamma$ is the same for
-every $\gamma$ at which the knot exposures are nonzero.
+as one scalar. If in every cluster every member has unit beta to its knot
+then every $\delta_i=0$, the members carry no budget, and $w_\gamma$ is the
+same for every $\gamma$ at which the knot exposures are nonzero. With
+$\delta_i=0$ in some clusters only, $w_\gamma$ still moves.
 
 For the rest of this section take $u=\ones$ and write $S=\Sigma_{PP}$ for
 the knot covariance, $s_i=S_{ii}$, $h=S^{-1}\ones$ and
@@ -515,7 +529,7 @@ moves until $\gamma$ is very close to $1$.
 
 \begin{proposition}[Lost precision]
 \label{prop:lost}
-Suppose every $\delta_i>0$. Put $\Delta=\operatorname{diag}(\delta_i)$,
+Under the gateway model, suppose every $\delta_i>0$. Put $\Delta=\operatorname{diag}(\delta_i)$,
 $K_\gamma=\operatorname{diag}(\kappa_i(\gamma))$,
 $Z=\ones^\top h+\sum_i\delta_i$ and
 $W_\gamma=\big(S^{-1}+K_\gamma\Delta^{-1}K_\gamma\big)^{-1}$. The minimum
@@ -530,14 +544,27 @@ variance is $V_\star=1/Z$, and
 
 \begin{proof}
 By \cref{cor:compress} work with $2k$ assets of covariance
-$\operatorname{diag}(S,\Delta^{-1})$ and budget vector $(\ones,\ones)$. The
-unconstrained precision is $Z$ and its direction is $(h,\delta)$. The bridge
-restricts the knot exposures to $K_\gamma a$ and the member weights to
-$\Delta a$, and its precision $1/V_0(\gamma)$ falls short of $Z$ by the
-squared distance from $(h,\delta)$ to that subspace,
-$\min_a\{(h-K_\gamma a)^\top S\,(h-K_\gamma a)
-+(\ones-a)^\top\Delta\,(\ones-a)\}$. Eliminating $a$ and applying the
-Woodbury identity gives $L_\gamma$.
+$\Sigma=\operatorname{diag}(S,\Delta^{-1})$ and budget vector
+$(\ones,\ones)$. The unconstrained precision is $Z$ and its direction is
+$\Sigma^{-1}\ones=(h,\delta)$. Column $i$ of $D_\gamma$ is
+$(\kappa_i(\gamma)e_i,\delta_ie_i)$; since $\delta_i>0$ it is nonzero even
+where $\kappa_i(\gamma)=0$, so $D_\gamma$ has rank $k$ on the whole bridge.
+The bridge restricts the knot exposures to $K_\gamma a$ and the member
+weights to $\Delta a$ for an outer vector $a$, and its precision
+$1/V_0(\gamma)=(D_\gamma^\top\ones)^\top(D_\gamma^\top\Sigma D_\gamma)^{-1}
+D_\gamma^\top\ones$ falls short of $Z$ by the squared $\Sigma$-distance
+from $(h,\delta)$ to that subspace,
+\begin{equation*}
+  \min_a\big\{(h-K_\gamma a)^\top S\,(h-K_\gamma a)
+  +(\ones-a)^\top\Delta\,(\ones-a)\big\},
+\end{equation*}
+because expanding $\|\Sigma^{-1}\ones-D_\gamma a\|_\Sigma^2$ and minimizing
+over $a$ gives exactly $Z-1/V_0(\gamma)$. Substitute $a=\ones-b$, so that
+$h-K_\gamma a=(h-\kappa)+K_\gamma b$. The minimum over $b$ is attained at
+$b=-(K_\gamma SK_\gamma+\Delta)^{-1}K_\gamma S\,(h-\kappa)$ and equals
+$(h-\kappa)^\top\big[S-SK_\gamma(K_\gamma SK_\gamma+\Delta)^{-1}K_\gamma S\big]
+(h-\kappa)$. The bracket is $W_\gamma$ by the Woodbury identity, which gives
+$L_\gamma$, and $1/(Z-L_\gamma)-1/Z$ is \eqref{eq:lost}.
 \end{proof}
 
 Since $W_\gamma\succ0$, the bridge attains the minimum variance exactly when
@@ -549,10 +576,10 @@ $\kappa=h$, and
 So if some $s_ih_i\neq1$ then $\gamma=1$ is the unique global minimizer of
 $V_0$ on $[0,1]$. If every $s_ih_i=1$ the whole bridge is already optimal.
 The curvature at the end is explicit as well. With
-$p_i=\kappa_i'(1)=(s_ih_i-1)/\nu_i$ and
+$\dot\kappa_i=\kappa_i'(1)=(s_ih_i-1)/\nu_i$ and
 $W_1=\big(S^{-1}+\operatorname{diag}(h_i^2/\delta_i)\big)^{-1}$,
 \begin{equation}
-  V_0''(1)=\frac{2\,p^\top W_1\,p}{Z^2}.
+  V_0''(1)=\frac{2\,\dot\kappa^\top W_1\,\dot\kappa}{Z^2}.
   \label{eq:curvature}
 \end{equation}
 
@@ -569,8 +596,9 @@ their correlation, the further the bridge has to travel.
 
 \begin{remark}[Degenerate partitions]
 With every asset its own cluster each direction is a multiple of a
-coordinate vector, so with the limiting direction at a vanishing the
-directions span the whole space at every $\gamma$. With a single cluster
+coordinate vector, so, with the limiting direction used wherever a
+$b_i(\gamma)$ vanishes, the directions span the whole space at every
+$\gamma$. With a single cluster
 there is nothing to condition on. In both cases $w_\gamma$ is the minimum-variance portfolio for
 every $\gamma$, and no model is needed. The bridge has length only for
 partitions strictly between the two.
@@ -587,10 +615,16 @@ Let $\widehat\Sigma_\tau=\Sigma+\tau E$ be an estimate, where $E$ is a random
 symmetric matrix whose law is unchanged by $E\mapsto-E$, and
 $\widehat\Sigma_\tau\succ0$ on the range of $\tau$ considered. Every
 quantity in the recipe is computed from $\widehat\Sigma_\tau$. The partition
-and the knots are held fixed as $\tau$ varies, since reclustering or
-reselecting knots from the data can destroy smoothness. The portfolio
-$w_\gamma$ of \eqref{eq:top} is normalized by $\ones^\top w_\gamma=1$, and
-we assume the normalizing total stays nonzero. Define the expected
+and the knots are held fixed as $\tau$ varies. A data-driven choice of
+either, such as the knot screens of \cref{sec:gateway}, is a discrete
+function of $\widehat\Sigma_\tau$: away from its decision boundaries it is
+locally constant, so the differential statements below hold for noise too
+small to switch it, and at a switching level $F$ can lose smoothness. The
+portfolio $w_\gamma$ of \eqref{eq:top} is normalized by
+$\ones^\top w_\gamma=1$, and we assume the normalizing total is bounded away
+from zero on the range of $(\gamma,\tau)$ considered; a total near zero
+makes $w_\gamma$ large and the expansion below non-uniform in $\gamma$.
+Define the expected
 out-of-sample variance and its noiseless profile,
 \begin{equation}
   F(\gamma,\tau)=\mathbb{E}\big[w_\gamma(\widehat\Sigma_\tau)^\top\,\Sigma\,
@@ -682,6 +716,29 @@ When every $\delta_i>0$ the uniqueness hypothesis is supplied by
 hypothesis when some $\delta_i=0$, since gateway exactness alone does not
 exclude another $\gamma<1$ that produces the same portfolio.
 
+\begin{remark}[When the gateway model fails]
+\label{rem:misspec}
+If some $\Delta_i\neq0$ in \eqref{eq:loss}, then $w_1$ need not be the
+minimum-variance portfolio, and $V_0'(1)$ is in general nonzero. The exact
+criterion for the right end is $\Sigma^{-1}\ones\in\operatorname{col}(D_1)$,
+which a nonzero $\Delta_i$ alone does not decide: with
+$\Sigma=\tfrac12I_4+\tfrac12\ones\ones^\top$, clusters $\{1,2\}$, $\{3,4\}$
+and knots $1$, $3$, each $\Delta_i=\tfrac1{12}\ones\ones^\top$, yet every
+direction is proportional to $\ones$ and $w_\gamma=\ones/4$ is the global
+optimum at every $\gamma$. When the end is inexact, the boundary expansion
+reads $\partial_\gamma F(1,\tau)=V_0'(1)+\tau^2G'(1)+O(\tau^4)$, and for
+small $\tau$ the population slope decides the endpoint test: if $V_0'(1)<0$
+then full coupling is a strict local minimizer whatever the sign of
+$G'(1)$, with no interior displacement, and if $V_0'(1)>0$ the minimizer of
+$V_0$ is away from full coupling already at $\tau=0$. In that test the sign
+of $G'(1)$ enters only when $|V_0'(1)|$ is itself of order $\tau^2$.
+Equation \eqref{eq:shift} was derived from $V_0'(1)=0$ and does not carry
+over. If instead $V_0$ has a nondegenerate interior minimizer $\gamma_0$,
+with $V_0'(\gamma_0)=0$ and $V_0''(\gamma_0)>0$, the same implicit-function
+argument gives
+$\gamma_*(\tau)=\gamma_0-\tau^2G'(\gamma_0)/V_0''(\gamma_0)+O(\tau^4)$.
+\end{remark}
+
 The displacement in \eqref{eq:shift} is of second order in the noise, and
 the gain from making it is of fourth order. When $G'(1)>0$,
 \begin{equation}
@@ -770,8 +827,9 @@ the sign of $G'(1)$ is the outcome of the competition.
 \subsection{Less symmetric examples}
 
 \paragraph{A quartic.} Take clusters $\{1,2\}$ and $\{3,4\}$ with knots $1$
-and $3$, unit variances except $\Sigma_{33}=4$, a single nonzero
-correlation entry $\Sigma_{13}=\tfrac12$, and the estimate
+and $3$, unit variances except $\Sigma_{33}=4$, a single nonzero covariance
+$\Sigma_{13}=\tfrac12$ between the knots (correlation $\tfrac14$), and the
+estimate
 $\widehat\Sigma_{13}=Z\in\{0,1\}$ with equal probability. On the branch
 $Z=1$ the second knot exposure is $x=\kappa_2(\gamma)=(1-\gamma)/(4-\gamma)$
 and the population variance is
@@ -812,6 +870,22 @@ Neither end owns the bridge. An interior optimum is not a consequence of the
 architecture, and a statement that it is generic needs a noise model. The
 derivatives quoted in both examples are exact, computed by truncated
 bivariate jets in rational arithmetic.
+
+\begin{remark}[Whole-matrix noise]
+\label{rem:wholematrix}
+\Cref{prop:incremental,prop:mvend} allow any symmetric $E$. Only the
+examples restrict the noise to cross-knot entries that preserve the gateway
+model, which is what reduces each cluster to the scalar $t_\gamma(z)$ or
+$\kappa_i(\gamma)$ and makes $G'(1)$ a closed form. Under whole-matrix
+noise $\widehat\Sigma_\tau$ need not satisfy the gateway model even when
+$\Sigma$ does, so \cref{prop:knotsmove} no longer describes the estimate:
+the member parts $d_{i,J_i}(\gamma)$ computed from $\widehat\Sigma_\tau$
+are random and in general move with $\gamma$. \Cref{prop:mvend} still
+applies, since it needs only symmetric noise, the smoothness assumed above,
+and gateway exactness of the population, but $G'(1)$ then collects
+within-cluster and cross-channel terms that the examples do not contain,
+and its sign is not settled by them.
+\end{remark}
 
 \section{Rank deficiency}
 \label{sec:rank}

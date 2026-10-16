@@ -4,7 +4,7 @@
 Interior Is Sometimes Provably Better* — `schur-nco-bridge.tex`,
 self-contained (embedded bibliography, no figures), compiles under plain
 pdflatex with zero warnings. Verification: `verify_schur_nco_bridge.py`
-(NumPy plus the standard library; 33 checks, exact rational arithmetic for
+(NumPy plus the standard library; 35 checks, exact rational arithmetic for
 the examples). Demonstrations: https://schur.microprediction.org/nco-demos.html
 
 Already posted: SSRN 7480738, CC BY,
