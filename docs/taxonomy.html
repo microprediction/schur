@@ -72,7 +72,7 @@
       Two dials: $\gamma$ conditions a cluster on the outside, $\eta$ conditions an asset on its
       cluster mates. Each cluster is budgeted by the inverse of a variance, or by NCO's outer optimizer. Block inversion gives
       $\Sigma^{-1}u$ exactly at $(\gamma,\eta)=(1,1)$ for any partition, with $u=\mathbf 1$ minimum
-      variance, $u=\sigma$ maximum diversification, $u=\mu$ the tangency direction. The near end
+      variance, $u=\sigma$ unconstrained maximum diversification, $u=\mu$ the tangency direction. The near end
       depends on the partition and on the <em>split rule</em>, the variance used for budgeting.
     </p>
 
@@ -111,7 +111,7 @@
           <td>HERC to minimum variance, a square</td>
           <td>HERC: inverse variance inside, inverse cluster variance across</td>
           <td>minimum variance, exactly</td>
-          <td>Flat clusters, from a dendrogram cut in the note and from the Fiedler order or fixed labels in the code, conditioned on all other assets or on siblings (exact) or on factor knots (exact under a block one-factor model), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. <a href="./schur-herc-square.pdf">The HERC square note</a>. <code>SchurBridge.herc_to_min_variance</code>.</td>
+          <td>Flat clusters, from a dendrogram cut in the note and from the Fiedler order or fixed labels in the code, conditioned on all other assets or on siblings (exact) or on factor knots (exact under a block one-factor model whose loading directions are known; a loading fitted within a two-asset cluster is not identified), two dials. Split: the variance of what the cluster holds on its conditioned pair, HERC's own rule read with risk contribution as a precision. <a href="./schur-herc-square.pdf">The HERC square note</a>. <code>SchurBridge.herc_to_min_variance</code>.</td>
         </tr>
         <tr>
           <td>Inverse variance to minimum variance</td>
@@ -120,9 +120,9 @@
           <td>One cluster and the inner dial, or every asset its own cluster and the outer dial; closed form from one inverse; Stevens (1998) at the far end. The inner dial of the HERC note. <code>SchurBridge.inverse_variance_to_min_variance</code>.</td>
         </tr>
         <tr>
-          <td>Any of the above to maximum diversification or tangency</td>
+          <td>Any of the above to unconstrained maximum diversification or tangency</td>
           <td>the same near ends with $\sigma$ or $\mu$ in the numerator: inverse volatility for $\sigma$, per-asset Kelly $\mu_i/\sigma_i^2$ for $\mu$. A heuristic with no $b$ in its numerator is not the near end of a bridge in this family.</td>
-          <td>$\Sigma^{-1}\sigma$ or $\Sigma^{-1}\mu$, exactly</td>
+          <td>$\Sigma^{-1}\sigma$ or $\Sigma^{-1}\mu$, exactly; long-short, since neither need be nonnegative</td>
           <td>As above with the companion vector $u=\sigma$ or $u=\mu$: <code>companion='vol'</code> / <code>'mean'</code>. The HERC note's remark on companion vectors, and the <a href="./generality.html">generality page</a> for the full list of problems of the form $\Sigma^{-1}b$. Compare Wuebben (2026), whose HRP-$\mu$ carries a signal through the tree but is exact at neither end.</td>
         </tr>
       </tbody>
@@ -132,12 +132,13 @@
     <p>
       The outer dial needs a conditioning set. <em>Siblings</em>: compose conditioning down a
       bisection tree, each block on its sibling; exact at $\gamma=1$ because Schur complements
-      compose, one half-size solve at the root. <em>All</em>: each cluster on every other
+      compose; the largest systems are two half-size solves at the root, one per sibling, then smaller ones down the tree. <em>All</em>: each cluster on every other
       asset; exact, one solve of size $n-|C|$ per cluster. <em>Knots</em>: each cluster on one
       asset per other cluster; exact under the gateway model of the NCO note, $k\times k$ solves.
       <em>Factor knots</em>: each cluster on one factor-mimicking portfolio per other cluster,
       $a_C=\Sigma_{CC}^{-1}\beta_C$; exact when cross-cluster dependence runs through one latent factor
-      per cluster, cluster-sized solves. The paths agree at both ends when exact and differ inside.
+      per cluster and $\beta_C$ is the true loading direction, which a within-cluster fit need not
+      recover, cluster-sized solves. The paths agree at both ends when exact and differ inside.
     </p>
 
     <h2>The split rules</h2>

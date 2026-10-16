@@ -131,9 +131,11 @@
       $\gamma$: the residual risk a portfolio keeps after hedging is, term for term, the conditional
       variance a weather model keeps after conditioning on neighbours.
     </p>
-    <p><em>Machine learning.</em> The natural gradient is the minimum-variance operation
-      applied to the <em>gradient</em> covariance, and the optimizer hierarchy lines up with the
-      portfolio one: SGD is equal weight, diagonal preconditioning is inverse-variance, KFAC&apos;s
+    <p><em>Machine learning.</em> The natural gradient is the solve $\Sigma^{-1}u$ with the
+      Fisher, the <em>gradient</em> covariance, as $\Sigma$ and the objective gradient as $u$: the
+      general member of the family, not minimum variance, which has $u=\mathbf 1$. The optimizer
+      hierarchy still lines up with the portfolio one as a sequence of metric choices: SGD uses the
+      identity metric, diagonal preconditioning a diagonal one, and KFAC&apos;s
       block-diagonal and block-tridiagonal inverse-Fisher are binary coupling choices:
       trust a cross-layer coupling completely or zero it exactly. KFAC&apos;s own
       &ldquo;damping&rdquo; (&lambda;I) is spectrum loading, not coupling attenuation. Every rung
@@ -200,9 +202,12 @@
       stand. The far end is flat in the population, $V_0'(1)=0$, so only the noise term has a slope
       there: the optimum moves inside exactly when $G'(1)>0$, to
       $\tilde\gamma=1-\big(G'(1)/V_0''(1)\big)\tau^2$, and the gain from moving is of fourth order.
-      The near end is blind to the cross-cluster block, so its estimation cost does not grow with
-      $\gamma$ and moving away from it costs $\gamma\tau^2$; if the population objective falls at
-      the near end, the near end is strictly suboptimal for small noise. And the sign of $G'(1)$ is
+      A tree's near end is blind to the top-level cross-block, so under noise confined to that
+      block its estimation cost is zero and moving away from it costs $\gamma\tau^2$. NCO's near
+      end is not blind: its outer tier reads cross-cluster covariance, so it carries an estimation
+      cost of its own, and the $\gamma\tau^2$ factor applies to the cost of moving away from it,
+      centred at that noisy end. In either case, if the population objective falls at the near end,
+      the near end is strictly suboptimal for small noise. And the sign of $G'(1)$ is
       not fixed by the structure: both signs occur, each on an open set.
     </p>
     <p>

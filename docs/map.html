@@ -130,7 +130,7 @@ const NODES = [
  {id:"cotton2026nco", label:"Cotton 2026 (NCO bridge)", year:2026, c:"hub", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7480738", note:"NCO is one end of a Schur bridge whose other end is minimum variance; one knot per cluster is a sufficient conditioning set; the interior is sometimes provably optimal out of sample."},
  {id:"raffinot2018", label:"Raffinot 2018 (HERC)", year:2018, c:"portfolio", url:"https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3237540", note:"Hierarchical equal risk contribution: a dendrogram cut into clusters, inverse variance inside, inverse cluster risk across. The (0,0) corner of the HERC square."},
  {id:"cotton2026herc", label:"Cotton 2026 (HERC square)", year:2026, c:"hub", url:"./schur-herc-square.pdf", note:"HERC's budget rule is the minimum-variance rule; it lacks two Schur complements. Damping them gives a square with HERC at one corner and the optimum at the opposite corner; the inner dial makes Stevens' identity a path."},
- {id:"cotton2026loc", label:"Cotton 2026 (localization)", year:2026, c:"hub", url:"./localization-is-schur-damping.pdf", note:"A block-constant taper is Schur damping; the optimal coupling is the square of a signal-to-noise shrinkage of the gain, interior at every noise level."},
+ {id:"cotton2026loc", label:"Cotton 2026 (localization)", year:2026, c:"hub", url:"./localization-is-schur-damping.pdf", note:"A block-constant taper is Schur damping; the optimal coupling is the square of a signal-to-noise shrinkage of the gain, interior at every positive noise level with positive signal and sampling error."},
  {id:"hz2016", label:"Houtekamer–Zhang 2016", year:2016, c:"da", url:"https://doi.org/10.1175/MWR-D-15-0440.1", note:"Review of the EnKF for atmospheric data assimilation; localization and inflation as the two dials."},
  {id:"taper2006", label:"Tapering 2006", year:2006, c:"spatial", url:"https://doi.org/10.1198/106186006X132178", note:"Entrywise damping (Schur product theorem) vs factorization damping (LDL'). The instructive contrast."},
 
@@ -141,7 +141,7 @@ const NODES = [
  {id:"pourahmadi1999", label:"Pourahmadi 1999", year:1999, c:"cholesky", url:"https://doi.org/10.1093/biomet/86.3.677", note:"Covariance = sequential regressions + innovation variances."},
  {id:"rlz2010", label:"Rothman–Levina–Zhu 2010", year:2010, c:"cholesky", url:"https://arxiv.org/abs/0903.0645", note:"Regularized Cholesky regressions are PD by construction. The plug-in license."},
  {id:"huang2006", label:"Huang et al 2006 ⚠", year:2006, c:"cholesky", url:"https://doi.org/10.1093/biomet/93.1.85", note:"Lasso on Cholesky regressions: the regularized ancestor of a sparse bridge."},
- {id:"rhee2022", label:"Rhee–Kwak–Lee 2022", year:2022, c:"cholesky", url:"https://doi.org/10.1016/j.csda.2022.107439", note:"The only robustified Cholesky-regression model (multivariate-t EM, longitudinal, small p)."},
+ {id:"rhee2022", label:"Rhee–Kwak–Lee 2022", year:2022, c:"cholesky", url:"https://doi.org/10.1016/j.csda.2022.107439", note:"A robustified Cholesky-regression model (multivariate-t EM, longitudinal, small p), after Lin and Wang (2009) and Zheng, Fung and Zhu (2014)."},
 
  {id:"jamesstein1961", label:"James–Stein 1961", year:1961, c:"shrinkage", url:"https://projecteuclid.org/euclid.bsmsp/1200512173", note:"The reliability ratio's ancestor."},
  {id:"lw2004", label:"Ledoit–Wolf 2004", year:2004, c:"shrinkage", url:"https://doi.org/10.1016/S0047-259X(03)00096-4", note:"Linear shrinkage; γ* is an LW intensity restricted to cross-block coupling."},
@@ -222,7 +222,7 @@ const EDGES = [
  {s:"pakel2021", t:"hub", type:"gap", label:"damped composite-likelihood DCC: nobody"},
  {s:"pourahmadi1999", t:"rlz2010", type:"lineage"}, {s:"pourahmadi1999", t:"huang2006", type:"lineage"},
  {s:"rlz2010", t:"hub", type:"identity", label:"PD-by-construction license"},
- {s:"pourahmadi1999", t:"rhee2022", type:"lineage", label:"only robustification (t, small p)"},
+ {s:"pourahmadi1999", t:"rhee2022", type:"lineage", label:"robustification (t, small p)"},
  {s:"rhee2022", t:"vecchia1988", type:"gap", label:"a robust Vecchia: we found none"},
  {s:"jamesstein1961", t:"hub", type:"identity", label:"γ* is a reliability ratio"},
  {s:"jamesstein1961", t:"lw2004", type:"lineage"}, {s:"lw2004", t:"lw2012", type:"lineage"},

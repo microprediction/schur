@@ -46,8 +46,12 @@
       The damped Schur complement can be applied in two places. The recursion can run on the raw
       estimate $\widehat\Sigma$ with each block conditioned on the others through
       $A-\gamma BD^{-1}B^\top$, or the estimate itself can be tapered, the cross-block scaled by
-      $\sqrt\gamma$, and handed to a plain optimizer. With two blocks these are the same operation with
-      the dial labelled differently. With more they are different paths between the same two ends.
+      $\sqrt\gamma$, and handed to a plain optimizer. With two scalar blocks these are the same operation
+      with the dial labelled differently: the recursion at $\gamma$ is the taper with cross-block
+      scale $\gamma$. With blocks larger than one asset, or more than two of them, they are
+      different paths between the same two ends: tapering by $s$ hands a block the pair
+      $(A-s^2BD^{-1}B^\top,\ \mathbf 1-sBD^{-1}\mathbf 1)$, the recursion at $g$ hands it
+      $(A-gBD^{-1}B^\top,\ \mathbf 1-gBD^{-1}\mathbf 1)$, and no relabelling matches both parts.
       Either way they agree at both of those ends, and out of sample their best points are within
       about one percentage point of each other. The choice is decided by what has to be done with
       the result, not by performance.

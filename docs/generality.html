@@ -87,10 +87,10 @@
       <thead><tr><th>problem</th><th>$Q$</th><th>$b$</th><th>solution</th></tr></thead>
       <tbody>
         <tr><td>Minimum variance, fully invested</td><td>$\Sigma$</td><td>$\mathbf 1$</td><td>$\Sigma^{-1}\mathbf 1$, normalized</td></tr>
-        <tr><td>Maximum diversification (Choueifaty and Coignard)</td><td>$\Sigma$</td><td>$\sigma$, the volatilities</td><td>$\Sigma^{-1}\sigma$: maximizes $\sigma^\top w/\sqrt{w^\top\Sigma w}$</td></tr>
+        <tr><td>Maximum diversification, unconstrained (Choueifaty and Coignard)</td><td>$\Sigma$</td><td>$\sigma$, the volatilities</td><td>$\Sigma^{-1}\sigma$: maximizes $\sigma^\top w/\sqrt{w^\top\Sigma w}$ without a long-only constraint</td></tr>
         <tr><td>Tangency, maximum Sharpe ratio</td><td>$\Sigma$</td><td>$\mu$, the excess means</td><td>$\Sigma^{-1}\mu$, normalized when $\mathbf 1^\top\Sigma^{-1}\mu>0$</td></tr>
-        <tr><td>Kelly, growth-optimal under Gaussian returns</td><td>$\Sigma$</td><td>$\mu$</td><td>$\Sigma^{-1}\mu$, unnormalized: the same direction with its scale kept</td></tr>
-        <tr><td>Maximum decorrelation</td><td>$R$, the correlation</td><td>$\mathbf 1$</td><td>$R^{-1}\mathbf 1$: minimum variance with the volatilities stripped out</td></tr>
+        <tr><td>Kelly, growth-optimal for a continuously rebalanced Gaussian diffusion</td><td>$\Sigma$, the instantaneous covariance</td><td>$\mu$, the instantaneous excess drift</td><td>$\Sigma^{-1}\mu$, unnormalized: the same direction with its scale kept; in discrete time a quadratic approximation</td></tr>
+        <tr><td>Maximum decorrelation, unconstrained</td><td>$R$, the correlation</td><td>$\mathbf 1$</td><td>$R^{-1}\mathbf 1$: minimum variance with the volatilities stripped out; the usual long-only version is not in the family</td></tr>
         <tr><td>Optimal forecast combination (Bates and Granger)</td><td>the forecast-error covariance</td><td>$\mathbf 1$</td><td>the same formula, on forecasts instead of assets</td></tr>
         <tr><td>Minimum tracking error with one exposure target</td><td>$\Sigma$</td><td>$c$, the exposure</td><td>benchmark plus a multiple of $\Sigma^{-1}c$: minimum variance in active weights</td></tr>
         <tr><td>Hedging one position with several instruments</td><td>$\Sigma_{yy}$</td><td>$\Sigma_{yx}$</td><td>$\Sigma_{yy}^{-1}\Sigma_{yx}$, the regression coefficients</td></tr>

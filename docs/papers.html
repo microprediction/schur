@@ -86,10 +86,11 @@
         (boundary derivative &minus;1/700 + (8/189)&tau;&sup2;), and the surrogate frontier is a
         clipped monotone inverse of &tau;&sup2; = &minus;V&#8320;&prime;/G&prime;. A closing
         section shows that every portfolio with a unit budget is the exact minimum-variance
-        portfolio of some positive definite matrix, by a symmetric rank-two correction of the
-        same algebraic form as Jagannathan and Ma's, so the distance from that correction to the
-        data measures how far an allocator's implied beliefs sit from its own input: zero for
-        minimum variance, 0.205 for HRP, 0.385 for equal weight. All exact
+        portfolio of some positive definite matrix. Separately, the nearest symmetric matrix that
+        rationalizes a chosen allocation differs from the input by a correction of rank at most two,
+        of the same algebraic form as Jagannathan and Ma's, and that nearest matrix can be
+        indefinite; its distance from the data measures how far an allocator's implied beliefs sit
+        from its own input: zero for minimum variance, 0.205 for HRP, 0.385 for equal weight. All exact
         claims are machine-verified in rational arithmetic.</em>
       </li>
       <li>
@@ -160,7 +161,7 @@
         construction so far builds that matrix from the same portfolios it holds. Separating the two
         gives a family with a trial space and a test space. At the far end the $k$ conditioned
         directions are the blocks of $\Sigma^{-1}u$ and sum to it, so any non-degenerate pairing
-        recovers it and the choice of representative cannot reach the far end at all. The interior
+        recovers it and the choice of representative cannot change the far end at all. The interior
         is not free: an unmatched pairing loses symmetry and can pass through singularity inside the
         dial, with a positive-definite $6\times6$ example where it does and a rate of about a
         quarter of estimated markets. Pricing against the cluster portfolios makes the matrix a Gram
