@@ -44,8 +44,9 @@ semidefinite, its conditional covariance of the unobserved block is the
 damped Schur complement $A-\gamma BD^{-1}B^\top$, and the localized gain is
 $\sqrt{\gamma}$ times the optimal gain. Under sampling error in the
 cross-covariance the expected analysis error is an exact quadratic in
-$\sqrt\gamma$, so the optimal coupling is strictly interior for every noise
-level and has the closed form of a signal-to-noise shrinkage of the gain.
+$\sqrt\gamma$, so the optimal coupling has the closed form of a
+signal-to-noise shrinkage of the gain, strictly interior at every positive
+noise level when the signal and sampling-error terms are both positive.
 \end{abstract}
 
 \section{Setting}
@@ -121,7 +122,9 @@ Its trace is minimized at
   \gamma_\star=s_\star^2 .
   \label{eq:sstar}
 \end{equation}
-If $\tr G>0$ then $\gamma_\star<1$ for every $\tau>0$.
+If $\tr G>0$ then $\gamma_\star<1$ for every $\tau>0$, and if also
+$\tr Q>0$ then $\gamma_\star>0$, so the optimum is strictly interior. At
+$\tau=0$ it is $\gamma_\star=1$, and with $\tr Q=0$ it is $\gamma_\star=0$.
 \end{proposition}
 
 \begin{proof}
@@ -130,7 +133,7 @@ $A-KB^\top-BK^\top+KSK^\top$. Put $K=s(B+\tau E)S^{-1}$ and take
 expectations. The terms linear in $E$ vanish by sign symmetry, the cross
 terms vanish by independence, and $\E[KSK^\top]=s^2(Q+\tau^2G)$. The trace
 of \eqref{eq:F} is a convex quadratic in $s$ with minimizer
-\eqref{eq:sstar}.
+\eqref{eq:sstar}; the boundary cases are read off that formula.
 \end{proof}
 
 The optimal gain is the sample gain shrunk by $s_\star$, the ratio of the
@@ -143,8 +146,9 @@ entries in $E$, $G=\tr(S^{-1})\,I$.
 \begin{remark}[Contrast with the portfolio bridge]
 On the portfolio bridge the full-coupling end can be the out-of-sample
 optimum or not, according to the sign of one derivative there
-\cite{cotton2026bridge,cotton2026nco}. Here the optimum is interior for
-every noise level. The reason is that the analysis mean is linear in the
+\cite{cotton2026bridge,cotton2026nco}. Here the optimum is interior at
+every positive noise level once both terms of \eqref{eq:sstar} are
+positive. The reason is that the analysis mean is linear in the
 gain and there is no budget constraint, so the objective is an exact
 quadratic in $s$, and the companion vector of the allocation problem has no
 counterpart.
