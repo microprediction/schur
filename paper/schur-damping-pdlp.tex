@@ -146,9 +146,15 @@ conditional correlation $\rho$ estimated from $n$ return observations,
 \end{equation}
 Strong, well-sampled cross-pool coupling sends $\gamma^\star\to 1$ and the merge
 deserves trust; weak or undersampled coupling sends $\gamma^\star\to 0$ and the
-divide-and-conquer split was right. The estimate $\gamma^\star$ tracks the
-validation-tuned optimum with no tuning, on portfolios, crypto correlation, and
-simulated processes \citep{cotton2024,cotton2026}.
+divide-and-conquer split was right. Those limits concern the population
+$\rho$. In use the sample correlation $r$ is plugged in, which makes
+$\gamma^\star$ a heuristic rather than an optimal shrinkage: under a true
+correlation of zero, $(n-2)r^2$ converges to a $\chi^2_1$ variable $Z$, so the
+plug-in converges to $Z/(1+Z)$, mean about $0.34$, and does not vanish with
+$n$. The coupling it keeps is then of order $1/\sqrt n$ and costs variance of
+order $1/n$. Empirically the plug-in tracks the validation-tuned optimum with
+no tuning, on portfolios, crypto correlation, and simulated processes
+\citep{cotton2024,cotton2026}.
 
 \section{The undersampled regime is where DeFi lives}
 
